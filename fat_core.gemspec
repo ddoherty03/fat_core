@@ -1,0 +1,27 @@
+# coding: utf-8
+lib = File.expand_path('../lib', __FILE__)
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+require 'fat_core/version'
+
+Gem::Specification.new do |spec|
+  spec.name          = "fat_core"
+  spec.version       = FatCore::VERSION
+  spec.authors       = ["Daniel E. Doherty"]
+  spec.email         = ["ded-law@ddoherty.net"]
+  spec.summary       = %q{fat_core provides some useful core extensions}
+  spec.description   = %q{Write a longer description. Optional.}
+  spec.homepage      = ""
+  spec.license       = "MIT"
+
+  spec.files         = `git ls-files -z`.split("\x0")
+  spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
+  spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
+  spec.require_paths = ["lib"]
+
+  spec.add_development_dependency "bundler", "~> 1.5"
+  spec.add_development_dependency "rake"
+  spec.add_development_dependency "rspec"
+  spec.add_development_dependency "byebug"
+
+  spec.add_runtime_dependency "activesupport"
+end
