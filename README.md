@@ -1,6 +1,23 @@
 # FatCore
 
-TODO: Write a gem description
+fat-core is a simple gem to collect core extensions and a few new classes that
+I find useful in multiple projects.  The emphasis is on extending the Date
+class to make it more useful in financial applications.
+
+For example, the Date class adds two methods for determining whether a given
+date is a US federal holiday or a NYSE holiday.
+
+    Date.parse('2014-05-18').fed_holiday?  => true # It's a weekend
+    Date.parse('2014-01-01').fed_holiday?  => true # It's New Years
+
+All holidays defined by federal statute are recognized.
+
+Likewise, days on which the NYSE is closed can be gotten with:
+
+    Date.parse('2014-04-18').nyse_holiday? => true # It's Good Friday
+
+Conversely, Date#fed_workday? and Date#nyse_workday? return true if they are
+open for business on those days.
 
 ## Installation
 
