@@ -1,3 +1,5 @@
+require 'fat_core/period'
+
 class Date
   # Constants for Begining of Time (BOT) and End of Time (EOT)
   # Just outside the range of what we would find in an accounting app.
@@ -137,75 +139,6 @@ class Date
       result = "%04d-%02d-%02d" % [year, month, day]
     end
     result
-  end
-
-  # Holidays decreed by executive order
-  FED_DECLARED_HOLIDAYS =
-    [
-     Date.parse('2012-12-24')
-    ]
-
-  def Date.days_in_month(y, m)
-    days = Time::COMMON_YEAR_DAYS_IN_MONTH[m]
-    return(days) unless m == 2
-    return Date.new(y, m, 1).leap? ? 29 : 28
-  end
-
-  def Date.nth_wday_in_year_month(n, wday, year, month)
-    # Return the nth weekday in the given month
-    # If n is negative, count from last day of month
-    if n > 0
-      # Set d to the 1st wday in month
-      d = Date.new(year, month, 1)
-      while d.wday != wday
-        d += 1
-      end
-      # Set d to the nth wday in month
-      nd = 1
-      while nd != n
-        d += 7
-        nd += 1
-      end
-      return d
-    elsif n < 0
-      n = -n
-      # Set d to the last wday in month
-      d = Date.new(year, month,
-                   Date.last_day_in_year_month(year, month))
-      while d.wday != wday;
-        d -= 1
-      end
-      # Set d to the nth wday in month
-      nd = 1
-      while nd != n
-        d -= 7
-        nd += 1
-      end
-      return d
-    else
-      raise ArgumentError,
-        'Arg 1 to nth_wday_in_month_year cannot be zero'
-    end
-  end
-
-  def Date.last_day_in_year_month(year, month)
-    days = [
-            31, # Dec
-            31, # Jan
-            28, # Feb
-            31, # Mar
-            30, # Apr
-            31, # May
-            30, # Jun
-            31, # Jul
-            31, # Aug
-            30, # Sep
-            31, # Oct
-            30, # Nov
-            31, # Dec
-           ]
-    days[2] = 29 if Date.new(year, month, 1).leap?
-    return days[month % 12]
   end
 
   def weekend?
@@ -362,7 +295,6 @@ class Date
     strftime "%-m/%-d/%Y"
   end
 
-  require 'fat_core/period'
   def expand_to_period(sym)
     Period.new(beginning_of_chunk(sym), end_of_chunk(sym))
   end
@@ -436,19 +368,19 @@ class Date
     end
   end
 
-    # Holidays decreed by executive order
+  # Holidays decreed by executive order
   FED_DECLARED_HOLIDAYS =
     [
      Date.parse('2012-12-24')
     ]
 
-  def Date.days_in_month(y, m)
+  def self.days_in_month(y, m)
     days = Time::COMMON_YEAR_DAYS_IN_MONTH[m]
     return(days) unless m == 2
     return Date.new(y, m, 1).leap? ? 29 : 28
   end
 
-  def Date.nth_wday_in_year_month(n, wday, year, month)
+  def self.nth_wday_in_year_month(n, wday, year, month)
     # Return the nth weekday in the given month
     # If n is negative, count from last day of month
     if n > 0
@@ -485,7 +417,7 @@ class Date
     end
   end
 
-  def Date.last_day_in_year_month(year, month)
+  def self.last_day_in_year_month(year, month)
     days = [
             31, # Dec
             31, # Jan
