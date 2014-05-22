@@ -118,11 +118,62 @@ class String
     r = r.gsub(/([_$&%#])/) { |m| '\\' + m }
     r = r.gsub('XzXzXobXzXzX', '\\{')
     r = r.gsub('XzXzXcbXzXzX', '\\}')
-    return r
   end
 
   def self.random(size = 8)
     "abcdefghijklmnopqrstuvwxyz".split('').shuffle[0..size].join('')
+  end
+
+  # Convert a string with an all-digit date to an iso string
+  # E.g., "20090923" -> "2009-09-23"
+  def digdate2iso
+    self.sub(/(\d\d\d\d)(\d\d)(\d\d)/, '\1-\2-\3')
+  end
+
+  def entitle!
+    little_words = %w[ a an the and or in on under of from as by to ]
+    newwords = []
+    words = split(/\s+/)
+    first_word = true
+    num_words = words.length
+    words.each_with_index do |w, k|
+      last_word = (k + 1 == num_words)
+      if w =~ %r[c/o]i
+        # Care of
+        newwords.push("c/o")
+      elsif w =~ %r[^p\.?o\.?$]i
+        # Post office
+        newwords.push("P.O.")
+      elsif w =~ %r[^[0-9]+(st|nd|rd|th)$]i
+        # Ordinals
+        newwords.push(w.downcase)
+      elsif w =~ %r[^[^aeiouy]*$]i
+        # All consonants, probably abbr
+        newwords.push(w.upcase)
+      elsif w =~ %r[^(us|ne|se|rr)$]i
+        # Common 2-letter abbrs with vowels
+        newwords.push(w.upcase)
+      elsif w =~ %r[^[0-9].*$]i
+        # Other runs starting with numbers,
+        # like 3-A
+        newwords.push(w.upcase)
+      elsif w =~ %r[^(\w+)-(\w+)$]i
+        # Hypenated double word
+        newwords.push($1.capitalize + '-' + $2.capitalize)
+      elsif little_words.include?(w.downcase)
+        # Only capitalize at beginning or end
+        newwords.push((first_word or last_word) ? w.capitalize : w.downcase)
+      else
+        # All else
+        newwords.push(w.capitalize)
+      end
+      first_word = false
+    end
+    self[0..-1] = newwords.join(' ')
+  end
+
+  def entitle
+    self.dup.entitle!
   end
 
   # Thanks to Eugene at stackoverflow for the following.

@@ -6,6 +6,7 @@ require 'active_support/core_ext'
 require "fat_core/version"
 
 module FatCore
+  require 'fat_core/enumerable'
   require 'fat_core/numeric'
   require 'fat_core/array'
   require 'fat_core/nil'
