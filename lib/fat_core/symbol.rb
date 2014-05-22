@@ -1,7 +1,7 @@
   class Symbol
     # Convert to capitalized string: :hello_world -> "Hello World"
     def entitle
-      to_s.sub('_', ' ').split(' ')
+      to_s.gsub('_', ' ').split(' ')
         .join(' ')
         .entitle
     end
