@@ -167,6 +167,16 @@ describe Date do
 
   describe "instance methods" do
 
+    it "should know if its a weekend of a weekday" do
+      expect(Date.parse('2014-05-17')).to be_weekend
+      expect(Date.parse('2014-05-17')).to_not be_weekday
+      expect(Date.parse('2014-05-18')).to be_weekend
+      expect(Date.parse('2014-05-18')).to_not be_weekday
+
+      expect(Date.parse('2014-05-22')).to be_weekday
+      expect(Date.parse('2014-05-22')).to_not be_weekend
+    end
+
     it "should know its pred and succ (for Range)" do
       Date.today.pred.should eq (Date.today - 1)
       Date.today.succ.should eq (Date.today + 1)

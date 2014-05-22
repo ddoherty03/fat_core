@@ -139,6 +139,14 @@ class Date
     result
   end
 
+  def weekend?
+    saturday? || sunday?
+  end
+
+  def weekday?
+    !weekend?
+  end
+
   def pred
     self - 1.day
   end
@@ -148,15 +156,15 @@ class Date
   end
 
   def iso
-    return strftime("%Y-%m-%d")
+    strftime("%Y-%m-%d")
   end
 
   def org
-    return strftime("[%Y-%m-%d %a]")
+    strftime("[%Y-%m-%d %a]")
   end
 
   def eng
-    return strftime("%B %e, %Y")
+    strftime("%B %e, %Y")
   end
 
   def quarter
