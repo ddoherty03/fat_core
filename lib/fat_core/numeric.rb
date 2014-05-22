@@ -84,6 +84,17 @@ class Numeric
       end
     end
   end
+
+  def secs_to_hms
+    frac = self % 1
+    mins, secs = self.divmod(60)
+    hrs, mins = mins.divmod(60)
+    if frac.round(5) > 0.0
+      "%02d:%02d:%02d.%d" % [hrs, mins, secs, frac.round(5) * 100]
+    else
+      "%02d:%02d:%02d" % [hrs, mins, secs]
+    end
+  end
 end
 
 class BigDecimal

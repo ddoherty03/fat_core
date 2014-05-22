@@ -24,4 +24,11 @@ describe Numeric do
   it "should not place commas in a number with exponent" do
     123456.789e100.commas.should == '1.23456789e+105'
   end
+
+  it "should be able to convert itself into an H:M:S string" do
+    expect(60.secs_to_hms).to eq('00:01:00')
+    expect(120.secs_to_hms).to eq('00:02:00')
+    expect(6584.secs_to_hms).to eq('01:49:44')
+    expect(6584.35.secs_to_hms).to eq('01:49:44.35')
+  end
 end
