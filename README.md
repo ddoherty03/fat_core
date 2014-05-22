@@ -23,7 +23,7 @@ open for business on those days.
 
 Add this line to your application's Gemfile:
 
-    gem 'fat_core'
+    gem 'fat_core', :git => 'https://github.com/ddoherty03/fat_core.git'
 
 And then execute:
 
