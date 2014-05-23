@@ -47,6 +47,31 @@ class Period
     end
   end
 
+  # Possibly useful class method to take an array of periods and join all the
+  # contiguous ones, then return an array of the disjoint periods not
+  # contiguous to one another.  An array of periods with no gaps should return
+  # an array of only one period spanning all the given periods.
+
+  # Return an array of periods that represent the concatenation of all
+  # adjacent periods in the given periods.
+  # def self.meld_periods(*periods)
+  #   melded_periods = []
+  #   while (this_period = periods.pop)
+  #     melded_periods.each do |mp|
+  #       if mp.overlaps?(this_period)
+  #         melded_periods.delete(mp)
+  #         melded_periods << mp.union(this_period)
+  #         break
+  #       elsif mp.contiguous?(this_period)
+  #         melded_periods.delete(mp)
+  #         melded_periods << mp.join(this_period)
+  #         break
+  #       end
+  #     end
+  #   end
+  #   melded_periods
+  # end
+
   # TO_DATE = Period.new(Date::BOT, Date.current)
   # FOREVER = Period.new(Date::BOT, Date::EOT)
 
