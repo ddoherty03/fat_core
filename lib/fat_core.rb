@@ -15,4 +15,5 @@ module FatCore
   require 'fat_core/date'
   require 'fat_core/string'
   require 'fat_core/symbol'
+  require 'fat_core/kernel'
 end
