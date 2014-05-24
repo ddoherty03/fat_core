@@ -65,26 +65,6 @@ class Numeric
     self.floor == self ? self.floor : self
   end
 
-  # If the difference between two single digits is self, return the
-  # possible pairs of digits that could account for that
-  # difference. Return an array of two-element arrays where the first
-  # element minus the second is equal to self.
-  def dig_diff_possibilities
-    pairs = []
-    if self.floor == 0 || self.abs.floor > 9
-      pairs
-    else
-      (0..9).each do |d1|
-        (0..9).each do |d2|
-          pairs << [d1, d2]
-        end
-      end
-      pairs.select do |d1, d2|
-        d1 - d2 == self.floor
-      end
-    end
-  end
-
   def secs_to_hms
     frac = self % 1
     mins, secs = self.divmod(60)

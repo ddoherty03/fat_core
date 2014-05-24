@@ -116,31 +116,6 @@ class Date
     end
   end
 
-  # For lazy date entry, expand missing components of a date from
-  # components of the template date form.  Note that the template may
-  # be in the form of an org date.
-  def self.expand_from_template(partial, template)
-    template =~ /\A\s*[\[<]?\s*(\d\d\d\d)\s*-\s*(\d\d?)\s*-\s*(\d\d?)\s*\w*\s*[\]>]?\s*\z/
-    year = $1.to_i; month = $2.to_i; day = $3.to_i
-    result = nil
-    case partial
-    when /\A\s*(\d\d?)\s*\z/
-      day = $1.to_i
-    when /\A\s*(\d\d?)\s*[-\/]\s*(\d\d?)\s*\z/
-      month = $1.to_i; day = $2.to_i
-    when /\A\s*(\d\d\d\d)\s*[-\/]\s*(\d\d?)\s*[-\/]\s*(\d\d?)\s*\z/
-      year = $1.to_i; month = $2.to_i; day = $3.to_i
-    when /\A\s*(\d\d?)\s*[-\/]\s*(\d\d?)\s*[-\/]\s*(\d\d\d\d)\s*\z/
-      month = $1.to_i; day = $2.to_i; year = $3.to_i
-    else
-      result = partial
-    end
-    unless result
-      result = "%04d-%02d-%02d" % [year, month, day]
-    end
-    result
-  end
-
   def weekend?
     saturday? || sunday?
   end

@@ -1,4 +1,4 @@
-require File.dirname(File.absolute_path(__FILE__)) + '/../spec_helper.rb'
+require 'spec_helper'
 
 describe Date do
   before :each do
@@ -143,25 +143,6 @@ describe Date do
       Date.parse_american('2 / 1 / 2011').iso.should eq('2011-02-01')
       Date.parse_american('  2 / 1 / 2011  ').iso.should eq('2011-02-01')
       Date.parse_american('  2 / 1 / 15  ').iso.should eq('2015-02-01')
-    end
-
-    it "should be able to expand a lazy date from a template" do
-      Date.expand_from_template("3", "2012-07-11").should eq("2012-07-03")
-      Date.expand_from_template("8-3", "2012-07-11").should eq("2012-08-03")
-      Date.expand_from_template("2013-9-4", "2012-07-11").should eq("2013-09-04")
-      Date.expand_from_template("garbage", "2012-07-11").should eq("garbage")
-      Date.expand_from_template("3", "[2011-03-01 Tue]").should eq("2011-03-03")
-      Date.expand_from_template("3", "[2011-03-01]").should eq("2011-03-03")
-      Date.expand_from_template("3", "<2011-03-01 Tue>").should eq("2011-03-03")
-      Date.expand_from_template("3", "<2011-03-01>").should eq("2011-03-03")
-      Date.expand_from_template("3", "  <   2011-03-01Tue   >   ").should eq("2011-03-03")
-      Date.expand_from_template("3", "  <   2011 - 3 - 1Tue   >   ").should eq("2011-03-03")
-      Date.expand_from_template(" 8 - 3 ", "[2011-03-01 Tue]").should eq("2011-08-03")
-      Date.expand_from_template("8/3", "2012-07-11").should eq("2012-08-03")
-      Date.expand_from_template("2013/9/4", "2012-07-11").should eq("2013-09-04")
-      Date.expand_from_template("9/4/2013", "2012-07-11").should eq("2013-09-04")
-      Date.expand_from_template("9-4-2013", "2012-07-11").should eq("2013-09-04")
-      Date.expand_from_template("4/5", "[2011-03-01 Tue]").should eq("2011-04-05")
     end
   end
 

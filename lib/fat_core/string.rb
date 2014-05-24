@@ -69,24 +69,6 @@ class String
     self
   end
 
-  # The pipe in org tables is \vert{}; change this to a real pipe char
-  def quote_for_db
-    self.gsub(/\\vert(\s+|\{\s*\})/, '|')
-  end
-
-  # The pipe screws up org tables unless written as \vert{}
-  # A \& copies the whole payee table in-situ and screws everything
-  # up.
-  # Catch a // that is missing the ending '/'.
-  def quote_for_org
-    quoted = self.gsub(/\|/, '\vert{}')
-    quoted = quoted.gsub('\\&', '&')
-    if quoted =~ /^\s*\/.*[^\/]\s*$/
-      quoted = quoted + '/'
-    end
-    quoted
-  end
-
   def wrap(width=70, hang=0)
     offset = 0
     trip = 1

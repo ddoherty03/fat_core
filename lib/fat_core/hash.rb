@@ -1,32 +1,6 @@
 class Hash
-
-  # Convert hash keys that are Floats to BigDecimal and keys that are ISO date
-  # strings to Dates.
-  alias_method :__get, :[]
-  def [](k)
-    if k.class == Float
-      __get(BigDecimal.new(k, 12))
-    elsif k.class == String && k =~ /\A\s*\d\d\d\d-\d\d-\d\d\s*\z/
-      __get(Date.parse(k))
-    else
-      __get(k)
-    end
-  end
-
-  alias_method :__set, :[]=
-
-  def []=(k, v)
-    if k.class == Float
-      __set(BigDecimal.new(k, 12), v)
-    elsif k.class == String && k =~ /\A\s*\d\d\d\d-\d\d-\d\d\s*\z/
-      __set(Date.parse(k), v)
-    else
-      __set(k, v)
-    end
-  end
-
-  # Return all keys in hash that are == to the given value or are included in
-  # an Enumerable at the given key
+  # Return all keys in hash that have a value == to the given value or have an
+  # Enumerable value that includes the given value.
   def keys_with_value(val)
     result = []
     each_pair do |k, v|
