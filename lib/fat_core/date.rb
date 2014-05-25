@@ -698,6 +698,6 @@ class Date
     # Date 6 calendar months before self
     start_date = self - 6.months + 2.days
     end_date = self + 6.months - 2.days
-    (start_date..end_date).include?(d)
+    (start_date..end_date).cover?(d)
   end
 end
