@@ -129,15 +129,18 @@ class String
       elsif w =~ %r[^[0-9]+(st|nd|rd|th)$]i
         # Ordinals
         newwords.push(w.downcase)
-      elsif w =~ %r[^[^aeiouy]*$]i
-        # All consonants, probably abbr
-        newwords.push(w.upcase)
+      elsif w =~ %r[^(cr|dr|st|rd|ave|pk|cir)$]i
+        # Common abbrs to capitalize
+        newwords.push(w.capitalize)
       elsif w =~ %r[^(us|ne|se|rr)$]i
-        # Common 2-letter abbrs with vowels
+        # Common 2-letter abbrs to upcase
         newwords.push(w.upcase)
       elsif w =~ %r[^[0-9].*$]i
         # Other runs starting with numbers,
         # like 3-A
+        newwords.push(w.upcase)
+      elsif w =~ %r[^[^aeiouy]*$]i
+        # All consonants, probably abbr
         newwords.push(w.upcase)
       elsif w =~ %r[^(\w+)-(\w+)$]i
         # Hypenated double word

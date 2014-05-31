@@ -119,4 +119,11 @@ the people, for the people, shall not perish from the earth."
     "St Lukes".fuzzy_match('st. luke\'s').should eq('St Lukes')
     "St Lukes, Inc.".fuzzy_match('st luke inc').should eq('St Lukes Inc')
   end
+
+  it "should be able to properly capitalize a string as a title" do
+    expect("the cat in the hat".entitle).to eq('The Cat in the Hat')
+    byebug
+    expect("dr".entitle).to eq('Dr')
+    expect("cr".entitle).to eq('Cr')
+  end
 end
