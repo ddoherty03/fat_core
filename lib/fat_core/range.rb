@@ -184,4 +184,9 @@ class Range
       overlaps
     end
   end
+
+  # Allow erb documents can directly interpolate ranges
+  def tex_quote
+    to_s
+  end
 end

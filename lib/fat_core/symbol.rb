@@ -10,4 +10,8 @@
     def as_sym
       self
     end
+
+    def tex_quote
+      to_s.tex_quote
+    end
   end

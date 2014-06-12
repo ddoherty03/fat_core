@@ -196,6 +196,11 @@ class Period
     end
   end
 
+  # Allow erb documents can directly interpolate ranges
+  def tex_quote
+    "#{first.iso}--#{last.iso}"
+  end
+
   # Days in period
   def size
     (last - first + 1).to_i

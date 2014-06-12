@@ -700,4 +700,9 @@ class Date
     end_date = self + 6.months - 2.days
     (start_date..end_date).cover?(d)
   end
+
+  # Allow erb documents can directly interpolate dates
+  def tex_quote
+    iso
+  end
 end

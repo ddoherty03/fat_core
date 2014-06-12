@@ -1,6 +1,4 @@
 class Numeric
-  # This method uses the ActiveSupport round method for numbers
-
   def signum
     if self > 0
       1
@@ -74,6 +72,11 @@ class Numeric
     else
       "%02d:%02d:%02d" % [hrs, mins, secs]
     end
+  end
+
+  # Allow erb documents can directly interpolate numbers
+  def tex_quote
+    to_s
   end
 end
 
