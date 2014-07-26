@@ -2,10 +2,28 @@ require 'fat_core/period'
 
 class Date
   # Constants for Begining of Time (BOT) and End of Time (EOT)
-  # Just outside the range of what we would find in an accounting app.
+  # Both outside the range of what we would find in an accounting app.
   BOT = Date.parse('1900-01-01')
   EOT = Date.parse('3000-12-31')
 
+  # Convert a string with an American style date into a Date object
+  #
+  # An American style date is of the form MM/DD/YYYY, that is it places the
+  # month first, then the day of the month, and finally the year.  The
+  # European convention is to place the day of the month first, DD/MM/YYYY.
+  # Because a date found in the wild can be ambiguous, e.g. 3/5/2014, a date
+  # string known to be using the American convention can be parsed using this
+  # method.  Both the month and the day can be a single digit.  The year can
+  # be either 2 or 4 digits, and if given as 2 digits, it adds 2000 to it to
+  # give the year.
+  #
+  # @example
+  #     Date.parse_american('9/11/2001') #=> Date(2011, 9, 11)
+  #     Date.parse_american('9/11/01')   #=> Date(2011, 9, 11)
+  #     Date.parse_american('9/11/1')    #=> ArgumentError
+  #
+  # @param str [#to_s] a stringling of the form MM/DD/YYYY
+  # @return [Date] the date represented by the string paramenter.
   def self.parse_american(str)
     if str.to_s =~ %r{\A\s*(\d\d?)\s*/\s*(\d\d?)\s*/\s*(\d?\d?\d\d)\s*\z}
       year, month, day = $3.to_i, $1.to_i, $2.to_i
@@ -18,6 +36,34 @@ class Date
     end
   end
 
+=begin
+  Convert a 'date spec' to a Date.  A date spec is a short-hand way of
+  specifying a date, relative to the computer clock.  A date spec can
+  interpreted as either a 'from spec' or a 'to spec'.
+
+  @example
+  Assuming that Date.current at the time of execution is 2014-07-26 and
+  using the default spec_type of :from.  The return values are actually Date
+  objects, but are shown below as textual dates.
+
+  A fully specified date returns that date:
+      Date.parse_spec('2001-09-11')  # =>
+
+  Commercial weeks can be specified using, for example W32 or 32W, with the
+  week beginning on Monday, ending on Sunday.
+      Date.parse_spec('2012-W32')    # =>
+      Date.parse_spec('2012-W32', :to) # =>
+      Date.parse_spec('W32') # =>
+
+  A spec of the form Q3 or 3Q returns the beginning or end of calendar
+  quarters.
+      Date.parse_spec('Q3')         # =>
+
+  @param spec [#to_s] a stringling containing the spec to be interpreted
+  @param spec_type [:from, :to] interpret the spec as a from- or to-spec
+    respectively, defaulting to interpretation as a to-spec.
+  @return [Date] a date object equivalent to the date spec
+=end
   def self.parse_spec(spec, spec_type = :from)
     spec = spec.strip
     unless [:from, :to].include?(spec_type)
