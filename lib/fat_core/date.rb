@@ -29,14 +29,14 @@ class Date
     when /^(\d\d\d\d)-(\d\d?)-(\d\d?)*$/
       # A specified date
       Date.new($1.to_i, $2.to_i, $3.to_i)
-    when /\AW(\d\d?)\z/
+    when /\AW(\d\d?)\z/, /\A(\d\d?)W\z/
       week_num = $1.to_i
       if week_num < 1 || week_num > 53
         raise Byr::UserError, "invalid week number (1-53): 'W#{week_num}'"
       end
       spec_type == :from ? Date.commercial(today.year, week_num).beginning_of_week :
         Date.commercial(today.year, week_num).end_of_week
-    when /\A(\d\d\d\d)-W(\d\d?)\z/
+    when /\A(\d\d\d\d)-W(\d\d?)\z/, /\A(\d\d\d\d)-(\d\d?)W\z/
       year = $1.to_i
       week_num = $2.to_i
       if week_num < 1 || week_num > 53
@@ -44,7 +44,7 @@ class Date
       end
       spec_type == :from ? Date.commercial(year, week_num).beginning_of_week :
         Date.commercial(year, week_num).end_of_week
-    when /^(\d\d\d\d)-(\d)[Qq]$/
+    when /^(\d\d\d\d)-(\d)[Qq]$/, /^(\d\d\d\d)-[Qq](\d)$/
       # Year-Quarter
       year = $1.to_i
       quarter = $2.to_i
@@ -54,7 +54,7 @@ class Date
       month = quarter * 3
       spec_type == :from ? Date.new(year, month, 1).beginning_of_quarter :
         Date.new(year, month, 1).end_of_quarter
-    when /^([1234])[qQ]$/
+    when /^([1234])[qQ]$/, /^[qQ]([1234])$/
       # Quarter only
       this_year = today.year
       quarter = $1.to_i

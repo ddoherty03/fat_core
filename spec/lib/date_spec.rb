@@ -24,34 +24,42 @@ describe Date do
         Date.parse_spec('2011-08-05').should eq Date.parse('2011-08-05')
       end
 
-      it "should parse week numbers such as 'W23' correctly" do
+      it "should parse week numbers such as 'W23' or '23W' correctly" do
         Date.parse_spec('W1').should eq Date.parse('2012-01-02')
         Date.parse_spec('W23').should eq Date.parse('2012-06-04')
         Date.parse_spec('W23', :to).should eq Date.parse('2012-06-10')
+        Date.parse_spec('23W').should eq Date.parse('2012-06-04')
+        Date.parse_spec('23W', :to).should eq Date.parse('2012-06-10')
         expect {
           Date.parse_spec('W83', :to)
         }.to raise_error
       end
 
-      it "should parse year-week numbers such as 'YYYY-W23' correctly" do
+      it "should parse year-week numbers such as 'YYYY-W23' or 'YYYY-23W' correctly" do
         Date.parse_spec('2003-W1').should eq Date.parse('2002-12-30')
         Date.parse_spec('2003-W1', :to).should eq Date.parse('2003-01-05')
         Date.parse_spec('2003-W23').should eq Date.parse('2003-06-02')
         Date.parse_spec('2003-W23', :to).should eq Date.parse('2003-06-08')
+        Date.parse_spec('2003-23W').should eq Date.parse('2003-06-02')
+        Date.parse_spec('2003-23W', :to).should eq Date.parse('2003-06-08')
         expect {
           Date.parse_spec('2003-W83', :to)
         }.to raise_error
       end
 
-      it "should parse year-quarter specs such as YYYY-NQ" do
+      it "should parse year-quarter specs such as YYYY-NQ or YYYY-QN" do
         Date.parse_spec('2011-4Q', :from).should eq Date.parse('2011-10-01')
         Date.parse_spec('2011-4Q', :to).should eq Date.parse('2011-12-31')
+        Date.parse_spec('2011-Q4', :from).should eq Date.parse('2011-10-01')
+        Date.parse_spec('2011-Q4', :to).should eq Date.parse('2011-12-31')
         expect { Date.parse_spec('2011-5Q') }.to raise_error
       end
 
-      it "should parse quarter-only specs such as NQ" do
+      it "should parse quarter-only specs such as NQ or QN" do
         Date.parse_spec('4Q', :from).should eq Date.parse('2012-10-01')
         Date.parse_spec('4Q', :to).should eq Date.parse('2012-12-31')
+        Date.parse_spec('Q4', :from).should eq Date.parse('2012-10-01')
+        Date.parse_spec('Q4', :to).should eq Date.parse('2012-12-31')
         expect { Date.parse_spec('5Q') }.to raise_error
       end
 
