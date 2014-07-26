@@ -65,7 +65,7 @@ class Date
   @return [Date] a date object equivalent to the date spec
 =end
   def self.parse_spec(spec, spec_type = :from)
-    spec = spec.strip
+    spec = spec.to_s.strip
     unless [:from, :to].include?(spec_type)
       raise Byr::LogicError "invalid date spec type: '#{spec_type}'"
     end
