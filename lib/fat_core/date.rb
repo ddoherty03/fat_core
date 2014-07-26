@@ -7,12 +7,15 @@ class Date
   EOT = Date.parse('3000-12-31')
 
   def self.parse_american(str)
-    str =~ %r{\A\s*(\d\d?)\s*/\s*(\d\d?)\s*/\s*(\d?\d?\d\d)\s*\z}
-    year, month, day = $3.to_i, $1.to_i, $2.to_i
-    if year < 100
-      year += 2000
+    if str.to_s =~ %r{\A\s*(\d\d?)\s*/\s*(\d\d?)\s*/\s*(\d?\d?\d\d)\s*\z}
+      year, month, day = $3.to_i, $1.to_i, $2.to_i
+      if year < 100
+        year += 2000
+      end
+      Date.new(year, month, day)
+    else
+      raise ArgumentError, "date string must be of form 'MM?/DD?/YY(YY)?'"
     end
-    Date.new(year, month, day)
   end
 
   def self.parse_spec(spec, spec_type = :from)
