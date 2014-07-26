@@ -67,7 +67,7 @@ class Date
   def self.parse_spec(spec, spec_type = :from)
     spec = spec.to_s.strip
     unless [:from, :to].include?(spec_type)
-      raise Byr::LogicError "invalid date spec type: '#{spec_type}'"
+      raise ArgumentError "invalid date spec type: '#{spec_type}'"
     end
 
     today = Date.current
@@ -78,7 +78,7 @@ class Date
     when /\AW(\d\d?)\z/, /\A(\d\d?)W\z/
       week_num = $1.to_i
       if week_num < 1 || week_num > 53
-        raise Byr::UserError, "invalid week number (1-53): 'W#{week_num}'"
+        raise ArgumentError, "invalid week number (1-53): 'W#{week_num}'"
       end
       spec_type == :from ? Date.commercial(today.year, week_num).beginning_of_week :
         Date.commercial(today.year, week_num).end_of_week
@@ -86,7 +86,7 @@ class Date
       year = $1.to_i
       week_num = $2.to_i
       if week_num < 1 || week_num > 53
-        raise Byr::UserError, "invalid week number (1-53): 'W#{week_num}'"
+        raise ArgumentError, "invalid week number (1-53): 'W#{week_num}'"
       end
       spec_type == :from ? Date.commercial(year, week_num).beginning_of_week :
         Date.commercial(year, week_num).end_of_week
@@ -95,7 +95,7 @@ class Date
       year = $1.to_i
       quarter = $2.to_i
       unless [1, 2, 3, 4].include?(quarter)
-        raise Byr::UserError, "bad date format: #{spec}"
+        raise ArgumentError, "bad date format: #{spec}"
       end
       month = quarter * 3
       spec_type == :from ? Date.new(year, month, 1).beginning_of_quarter :
@@ -161,8 +161,8 @@ class Date
     when /^never/
       nil
     else
-      raise Byr::UserError, "bad date spec: '#{spec}''"
-    end
+      raise ArgumentError, "bad date spec: '#{spec}''"
+    end # !> previous definition of length was here
   end
 
   def weekend?
