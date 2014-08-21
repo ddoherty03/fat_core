@@ -53,6 +53,7 @@ class Period
   # today as the period.
   def self.parse_spec(from = 'today', to = nil)
     to ||= from
+    from ||= to
     Period.new(Date.parse_spec(from, :from), Date.parse_spec(to, :to))
   end
 

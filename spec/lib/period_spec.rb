@@ -47,6 +47,7 @@ describe Period do
       expect(Period.parse_spec.first).to eq Date.current
       expect(Period.parse_spec('2014-3Q').first).to eq Date.parse('2014-07-01')
       expect(Period.parse_spec('2014-3Q').last).to eq Date.parse('2014-09-30')
+      expect(Period.parse_spec(nil, '2014-3Q').last).to eq Date.parse('2014-09-30')
     end
 
     it "should know the days in a chunk sym" do
