@@ -47,6 +47,15 @@ class Period
     end
   end
 
+  # Return a period based on two date specs (see Date.parse_spec), a '''from'
+  # and a 'to' spec.  If the to-spec is not given or is nil, the from-spec is
+  # used for both the from- and to-spec.  If no from-spec is given, return
+  # today as the period.
+  def self.parse_spec(from = 'today', to = nil)
+    to ||= from
+    Period.new(Date.parse_spec(from, :from), Date.parse_spec(to, :to))
+  end
+
   # Possibly useful class method to take an array of periods and join all the
   # contiguous ones, then return an array of the disjoint periods not
   # contiguous to one another.  An array of periods with no gaps should return
