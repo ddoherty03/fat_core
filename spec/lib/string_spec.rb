@@ -56,68 +56,68 @@ the people, for the people, shall not perish from the earth."
   end
 
   it "should wrap a short string" do
-    "hello, world".wrap.should == "hello, world"
+    expect("hello, world".wrap).to eq "hello, world"
   end
 
   it "should wrap a long string" do
-    @getty.wrap.split("\n").each {|l| l.length.should <= 70}
+    @getty.wrap.split("\n").each {|l| expect(l.length).to be <= 70}
   end
 
   it "should wrap a long string with a hangining indent" do
-    @getty.wrap(70, 10).split("\n").each {|l| l.length.should <= 70}
+    @getty.wrap(70, 10).split("\n").each {|l| expect(l.length).to be <= 70}
     @getty.wrap(70, 10).split("\n")[1..-1].each do |l|
-      l.should match(/^          /)
+      expect(l).to match(/^          /)
     end
     second_line = ' ' * 10 + 'nent a new nation'
     third_line =  ' ' * 10 + 'e proposition'
     twenty_fourth_line = ' ' * 10 + 'eople, by the people, for the people'
-    @getty.wrap(70, 10).split("\n")[1].should match(/^#{second_line}/)
-    @getty.wrap(70, 10).split("\n")[2].should match(/^#{third_line}/)
-    @getty.wrap(70, 10).split("\n")[23].should match(/^#{twenty_fourth_line}/)
+    expect(@getty.wrap(70, 10).split("\n")[1]).to match(/^#{second_line}/)
+    expect(@getty.wrap(70, 10).split("\n")[2]).to match(/^#{third_line}/)
+    expect(@getty.wrap(70, 10).split("\n")[23]).to match(/^#{twenty_fourth_line}/)
   end
 
   it "should be able to quote special TeX characters" do
-    "$10,000".tex_quote.should eq("\\$10,000")
-    "would~~have".tex_quote.should eq("would\\textasciitilde{}\\textasciitilde{}have")
-    "<hello>".tex_quote.should eq("\\textless{}hello\\textgreater{}")
-    "{hello}".tex_quote.should eq("\\{hello\\}")
+    expect("$10,000".tex_quote).to eq("\\$10,000")
+    expect("would~~have".tex_quote).to eq("would\\textasciitilde{}\\textasciitilde{}have")
+    expect("<hello>".tex_quote).to eq("\\textless{}hello\\textgreater{}")
+    expect("{hello}".tex_quote).to eq("\\{hello\\}")
   end
 
   it "should be able to fuzzy match with another string" do
-    "Hello, world".fuzzy_match('or').should be_true
-    "Hello, world".fuzzy_match('ox').should be_false
+    expect("Hello, world".fuzzy_match('or')).to be_truthy
+    expect("Hello, world".fuzzy_match('ox')).to be_falsy
   end
 
   it "should be able to fuzzy match with another string containing re" do
-    "Hello, world".matches_with('/or/').should be_true
-    "Hello, world".matches_with('/ox/').should be_false
+    expect("Hello, world".matches_with('/or/')).to be_truthy
+    expect("Hello, world".matches_with('/ox/')).to be_falsy
   end
 
   it "should be able to fuzzy match space-separated parts" do
-    "Hello world".fuzzy_match('hel or').should be_true
-    "Hello, world".fuzzy_match('hel ox').should be_false
+    expect("Hello world".fuzzy_match('hel or')).to be_truthy
+    expect("Hello, world".fuzzy_match('hel ox')).to be_falsy
   end
 
   it "should be able to fuzzy match colon-separated parts" do
-    "Hello:world".fuzzy_match('hel:or').should be_true
-    "Hello:world".fuzzy_match('hel:ox').should be_false
+    expect("Hello:world".fuzzy_match('hel:or')).to be_truthy
+    expect("Hello:world".fuzzy_match('hel:ox')).to be_falsy
   end
 
   it "should be able to fuzzy match colon-separated parts" do
-    "Hello:world".fuzzy_match('hel:or').should be_true
-    "Hello:world".fuzzy_match('hel:ox').should be_false
+    expect("Hello:world".fuzzy_match('hel:or')).to be_truthy
+    expect("Hello:world".fuzzy_match('hel:ox')).to be_falsy
   end
 
   it "should return the matched text" do
-    "Hello:world".fuzzy_match('hel').should eq('Hel')
-    "Hello:world".fuzzy_match('hel:or').should eq('Hello:wor')
-    "Hello:world".matches_with('/^h.*r/').should eq('Hello:wor')
+    expect("Hello:world".fuzzy_match('hel')).to eq('Hel')
+    expect("Hello:world".fuzzy_match('hel:or')).to eq('Hello:wor')
+    expect("Hello:world".matches_with('/^h.*r/')).to eq('Hello:wor')
   end
 
   it "should ignore periods, commas, and apostrophes when matching" do
-    "St. Luke's".fuzzy_match('st lukes').should eq('St Lukes')
-    "St Lukes".fuzzy_match('st. luke\'s').should eq('St Lukes')
-    "St Lukes, Inc.".fuzzy_match('st luke inc').should eq('St Lukes Inc')
+    expect("St. Luke's".fuzzy_match('st lukes')).to eq('St Lukes')
+    expect("St Lukes".fuzzy_match('st. luke\'s')).to eq('St Lukes')
+    expect("St Lukes, Inc.".fuzzy_match('st luke inc')).to eq('St Lukes Inc')
   end
 
   it "should be able to properly capitalize a string as a title" do
