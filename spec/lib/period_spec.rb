@@ -15,7 +15,7 @@ describe Period do
     end
 
     it "should be initializable with Dates" do
-      expect(Period.new(Date.parse('2013-01-01'), Date.parse('2013-12-13'))).
+      expect(Period.new('2013-01-01', '2013-12-13')).
         to be_instance_of Period
     end
 
@@ -101,7 +101,7 @@ describe Period do
       rr = Period.new('2013-01-01', '2013-12-31').to_range
       expect(rr).to be_instance_of Range
       expect(rr.first).to eq(pp.first)
-      expect(rr.first).to eq(pp.first)
+      expect(rr.last).to eq(pp.last)
     end
 
     it "should be able to tell if it contains a date" do
