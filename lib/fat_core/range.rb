@@ -61,7 +61,7 @@ class Range
   alias_method :&, :intersection
 
   def union(other)
-    return nil unless self.overlaps?(other)
+    return nil unless self.overlaps?(other) || self.contiguous?(other)
     ([self.min, other.min].min..[self.max, other.max].max)
   end
   alias_method :+, :union

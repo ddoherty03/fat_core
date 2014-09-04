@@ -60,6 +60,9 @@ describe Range do
       expect(((0..10) + (5..20))).to eq((0..20))
       expect(((0..10) + (5..20))).to eq((5..20) + (0..10))
       expect(((0..10) + (10..20))).to eq((0..20))
+
+      # For discrete values, union should work on contiguous ranges
+      expect(((0..5) + (6..20))).to eq((0..20))
     end
 
     it "union should return nil if there is no overlap" do
