@@ -96,8 +96,8 @@ describe Range do
       expect(((4..10) - (7..10)).last).to eq((4..6))
 
       # Other does not overlap
-      expect((4..10) - (13..20)).to be_empty
-      expect((4..10) - (1..3)).to be_empty
+      expect((4..10) - (13..20)).to eq([(4..10)])
+      expect((4..10) - (1..3)).to  eq([(4..10)])
     end
   end
 

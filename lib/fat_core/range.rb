@@ -70,24 +70,27 @@ class Range
   # argument from self.  Because in the case where self is a superset of the
   # other range, this will result in the difference being two non-contiguous
   # ranges, this returns an array of ranges.  If there is no overlap or if
-  # self is a subset of the other range, return an empty array
+  # self is a subset of the other range, return an array of self
   def difference(other)
     unless max.respond_to?(:succ) && min.respond_to?(:pred) &&
         other.max.respond_to?(:succ) && other.min.respond_to?(:pred)
       raise "Range difference operation requires objects have pred and succ methods"
     end
-    # return [] unless self.overlaps?(other)
-    if proper_superset_of?(other)
-      [(min..other.min.pred),
-       (other.max.succ..max)]
-    elsif subset_of?(other)
+    # return [self] unless self.overlaps?(other)
+    if subset_of?(other)
+      # (4..7) - (0..10)
       []
+    elsif proper_superset_of?(other)
+      # (4..7) - (5..5) -> [(4..4), (6..7)]
+      [(min..other.min.pred), (other.max.succ..max)]
     elsif overlaps?(other) && other.min <= min
+      # (4..7) - (2..5) -> (6..7)
       [(other.max.succ .. max)]
     elsif overlaps?(other) && other.max >= max
+      # (4..7) - (6..10) -> (4..5)
       [(min .. other.min.pred)]
     else
-      []
+      [ self ]
     end
   end
   alias_method :-, :difference
