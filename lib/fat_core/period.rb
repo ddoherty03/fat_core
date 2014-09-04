@@ -314,6 +314,12 @@ class Period
   end
 
   def contains?(date)
+    if date.respond_to?(:to_date)
+      date = date.to_date
+    end
+    unless (date.is_a? Date)
+      raise ArgumentError, "argument must be a Date"
+    end
     self.to_range.cover?(date)
   end
 
