@@ -1,0 +1,4 @@
+2014-09-04  Daniel E. Doherty  <ded-law@ddoherty.net>
+
+        * range.rb (Range#left_contiguous, Range#overlaps): test overlap
+        for both orders of arguments (self, other) and (other, self).
