@@ -47,6 +47,33 @@ class Period
     end
   end
 
+  # Comparable base: periods are equal only if their first and last dates are
+  # equal.  Sorting will be by first date, then last, so periods starting on
+  # the same date will sort by last date, thus, from smallest to largest in
+  # size.
+  def <=>(other)
+    [first, last] <=> [other.first, other.last]
+  end
+
+  # Comparable does not include this.
+  def !=(other)
+    !(self == other)
+  end
+
+  # Enumerable base.  Yield each day in the period.
+  def each
+    d = first
+    while d <= last
+      yield d
+      d = d + 1.day
+    end
+  end
+
+  # Case equality checks for inclusion of date in period.
+  def ===(date)
+    self.contains?(date)
+  end
+
   # Return a period based on two date specs (see Date.parse_spec), a '''from'
   # and a 'to' spec.  If the to-spec is not given or is nil, the from-spec is
   # used for both the from- and to-spec.  If no from-spec is given, return
@@ -84,14 +111,6 @@ class Period
 
   # TO_DATE = Period.new(Date::BOT, Date.current)
   # FOREVER = Period.new(Date::BOT, Date::EOT)
-
-  def each
-    d = first
-    while d <= last
-      yield d
-      d = d + 1.day
-    end
-  end
 
   def self.chunk_syms
     [:day, :week, :biweek, :semimonth, :month, :bimonth,
@@ -178,14 +197,6 @@ class Period
 
   def to_range
     (first..last)
-  end
-
-  def ==(other)
-    first == other.first && last == other.last
-  end
-
-  def <=>(other)
-    [first, size] <=> [other.first, other.size]
   end
 
   def to_s
