@@ -50,7 +50,8 @@ class Range
   end
 
   def overlaps?(other)
-    cover?(other.min) || cover?(other.max)
+    (cover?(other.min) || cover?(other.max) ||
+     other.cover?(min) || other.cover?(max))
   end
 
   def intersection(other)

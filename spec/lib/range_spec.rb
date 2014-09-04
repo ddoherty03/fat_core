@@ -50,7 +50,7 @@ describe Range do
       expect(((0..10) & (5..20))).to eq((5..10))
       expect(((0..10) & (5..20))).to eq((5..20) & (0..10))
       expect(((0..10) & (10..20))).to eq((10..10))
-    end
+   end
 
     it "intersection should return nil if there is no overlap" do
       expect(((0..10) & (15..20))).to be_nil
@@ -64,6 +64,7 @@ describe Range do
 
     it "union should return nil if there is no overlap" do
       expect(((0..10) & (15..20))).to be_nil
+      expect(((15..20) & (0..10))).to be_nil
     end
 
     it "should know the difference with another range" do
@@ -100,15 +101,20 @@ describe Range do
   describe "joining" do
     it "should be able to join contiguous ranges" do
       expect((0..3).join(4..8)).to eq (0..8)
+      expect((4..8).join(0..3)).to eq (0..8)
     end
 
     it "should return nil on join of non-contiguous ranges" do
       expect((0..3).join(5..8)).to be_nil
       expect((0...3).join(4..8)).to be_nil
+
+      expect((5..8).join(0..3)).to be_nil
+      expect((4..8).join(0...3)).to be_nil
     end
 
     it "should work with Floats, allowing single-point overlap" do
       expect((0.0..3.0).join(3.0..8.2)).to eq (0.0..8.2)
+      expect((3.0..8.2).join(0.0..3.0)).to eq (0.0..8.2)
     end
   end
 
@@ -144,6 +150,14 @@ describe Range do
       expect((0..10).overlaps?(0..10)).to be_truthy
       expect((0..10).overlaps?(11..12)).to be_falsy
       expect((0..10).overlaps?(-11..-1)).to be_falsy
+
+      # Order of operands should not matter
+      expect((-3..5).overlaps?(0..10)).to be_truthy
+      expect((3..5).overlaps?(0..10)).to be_truthy
+      expect((8..15).overlaps?(0..10)).to be_truthy
+      expect((0..10).overlaps?(0..10)).to be_truthy
+      expect((11..12).overlaps?(0..10)).to be_falsy
+      expect((-11..-1).overlaps?(0..10)).to be_falsy
     end
 
     it "should be able to determine whether a set contains covered overlaps" do
