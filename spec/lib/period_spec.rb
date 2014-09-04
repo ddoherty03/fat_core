@@ -305,5 +305,42 @@ describe Period do
 
       expect(Period.new('2013-11-02', '2013-12-16').chunk_sym).to eq(:irregular)
     end
+
+    it "should know its intersection with other period" do
+      year = Period.parse_spec('this_year')
+      month = Period.parse_spec('this_month')
+      expect(year & month).to eq(month)
+      expect(month & year).to eq(month)
+      # It should return a Period, not a Range
+      expect((month & year).class).to eq(Period)
+    end
+
+    it "should know its union with other period" do
+      last_month = Period.parse_spec('last_month')
+      month = Period.parse_spec('this_month')
+      expect((last_month + month).first).to eq(last_month.first)
+      expect((last_month + month).last).to eq(month.last)
+      # It should return a Period, not a Range
+      expect((last_month + month).class).to eq(Period)
+    end
+
+    it "should know its differences with other period" do
+      year = Period.parse_spec('this_year')
+      month = Period.parse_spec('this_month')
+      # Note: the difference operator returns an Array of Periods resulting
+      # from removing other from self.
+      expect((year - month).first)
+        .to eq(Period.new(year.first, month.first - 1.day))
+      expect((year - month).last)
+        .to eq(Period.new(month.last + 1.day, year.last))
+      # It should return an Array of Periods, not a Ranges
+      (year - month).each do |p|
+        expect(p.class).to eq(Period)
+      end
+
+      last_year = Period.parse_spec('last_year')
+      month = Period.parse_spec('this_month')
+      expect(last_year - month).to eq([last_year])
+    end
   end
 end

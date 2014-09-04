@@ -252,17 +252,20 @@ class Period
   end
 
   def intersection(other)
-    self.to_range.intersection(other.to_range)
+    result = self.to_range.intersection(other.to_range)
+    Period.new(result.first, result.last)
   end
   alias_method :&, :intersection
 
   def union(other)
-    self.to_range.union(other.to_range)
+    result = self.to_range.union(other.to_range)
+    Period.new(result.first, result.last)
   end
   alias_method :+, :union
 
   def difference(other)
-    self.to_range.difference(other.to_range)
+    ranges = self.to_range.difference(other.to_range)
+    ranges.each.map{ |r| Period.new(r.first, r.last) }
   end
   alias_method :-, :difference
 
