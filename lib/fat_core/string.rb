@@ -4,8 +4,8 @@ class String
   # portion of self.  Other cannot be a regex embedded in a string.
   def fuzzy_match(other)
     # Remove periods, commas, and apostrophes
-    other = other.gsub(/[.,']/, '')
-    target = self.gsub(/[.,']/, '')
+    other = other.gsub(/[\*.,']/, '')
+    target = self.gsub(/[\*.,']/, '')
     matched_text = nil
     matchers = other.split(/[: ]+/)
     regexp_string = matchers.map {|m| ".*?#{Regexp.escape(m)}.*?"}.join('[: ]')

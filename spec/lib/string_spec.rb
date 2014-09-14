@@ -118,6 +118,7 @@ the people, for the people, shall not perish from the earth."
     expect("St. Luke's".fuzzy_match('st lukes')).to eq('St Lukes')
     expect("St Lukes".fuzzy_match('st. luke\'s')).to eq('St Lukes')
     expect("St Lukes, Inc.".fuzzy_match('st luke inc')).to eq('St Lukes Inc')
+    expect("E*TRADE".fuzzy_match('etrade')).to eq('ETRADE')
   end
 
   it "should be able to properly capitalize a string as a title" do
