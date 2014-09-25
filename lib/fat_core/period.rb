@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 class Period
   include Enumerable
   include Comparable
@@ -46,6 +47,10 @@ class Period
       raise ArgumentError, "Period's first date is later than its last date"
     end
   end
+
+  # These need to come after initialize is defined
+  TO_DATE = Period.new(Date::BOT, Date.current)
+  FOREVER = Period.new(Date::BOT, Date::EOT)
 
   # Comparable base: periods are equal only if their first and last dates are
   # equal.  Sorting will be by first date, then last, so periods starting on
@@ -108,9 +113,6 @@ class Period
   #   end
   #   melded_periods
   # end
-
-  TO_DATE = Period.new(Date::BOT, Date.current)
-  FOREVER = Period.new(Date::BOT, Date::EOT)
 
   def self.chunk_syms
     [:day, :week, :biweek, :semimonth, :month, :bimonth,

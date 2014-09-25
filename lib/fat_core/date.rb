@@ -1,4 +1,3 @@
-require 'fat_core/period'
 
 class Date
   # Constants for Begining of Time (BOT) and End of Time (EOT)
@@ -320,6 +319,7 @@ class Date
   end
 
   def expand_to_period(sym)
+    require 'fat_core/period'
     Period.new(beginning_of_chunk(sym), end_of_chunk(sym))
   end
 
