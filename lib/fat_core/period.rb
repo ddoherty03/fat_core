@@ -109,8 +109,8 @@ class Period
   #   melded_periods
   # end
 
-  # TO_DATE = Period.new(Date::BOT, Date.current)
-  # FOREVER = Period.new(Date::BOT, Date::EOT)
+  TO_DATE = Period.new(Date::BOT, Date.current)
+  FOREVER = Period.new(Date::BOT, Date::EOT)
 
   def self.chunk_syms
     [:day, :week, :biweek, :semimonth, :month, :bimonth,
