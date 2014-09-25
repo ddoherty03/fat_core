@@ -23,6 +23,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rspec"
   spec.add_development_dependency "rcodetools"
   spec.add_development_dependency "byebug"
+  spec.add_development_dependency "pry"
 
   spec.add_runtime_dependency "activesupport"
   spec.add_runtime_dependency "erubis"
