@@ -222,6 +222,12 @@ describe Range do
       expect(gaps[1]).to eq((9..10))
     end
 
+    it "should notice single point coverage" do
+      gaps = (0..10).gaps([(4..4), (5..5), (6..6)])
+      expect(gaps[0]).to eq((0..3))
+      expect(gaps[1]).to eq((7..10))
+    end
+
     it "should work even if ranges overlap" do
       gaps = (0..10).gaps([(-2..3), (2..8), (4..10)])
       expect(gaps).to be_empty

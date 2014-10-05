@@ -151,7 +151,7 @@ class Range
           end_point = rr.min.pred
           gaps << (start_point..end_point)
           cur_point = rr.max.succ
-        elsif rr.max > cur_point
+        elsif rr.max >= cur_point
           cur_point = rr.max.succ
         end
       end
