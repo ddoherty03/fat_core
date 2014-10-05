@@ -145,12 +145,15 @@ class Range
       gaps = []
       cur_point = min
       ranges.each do |rr|
+        break if rr.min > max
         if rr.min > cur_point
           start_point = cur_point
           end_point = rr.min.pred
           gaps << (start_point..end_point)
+          cur_point = rr.max.succ
+        elsif rr.max > cur_point
+          cur_point = rr.max.succ
         end
-        cur_point = rr.max.succ
       end
       if cur_point < max
         gaps << (cur_point..max)

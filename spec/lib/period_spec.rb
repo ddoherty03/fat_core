@@ -346,13 +346,20 @@ describe Period do
     it "should be able to find gaps from an array of periods" do
       pp = Period.parse_spec('2014-2Q')
       periods = [
-                 Period.parse_spec('2014-03', '2014-04-11'),
-                 Period.parse_spec('2014-04-25', '2014-07-11')
+                 Period.parse_spec('2013-11', '2013-12-20'),
+                 Period.parse_spec('2014-01', '2014-04-20'),
+                 # Gap 2014-04-21 to 2014-04-30
+                 Period.parse_spec('2014-05', '2014-05-11'),
+                 # Gap 2014-05-12 to 2014-05-24
+                 Period.parse_spec('2014-05-25', '2014-07-11'),
+                 Period.parse_spec('2014-09')
                 ]
       gaps = pp.gaps(periods)
-      expect(gaps.size).to eq(1)
-      expect(gaps.first.first).to eq(Date.parse('2014-04-12'))
-      expect(gaps.first.last).to eq(Date.parse('2014-04-24'))
+      expect(gaps.size).to eq(2)
+      expect(gaps.first.first).to eq(Date.parse('2014-04-21'))
+      expect(gaps.first.last).to eq(Date.parse('2014-04-30'))
+      expect(gaps.last.first).to eq(Date.parse('2014-05-12'))
+      expect(gaps.last.last).to eq(Date.parse('2014-05-24'))
     end
   end
 end

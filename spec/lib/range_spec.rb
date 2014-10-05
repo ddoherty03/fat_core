@@ -205,19 +205,19 @@ describe Range do
     end
 
     it "should not include parts before or after in gaps" do
-      gaps = (0..10).gaps([(-3..3), (7..13)])
+      gaps = (0..10).gaps([(-10..-8), (-3..3), (7..13), (30..40)])
       expect(gaps.size).to eq(1)
       expect(gaps[0]).to eq((4..6))
     end
 
-    it "should return an gaps at beginning and end" do
+    it "should return gaps at beginning and end" do
       gaps = (0..10).gaps([(2..3), (4..6), (7..8)])
       expect(gaps[0]).to eq((0..1))
       expect(gaps[1]).to eq((9..10))
     end
 
     it "should work even if ranges are out of order" do
-      gaps = (0..10).gaps([(2..3), (7..8), (4..6)])
+      gaps = (0..10).gaps([(2..3), (30..40), (7..8), (-10..-8), (4..6)])
       expect(gaps[0]).to eq((0..1))
       expect(gaps[1]).to eq((9..10))
     end
