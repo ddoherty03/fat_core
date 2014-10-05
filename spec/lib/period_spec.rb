@@ -342,5 +342,17 @@ describe Period do
       month = Period.parse_spec('this_month')
       expect(last_year - month).to eq([last_year])
     end
+
+    it "should be able to find gaps from an array of periods" do
+      pp = Period.parse_spec('2014-2Q')
+      periods = [
+                 Period.parse_spec('2014-03', '2014-04-11'),
+                 Period.parse_spec('2014-04-25', '2014-07-11')
+                ]
+      gaps = pp.gaps(periods)
+      expect(gaps.size).to eq(1)
+      expect(gaps.first.first).to eq(Date.parse('2014-04-12'))
+      expect(gaps.first.last).to eq(Date.parse('2014-04-24'))
+    end
   end
 end

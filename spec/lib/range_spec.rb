@@ -204,6 +204,12 @@ describe Range do
       expect(gaps).to be_empty
     end
 
+    it "should not include parts before or after in gaps" do
+      gaps = (0..10).gaps([(-3..3), (7..13)])
+      expect(gaps.size).to eq(1)
+      expect(gaps[0]).to eq((4..6))
+    end
+
     it "should return an gaps at beginning and end" do
       gaps = (0..10).gaps([(2..3), (4..6), (7..8)])
       expect(gaps[0]).to eq((0..1))
