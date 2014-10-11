@@ -86,6 +86,23 @@ describe Period do
     end
   end
 
+  describe "sorting" do
+    it "should sort by first, then size" do
+      periods = []
+      periods << Period.new('2012-07-01', '2012-07-31')
+      periods << Period.new('2012-06-01', '2012-06-30')
+      periods << Period.new('2012-08-01', '2012-08-31')
+      periods.sort!
+      # First by start_date, then shortest period to longest
+      expect(periods[0].first).to eq(Date.parse('2012-06-01'))
+      expect(periods[1].first).to eq(Date.parse('2012-07-01'))
+      expect(periods[2].first).to eq(Date.parse('2012-08-01'))
+      expect(periods[0].last).to eq(Date.parse('2012-06-30'))
+      expect(periods[1].last).to eq(Date.parse('2012-07-31'))
+      expect(periods[2].last).to eq(Date.parse('2012-08-31'))
+    end
+  end
+
   describe "instance methods" do
 
     it "should be able to compare for equality" do

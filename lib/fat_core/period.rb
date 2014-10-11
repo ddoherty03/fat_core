@@ -57,7 +57,7 @@ class Period
   # the same date will sort by last date, thus, from smallest to largest in
   # size.
   def <=>(other)
-    [first, last] <=> [other.first, other.last]
+    [first, size] <=> [other.first, other.size]
   end
 
   # Comparable does not include this.
