@@ -164,34 +164,60 @@ class Date
     end # !> previous definition of length was here
   end
 
-  def weekend?
-    saturday? || sunday?
-  end
-
-  def weekday?
-    !weekend?
-  end
-
+  # Predecessor of self.  Allows Date to work as a countable element
+  # of a Range.
   def pred
     self - 1.day
   end
 
+  # Successor of self.  Allows Date to work as a countable element
+  # of a Range.
   def succ
     self + 1.day
   end
 
+  # Format as an ISO string.
   def iso
     strftime("%Y-%m-%d")
   end
 
+  # Format date to TeX documents as ISO strings
+  def tex_quote
+    iso
+  end
+
+  # Format as an all-numeric string, i.e. 'YYYYMMDD'
+  def num
+    strftime("%Y%m%d")
+  end
+
+  # Format as an inactive Org date (see emacs org-mode)
   def org
     strftime("[%Y-%m-%d %a]")
   end
 
+  # Format as an English string
   def eng
     strftime("%B %e, %Y")
   end
 
+  # Format date in MM/DD/YYYY form, as typical for the short American
+  # form.
+  def american
+    strftime "%-m/%-d/%Y"
+  end
+
+  # Does self fall on a weekend?
+  def weekend?
+    saturday? || sunday?
+  end
+
+  # Does self fall on a weekday?
+  def weekday?
+    !weekend?
+  end
+
+  # Self's calendar quarter: 1, 2, 3, or 4
   def quarter
     case month
     when (1..3)
@@ -205,6 +231,10 @@ class Date
     end
   end
 
+  # The date that is the first day of the bimonth in which self
+  # falls. A 'bimonth' is a two-month calendar period beginning on the
+  # first day of the odd-numbered months.  E.g., 2014-01-01 to
+  # 2014-02-28 is the first bimonth of 2014.
   def beginning_of_bimonth
     if month % 2 == 1
       beginning_of_month
@@ -213,6 +243,10 @@ class Date
     end
   end
 
+  # The date that is the last day of the bimonth in which self falls.
+  # A 'bimonth' is a two-month calendar period beginning on the first
+  # day of the odd-numbered months.  E.g., 2014-01-01 to 2014-02-28 is
+  # the first bimonth of 2014.
   def end_of_bimonth
     if month % 2 == 1
       (self + 1.month).end_of_month
@@ -221,6 +255,10 @@ class Date
     end
   end
 
+  # The date that is the first day of the semimonth in which self
+  # falls.  A semimonth is a calendar period beginning on the 1st or
+  # 16th of each month and ending on the 15th or last day of the month
+  # respectively.  So each year has exactly 24 semimonths.
   def beginning_of_semimonth
     if day >= 16
       Date.new(year, month, 16)
@@ -229,6 +267,10 @@ class Date
     end
   end
 
+  # The date that is the last day of the semimonth in which self
+  # falls.  A semimonth is a calendar period beginning on the 1st or
+  # 16th of each month and ending on the 15th or last day of the month
+  # respectively.  So each year has exactly 24 semimonths.
   def end_of_semimonth
     if day <= 15
       Date.new(year, month, 15)
@@ -237,8 +279,8 @@ class Date
     end
   end
 
-  # Note: we use a monday start of the week in the next two methods because
-  # commercial week counting assumes a monday start.
+  # Note: we use a Monday start of the week in the next two methods because
+  # commercial week counting assumes a Monday start.
   def beginning_of_biweek
     if cweek % 2 == 1
       beginning_of_week(:monday)
@@ -313,11 +355,6 @@ class Date
     self.end_of_week == self
   end
 
-  # Format date in MM/DD/YYYY form
-  def american
-    strftime "%-m/%-d/%Y"
-  end
-
   def expand_to_period(sym)
     require 'fat_core/period'
     Period.new(beginning_of_chunk(sym), end_of_chunk(sym))
@@ -342,7 +379,7 @@ class Date
     when :day
       self + 1.days
     else
-      raise LogicError, "add_chunk unknown chunk: '#{chunk}'"
+      raise ArgumentError, "add_chunk unknown chunk: '#{chunk}'"
     end
   end
 
@@ -365,7 +402,7 @@ class Date
     when :day
       self
     else
-      raise LogicError, "unknown chunk sym: '#{sym}'"
+      raise ArgumentError, "unknown chunk sym: '#{sym}'"
     end
   end
 
@@ -393,20 +430,37 @@ class Date
   end
 
   # Holidays decreed by executive order
-  FED_DECLARED_HOLIDAYS =
+  # See http://www.whitehouse.gov/the-press-office/2012/12/21/
+  #  executive-order-closing-executive-departments-and-agencies-federal-gover
+  FED_DECREED_HOLIDAYS =
     [
      Date.parse('2012-12-24')
     ]
 
   def self.days_in_month(y, m)
+    if m < 1 || m > 12
+      raise ArgumentError, "illegal month number"
+    end
     days = Time::COMMON_YEAR_DAYS_IN_MONTH[m]
-    return(days) unless m == 2
-    return Date.new(y, m, 1).leap? ? 29 : 28
+    if m == 2
+      Date.new(y, m, 1).leap? ? 29 : 28
+    else
+      days
+    end
   end
 
   def self.nth_wday_in_year_month(n, wday, year, month)
     # Return the nth weekday in the given month
     # If n is negative, count from last day of month
+    wday = wday.to_i
+    if wday < 0 || wday > 6
+      raise ArgumentError, "illegal weekday number"
+    end
+    month = month.to_i
+    if month < 1 || month > 12
+      raise ArgumentError, "illegal month number"
+    end
+    n = n.to_i
     if n > 0
       # Set d to the 1st wday in month
       d = Date.new(year, month, 1)
@@ -419,12 +473,11 @@ class Date
         d += 7
         nd += 1
       end
-      return d
+      d
     elsif n < 0
       n = -n
       # Set d to the last wday in month
-      d = Date.new(year, month,
-                   Date.last_day_in_year_month(year, month))
+      d = Date.new(year, month, 1).end_of_month
       while d.wday != wday;
         d -= 1
       end
@@ -434,36 +487,22 @@ class Date
         d -= 7
         nd += 1
       end
-      return d
+      d
     else
       raise ArgumentError,
         'Arg 1 to nth_wday_in_month_year cannot be zero'
     end
   end
 
-  def self.last_day_in_year_month(year, month)
-    days = [
-            31, # Dec
-            31, # Jan
-            28, # Feb
-            31, # Mar
-            30, # Apr
-            31, # May
-            30, # Jun
-            31, # Jul
-            31, # Aug
-            30, # Sep
-            31, # Oct
-            30, # Nov
-            31, # Dec
-           ]
-    days[2] = 29 if Date.new(year, month, 1).leap?
-    days[month % 12]
+  def within_6mos_of?(d)
+    # Date 6 calendar months before self
+    start_date = self - 6.months + 2.days
+    end_date = self + 6.months - 2.days
+    (start_date..end_date).cover?(d)
   end
 
-  def easter_this_year
-    # Return the date of Easter in self's year
-    y = self.year
+  def self.easter(year)
+    y = year
     a = y % 19
     b, c = y.divmod(100)
     d, e = b.divmod(4)
@@ -474,47 +513,45 @@ class Date
     l = (32 + 2*e + 2*i - h - k) % 7
     m = (a + 11*h + 22*l) / 451
     n, p = (h + l - 7*m + 114).divmod(31)
-    return Date.new(y, n, p + 1)
+    Date.new(y, n, p + 1)
+   end
+
+  def easter_this_year
+    # Return the date of Easter in self's year
+    Date.easter(self.year)
   end
 
   def easter?
     # Am I Easter?
-    # Easter is always in March or April
-    return false unless [3, 4].include?(self.mon)
-    return self == self.easter_this_year
+    self == self.easter_this_year
   end
 
   def nth_wday_in_month?(n, wday, month)
     # Is self the nth weekday in the given month of its year?
     # If n is negative, count from last day of month
-    if self.wday != wday
-      return false
-    elsif self.mon != month
-      return false
-    else
-      return self == Date.nth_wday_in_year_month(n, wday, self.year, month)
-    end
+    self == Date.nth_wday_in_year_month(n, wday, self.year, month)
   end
 
+  #######################################################
+  # Calculations for Federal holidays
+  # 5 USC 6103
+  #######################################################
   def fed_fixed_holiday?
     # Fixed-date holidays on weekdays
     if self.mon == 1 && self.mday == 1
       # New Years (January 1),
-      return true
+      true
     elsif self.mon == 7 && self.mday == 4
       # Independence Day (July 4),
-      return true
+      true
     elsif self.mon == 11 && self.mday == 11
       # Veterans Day (November 11),
-      return true
+      true
     elsif self.mon == 12 && self.mday == 25
       # Christmas (December 25), and
-      return true
-    elsif self.mon == 12 && self.mday == 31
-      # New Year's Eve (December 31)
-      return true;
+      true
     else
-      return false
+      false
     end
   end
 
@@ -524,66 +561,58 @@ class Date
 
     # No moveable feasts in certain months
     if [ 3, 4, 6, 7, 8, 12 ].include?(self.month)
-      return false
+      false
     elsif self.wday == 1
+      moveable_mondays = []
       # MLK's Birthday (Third Monday in Jan)
-      return true if self.nth_wday_in_month?(3, 1, 1)
+      moveable_mondays << self.nth_wday_in_month?(3, 1, 1)
       # Washington's Birthday (Third Monday in Feb)
-      return true if self.nth_wday_in_month?(3, 1, 2)
+      moveable_mondays << self.nth_wday_in_month?(3, 1, 2)
       # Memorial Day (Last Monday in May)
-      return true if self.nth_wday_in_month?(-1, 1, 5)
+      moveable_mondays << self.nth_wday_in_month?(-1, 1, 5)
       # Labor Day (First Monday in Sep)
-      return true if self.nth_wday_in_month?(1, 1, 9)
+      moveable_mondays << self.nth_wday_in_month?(1, 1, 9)
       # Columbus Day (Second Monday in Oct)
-      return true if self.nth_wday_in_month?(2, 1, 10)
+      moveable_mondays << self.nth_wday_in_month?(2, 1, 10)
       # Other Mondays
-      return false
+      moveable_mondays.any?
     elsif self.wday == 4
       # Thanksgiving Day (Fourth Thur in Nov)
-      return false unless self.month == 11
-      return self.nth_wday_in_month?(4, 4, 11)
+      self.nth_wday_in_month?(4, 4, 11)
     else
-      return false
+      false
     end
   end
 
   def fed_holiday?
-    if FED_DECLARED_HOLIDAYS.include?(self)
-      return true
-    end
-
     # All Saturdays and Sundays are "holidays"
-    if self.weekend? then return true end
+    return true if self.weekend?
+
+    # Some days are holidays by executive decree
+    return true if FED_DECREED_HOLIDAYS.include?(self)
 
     # Is self a fixed holiday
-    return true if self.fed_fixed_holiday?
+    return true if (self.fed_fixed_holiday? || self.fed_moveable_feast?)
 
-    # A Friday is a holiday if a fixed-date holiday
-    # would fall on the following Saturday
-    if self.wday == 5
-      td = self + 1
-      return true if td.fed_fixed_holiday?
-    end
-
-    # A Monday is a holiday if a fixed-date holiday
-    # would fall on the preceding Sunday
-    if self.wday == 1
-      td = self - 1
-      return true if td.fed_fixed_holiday?
-    end
-
-    # If Christmas falls on a Thursday, apparently, the Friday after is
-    # treated as a holiday as well.  See 2003, 2008, for example.
     if self.wday == 5 and self.month == 12 and self.day == 26
-      return true
+      # If Christmas falls on a Thursday, apparently, the Friday after is
+      # treated as a holiday as well.  See 2003, 2008, for example.
+      true
+    elsif self.wday == 5
+      # A Friday is a holiday if a fixed-date holiday
+      # would fall on the following Saturday
+      (self + 1).fed_fixed_holiday? || (self + 1).fed_moveable_feast?
+    elsif self.wday == 1
+      # A Monday is a holiday if a fixed-date holiday
+      # would fall on the preceding Sunday
+      (self - 1).fed_fixed_holiday? || (self - 1).fed_moveable_feast?
+    else
+      false
     end
-
-    # It's last chance is if its a movable feast
-    return self.fed_moveable_feast?;
   end
 
   #######################################################
-  # Calulations for NYSE holidays
+  # Calculations for NYSE holidays
   # Rule 51 and supplementary material
   #######################################################
 
@@ -605,15 +634,15 @@ class Date
     # Fixed-date holidays
     if self.mon == 1 && self.mday == 1
       # New Years (January 1),
-      return true
+      true
     elsif self.mon == 7 && self.mday == 4
       # Independence Day (July 4),
-      return true
+      true
     elsif self.mon == 12 && self.mday == 25
       # Christmas (December 25), and
-      return true
+      true
     else
-      return false
+      false
     end
   end
 
@@ -623,7 +652,7 @@ class Date
 
     # No moveable feasts in certain months
     if [ 6, 7, 8, 10, 12 ].include?(self.month)
-      return false
+      false
     elsif self.wday == 1
       # MLK's Birthday (Third Monday in Jan)
       return true if self.nth_wday_in_month?(3, 1, 1)
@@ -634,17 +663,15 @@ class Date
       # Labor Day (First Monday in Sep)
       return true if self.nth_wday_in_month?(1, 1, 9)
       # Other Mondays
-      return false
+      false
     elsif self.wday == 4
       # Thanksgiving Day (Fourth Thur in Nov)
-      return false unless self.month == 11
-      return self.nth_wday_in_month?(4, 4, 11)
+      self.nth_wday_in_month?(4, 4, 11)
     elsif self.wday == 5
       # Good Friday, the Friday before Easter
-      td = self + 2
-      return td.easter?
+      (self + 2).easter?
     else
-      return false
+      false
     end
   end
 
@@ -653,105 +680,70 @@ class Date
     return true if self.weekend?
 
     # Is self a fixed holiday
-    return true if self.nyse_fixed_holiday?
+    return true if self.nyse_fixed_holiday? || self.nyse_moveable_feast?
 
-    # A Friday is a holiday if a fixed-date holiday
-    # would fall on the following Saturday
     if self.wday == 5
-      td = self + 1
-      return true if td.nyse_fixed_holiday?
+      # A Friday is a holiday if a fixed-date holiday
+      # would fall on the following Saturday
+      (self + 1).nyse_fixed_holiday? || (self + 1).nyse_moveable_feast?
+    elsif self.wday == 1
+      # A Monday is a holiday if a fixed-date holiday
+      # would fall on the preceding Sunday
+      (self - 1).nyse_fixed_holiday? || (self - 1).nyse_moveable_feast?
+    else
+      false
     end
-
-    # A Monday is a holiday if a fixed-date holiday
-    # would fall on the preceding Sunday
-    if self.wday == 1
-      td = self - 1
-      return true if td.nyse_fixed_holiday?
-    end
-
-    # It's last chance is if its a movable feast
-    return self.nyse_moveable_feast?;
   end
 
   def fed_workday?
-    return ! self.fed_holiday?;
+    !self.fed_holiday?
   end
 
   def nyse_workday?
-    return ! self.nyse_holiday?;
-  end
-
-  def next_fed_workday
-    result = self + 1
-    while result.fed_holiday?
-      result += 1;
-    end
-    return result
+    !self.nyse_holiday?
   end
 
   def add_fed_business_days(n)
     d = self.dup
-    if n < 0
-      n.abs.times { d = d.prior_fed_workday }
-    elsif n > 0
-      n.times { d = d.next_fed_workday }
-    end
+    return d if n == 0
+    incr = n < 0 ? -1 : 1
+    n = n.abs
+    while n > 0
+      d += incr
+      if d.fed_workday?
+        n -= 1
+      end
+     end
     d
   end
 
-  def next_nyse_workday
-    result = self.dup
-    result += 1
-    while result.nyse_holiday?
-      result += 1;
-    end
-    return result
+  def next_fed_workday
+    self.add_fed_business_days(1)
+  end
+
+  def prior_fed_workday
+    self.add_fed_business_days(-1)
   end
 
   def add_nyse_business_days(n)
     d = self.dup
-    if n < 0
-      n.abs.times { d = d.prior_nyse_workday }
-    elsif n > 0
-      n.times { d = d.next_nyse_workday }
-    end
+    return d if n == 0
+    incr = n < 0 ? -1 : 1
+    n = n.abs
+    while n > 0
+      d += incr
+      if d.nyse_workday?
+        n -= 1
+      end
+     end
     d
   end
 
-  def prior_fed_workday
-    result = self - 1
-    while result.fed_holiday?
-      result -= 1;
-    end
-    return result
+  def next_nyse_workday
+    self.add_nyse_business_days(1)
   end
 
   def prior_nyse_workday
-    result = self.dup
-    result -= 1
-    while result.nyse_holiday?
-      result -= 1;
-    end
-    return result
-  end
-
-  def iso
-    strftime("%Y-%m-%d")
-  end
-
-  def num
-    strftime("%Y%m%d")
-  end
-
-  def within_6mos_of?(d)
-    # Date 6 calendar months before self
-    start_date = self - 6.months + 2.days
-    end_date = self + 6.months - 2.days
-    (start_date..end_date).cover?(d)
-  end
-
-  # Allow erb documents can directly interpolate dates
-  def tex_quote
-    iso
+    self.add_nyse_business_days(-1)
   end
 end
