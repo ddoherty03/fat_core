@@ -104,9 +104,7 @@ class String
   end
 
   def self.random(size = 8)
-    return '' if size == 0
-    copies = (size / 26).floor + 1
-    (('a'..'z').to_a * copies).shuffle[0..size-1].join('')
+    ('a'..'z').cycle.take(size).shuffle.join
   end
 
   # Convert a string with an all-digit date to an iso string
