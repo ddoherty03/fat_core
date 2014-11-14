@@ -10,7 +10,6 @@ describe Date do
   end
 
   describe "class methods" do
-
     describe "date arithmetic" do
       it "should know the number of days in a month" do
         expect(Date.days_in_month(2000, 1)).to eq 31
@@ -42,18 +41,25 @@ describe Date do
         # 26 27 28 29 30 31
 
         # First Monday
-        expect(Date.nth_wday_in_year_month(1, 1, 2014, 1)).to eq Date.parse('2014-01-06')
+        expect(Date.nth_wday_in_year_month(1, 1, 2014, 1))
+          .to eq Date.parse('2014-01-06')
         # Second Monday
-        expect(Date.nth_wday_in_year_month(2, 1, 2014, 1)).to eq Date.parse('2014-01-13')
+        expect(Date.nth_wday_in_year_month(2, 1, 2014, 1))
+          .to eq Date.parse('2014-01-13')
         # Third Sunday
-        expect(Date.nth_wday_in_year_month(3, 0, 2014, 1)).to eq Date.parse('2014-01-19')
+        expect(Date.nth_wday_in_year_month(3, 0, 2014, 1))
+          .to eq Date.parse('2014-01-19')
         # Third Sunday (float floored)
-        expect(Date.nth_wday_in_year_month(3.2, 0, 2014, 1)).to eq Date.parse('2014-01-19')
+        expect(Date.nth_wday_in_year_month(3.2, 0, 2014, 1))
+          .to eq Date.parse('2014-01-19')
         # Negative wday counts from end: Last Sunday
-        expect(Date.nth_wday_in_year_month(-1, 0, 2014, 1)).to eq Date.parse('2014-01-26')
-        expect(Date.nth_wday_in_year_month(-3, 0, 2014, 1)).to eq Date.parse('2014-01-12')
+        expect(Date.nth_wday_in_year_month(-1, 0, 2014, 1))
+          .to eq Date.parse('2014-01-26')
+        expect(Date.nth_wday_in_year_month(-3, 0, 2014, 1))
+          .to eq Date.parse('2014-01-12')
         # Negative wday counts from end: Last Thursday
-        expect(Date.nth_wday_in_year_month(-1, 4, 2014, 1)).to eq Date.parse('2014-01-30')
+        expect(Date.nth_wday_in_year_month(-1, 4, 2014, 1))
+          .to eq Date.parse('2014-01-30')
 
         # Exceptions
         expect {
