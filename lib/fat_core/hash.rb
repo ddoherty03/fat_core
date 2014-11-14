@@ -17,6 +17,7 @@ class Hash
     keys_with_value(v).each do |k|
       delete(k)
     end
+    self
   end
 
   def remap_keys(key_map = {})
