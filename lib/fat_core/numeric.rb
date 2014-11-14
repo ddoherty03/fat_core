@@ -13,7 +13,7 @@ class Numeric
     # By default, use zero places for whole numbers; four places for
     # numbers containing a fractional part to 4 places.
     if places.nil?
-      if self.modulo(1).round(4) > 0.0
+      if self.abs.modulo(1).round(4) > 0.0
         places = 4
       else
         places = 0
