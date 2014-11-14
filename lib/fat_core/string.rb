@@ -62,7 +62,8 @@ class String
 
   # Convert to symbol "Hello World" -> :hello_world
   def as_sym
-    strip.squeeze(' ').gsub(/\s+/, '_').downcase.to_sym
+    strip.squeeze(' ').gsub(/\s+/, '_').
+      gsub(/[^_A-Za-z]/, '').downcase.to_sym
   end
 
   def as_string
