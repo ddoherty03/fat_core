@@ -157,29 +157,34 @@ class Period
       92
     when :year
       366
+    when :irregular
+      raise ArgumentError, "no maximum period for :irregular chunk"
     else
       chunk_sym_to_days(sym)
     end
   end
 
-  # This is only used for inferring statement frequency based on the number
-  # of days between statements, so it will not consider all possible chunks,
-  # only :year, :quarter, :month, and :week.  And distinguishing between
-  # :semimonth and :biweek is impossible anyway.  Since statement dates can
-  # bounce around quite a bit in my experience, this is really fuzzy.  For
-  # example, one of my banks does monthly statements "around" the 10th of
-  # the month, but the 10th can get pushed off by holidays, weekends, etc.,
-  # so a "quarter" here is much broader than the calendar definition.  Ditto
-  # for the others, but since statements are most likely monthly, we default
-  # to :month.
+  # This is only used for inferring statement frequency based on the
+  # number of days between statements, so it will not consider all
+  # possible chunks, only :year, :quarter, :month, and :week.  And
+  # distinguishing between :semimonth and :biweek is impossible in
+  # some cases since a :semimonth can be 14 days just like a :biweek.
+  # This ignores that possiblity and requires a :semimonth to be at
+  # least 15 days.
   def self.days_to_chunk_sym(days)
     case days
     when 356..376
       :year
     when 86..96
       :quarter
+    when 59..62
+      :bimonth
     when 26..33
       :month
+    when 15..16
+      :semimonth
+    when 14
+      :biweek
     when 7
       :week
     when 1
@@ -187,14 +192,6 @@ class Period
     else
       :irregular
     end
-  end
-
-  def size
-    to_range.size
-  end
-
-  def length
-    size
   end
 
   def to_range

@@ -50,6 +50,10 @@ describe Period do
       expect(Period.parse_spec(nil, '2014-3Q').last).to eq Date.parse('2014-09-30')
     end
 
+    it "should know what the valid chunk syms are" do
+      expect(Period.chunk_syms.size).to eq 9
+    end
+
     it "should know the days in a chunk sym" do
       expect(Period.chunk_sym_to_days(:year)).to eq(365)
       expect(Period.chunk_sym_to_days(:quarter)).to eq(90)
@@ -60,6 +64,22 @@ describe Period do
       expect(Period.chunk_sym_to_days(:week)).to eq(7)
       expect(Period.chunk_sym_to_days(:day)).to eq(1)
       expect(Period.chunk_sym_to_days(:irregular)).to eq(30)
+      expect {
+        Period.chunk_sym_to_days(:eon)
+      }.to raise_error ArgumentError
+    end
+
+    it "should know the maximum days in a chunk sym" do
+      expect(Period.chunk_sym_to_max_days(:year)).to eq(366)
+      expect(Period.chunk_sym_to_max_days(:quarter)).to eq(92)
+      expect(Period.chunk_sym_to_max_days(:bimonth)).to eq(62)
+      expect(Period.chunk_sym_to_max_days(:month)).to eq(31)
+      expect(Period.chunk_sym_to_max_days(:semimonth)).to eq(16)
+      expect(Period.chunk_sym_to_max_days(:biweek)).to eq(14)
+      expect(Period.chunk_sym_to_max_days(:week)).to eq(7)
+      expect(Period.chunk_sym_to_max_days(:day)).to eq(1)
+      expect{ Period.chunk_sym_to_max_days(:irregular) }
+        .to raise_error ArgumentError
       expect {
         Period.chunk_sym_to_days(:eon)
       }.to raise_error ArgumentError
@@ -76,7 +96,10 @@ describe Period do
     it "should know what to call a chunk based on its size" do
       expect(Period.new('2011-01-01', '2011-12-31').chunk_name).to eq('Year')
       expect(Period.new('2011-01-01', '2011-03-31').chunk_name).to eq('Quarter')
+      expect(Period.new('2011-01-01', '2011-02-28').chunk_name).to eq('Bi-month')
       expect(Period.new('2011-01-01', '2011-01-31').chunk_name).to eq('Month')
+      expect(Period.new('2011-01-01', '2011-01-15').chunk_name).to eq('Semi-month')
+      expect(Period.new('2011-01-09', '2011-01-22').chunk_name).to eq('Bi-week')
       expect(Period.new('2011-01-01', '2011-01-07').chunk_name).to eq('Week')
       expect(Period.new('2011-01-01', '2011-01-01').chunk_name).to eq('Day')
       expect(Period.new('2011-01-01', '2011-01-21').chunk_name).to eq('Period')
@@ -104,13 +127,13 @@ describe Period do
   end
 
   describe "instance methods" do
-
     it "should be able to compare for equality" do
       pp1 = Period.new('2013-01-01', '2013-12-31')
       pp2 = Period.new('2013-01-01', '2013-12-31')
       pp3 = Period.new('2013-01-01', '2013-12-30')
       expect((pp1 == pp2)).to be true
       expect((pp1 == pp3)).to_not be true
+      expect((pp1 != pp3)).to be true
     end
 
     it "should be able to convert into a Range" do
@@ -141,11 +164,37 @@ describe Period do
       }.not_to raise_error
     end
 
+    it "should be able to tell if it contains a date with ===" do
+      pp = Period.new('2013-01-01', '2013-12-31')
+      expect(pp === Date.parse('2013-01-01')).to be true
+      expect(pp === Date.parse('2013-07-04')).to be true
+      expect(pp === Date.parse('2013-12-31')).to be true
+      expect(pp === Date.parse('2012-07-04')).to be false
+    end
+
+    it "should know its size" do
+      pp = Period.new('2013-01-01', '2013-12-31')
+      expect(pp.size).to eq 365
+      expect(pp.length).to eq 365
+    end
+
+    it "should implement the each method" do
+      pp = Period.new('2013-12-01', '2013-12-31')
+      pp.map { |dt| dt.iso }
+        .each { |s| expect(s).to match(/\d{4}-\d\d-\d\d/) }
+    end
+
     it "should be able to make a concise period string" do
       expect(Period.new('2013-01-01', '2013-12-31').to_s).to eq('2013')
       expect(Period.new('2013-04-01', '2013-06-30').to_s).to eq('2013-2Q')
       expect(Period.new('2013-03-01', '2013-03-31').to_s).to eq('2013-03')
-      expect(Period.new('2013-03-11', '2013-10-31').to_s).to eq('2013-03-11 to 2013-10-31')
+      expect(Period.new('2013-03-11', '2013-10-31').to_s)
+        .to eq('2013-03-11 to 2013-10-31')
+    end
+
+    it "should be able to make a TeX string" do
+      expect(Period.new('2013-01-01', '2013-12-31').tex_quote)
+        .to eq('2013-01-01--2013-12-31')
     end
 
     # Note in the following that first period must begin within self.
@@ -321,6 +370,60 @@ describe Period do
       expect(Period.new('2013-11-10', '2013-11-11').chunk_sym).to_not eq(:day)
 
       expect(Period.new('2013-11-02', '2013-12-16').chunk_sym).to eq(:irregular)
+    end
+
+    it "should know if it's a subset of another period" do
+      year = Period.parse_spec('this_year')
+      month = Period.parse_spec('this_month')
+      expect(month.subset_of?(year)).to be true
+      expect(year.subset_of?(year)).to be true
+    end
+
+    it "should know if it's a proper subset of another period" do
+      year = Period.parse_spec('this_year')
+      month = Period.parse_spec('this_month')
+      expect(month.proper_subset_of?(year)).to be true
+      expect(year.proper_subset_of?(year)).to be false
+    end
+
+    it "should know if it's a superset of another period" do
+      year = Period.parse_spec('this_year')
+      month = Period.parse_spec('this_month')
+      expect(year.superset_of?(month)).to be true
+      expect(year.superset_of?(year)).to be true
+    end
+
+    it "should know if it's a proper superset of another period" do
+      year = Period.parse_spec('this_year')
+      month = Period.parse_spec('this_month')
+      expect(year.proper_superset_of?(month)).to be true
+      expect(year.proper_superset_of?(year)).to be false
+    end
+
+    it "should know if it overlaps another period" do
+      period1 = Period.parse_spec('2013')
+      period2 = Period.parse_spec('2012-10', '2013-03')
+      period3 = Period.parse_spec('2014')
+      expect(period1.overlaps?(period2)).to be true
+      expect(period2.overlaps?(period1)).to be true
+      expect(period1.overlaps?(period3)).to be false
+    end
+
+    it "should know whether an array of periods have overlaps within it" do
+      months = (1..12).to_a.map{ |k| Period.parse_spec("2013-#{k}") }
+      year = Period.parse_spec("2013")
+      expect(year.has_overlaps_within?(months)).to be false
+      months << Period.parse_spec("2013-09-15", "2013-10-02")
+      expect(year.has_overlaps_within?(months)).to be true
+    end
+
+    it "should know whether an array of periods span it" do
+      months = (1..12).to_a.map{ |k| Period.parse_spec("2013-#{k}") }
+      year = Period.parse_spec("2013")
+      expect(year.spanned_by?(months)).to be true
+
+      months = (2..12).to_a.map{ |k| Period.parse_spec("2013-#{k}") }
+      expect(year.spanned_by?(months)).to be false
     end
 
     it "should know its intersection with other period" do
