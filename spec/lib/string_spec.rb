@@ -118,6 +118,7 @@ the people, for the people, shall not perish from the earth."
       expect("joke".as_sym).to eq :joke
       expect("hello world".as_sym).to eq :hello_world
       expect("hello world   it's me".as_sym).to eq :hello_world_its_me
+      expect("Street1".as_sym).to eq :street1
     end
 
     it "should do nothing in response to as_string" do
