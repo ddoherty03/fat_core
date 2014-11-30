@@ -140,8 +140,11 @@ class String
         # Other runs starting with numbers,
         # like 3-A
         newwords.push(w.upcase)
-      elsif w =~ %r[^[^aeiouy]*$]i
-        # All consonants, probably abbr
+      elsif w =~ %r[^(N|S|E|W|NE|NW|SE|SW)$]i
+        # Compass directions all caps
+        newwords.push(w.upcase)
+      elsif w =~ %r[^[^aeiouy]*$]i && w.size > 2
+        # All consonants and at least 3 chars, probably abbr
         newwords.push(w.upcase)
       elsif w =~ %r[^(\w+)-(\w+)$]i
         # Hypenated double word

@@ -176,6 +176,9 @@ the people, for the people, shall not perish from the earth."
       expect("the cat in the hat".entitle).to eq('The Cat in the Hat')
       expect("dr".entitle).to eq('Dr')
       expect("cr".entitle).to eq('Cr')
+      # Capitalize all consonants size if >= 3
+      expect("tr".entitle).to eq('Tr')
+      expect("trd".entitle).to eq('TRD')
       # Don't capitalize c/o
       expect("IBM c/o watson".entitle).to eq('Ibm c/o Watson')
       # Capitlaize p.o.
