@@ -1,4 +1,15 @@
+require 'damerau-levenshtein'
+
 class String
+  def distance(other, block_size: 1, max_distance: 10)
+    dl = DamerauLevenshtein
+    # NOTE: DL 'gives up after' max_distance, so the distance function
+    # will return max_distance+1 if the distance is bigger than that.
+    # Here we subtract 1 so the max_distance also becomes the max
+    # return value.
+    dl.distance(self, other, block_size, max_distance-1)
+  end
+
   # See if self contains colon- or space-separated words that include
   # the colon- or space-separated words of other.  Return the matched
   # portion of self.  Other cannot be a regex embedded in a string.

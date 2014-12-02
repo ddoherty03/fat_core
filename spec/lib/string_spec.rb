@@ -196,5 +196,19 @@ the people, for the people, shall not perish from the earth."
       expect("the hitler-stalin pact".entitle).
         to eq('The Hitler-Stalin Pact')
     end
+
+    it "should be able to compute its Levenshtein distance from another string" do
+      expect('Something'.distance('Smoething')).to eq 1
+      expect('Something'.distance('Smoething', block_size: 0)).to eq 2
+      expect('Something'.distance('meSothing', block_size: 1)).to eq 4
+      expect('Something'.distance('meSothing', block_size: 2)).to eq 2
+      expect('SomethingElse'.distance('Encyclopedia')).to eq 10
+      expect('SomethingElseUnrelated'.
+              distance('EncyclopediaBritanica',
+                       max_distance: 40)).to eq 21
+      expect('SomethingElseUnrelated'.
+              distance('EncyclopediaBritanica',
+                       max_distance: 15)).to eq 15
+    end
   end
 end
