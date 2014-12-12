@@ -201,6 +201,7 @@ describe Date do
     end
 
     describe "parse_spec" do
+      # For these tests, today is 2012-07-18
 
       it "should choke if spec type is neither :from or :to" do
         expect {
@@ -311,6 +312,18 @@ describe Date do
         expect(Date.parse_spec('this_bimonth', :to)).to eq Date.parse('2012-08-31')
         expect(Date.parse_spec('last_bimonth')).to eq Date.parse('2012-05-01')
         expect(Date.parse_spec('last_bimonth', :to)).to eq Date.parse('2012-06-30')
+
+        # Set today to 2014-12-12: Found that last_bimonth was reporting
+        # current bimonth when today was in the second month of the current
+        # bimonth, i.e., an even month
+        allow(Date).to receive_messages(:today => Date.parse('2014-12-12'))
+        allow(Date).to receive_messages(:current => Date.parse('2014-12-12'))
+
+        expect(Date.parse_spec('last_bimonth')).to eq Date.parse('2014-09-01')
+        expect(Date.parse_spec('last_bimonth', :to)).to eq Date.parse('2014-10-31')
+
+        allow(Date).to receive_messages(:today => Date.parse('2012-07-18'))
+        allow(Date).to receive_messages(:current => Date.parse('2012-07-18'))
       end
 
       it "should parse relative quarters: this_quarter, last_quarter" do

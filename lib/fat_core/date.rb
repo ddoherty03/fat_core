@@ -128,8 +128,8 @@ class Date
     when /^(this_?)?biweek/
       spec_type == :from ? today.beginning_of_biweek : today.end_of_biweek
     when /last_?biweek/
-      spec_type == :from ? (today - 1.week).beginning_of_biweek :
-        (today - 1.week).end_of_biweek
+      spec_type == :from ? (today - 2.week).beginning_of_biweek :
+        (today - 2.week).end_of_biweek
     when /^(this_?)?semimonth/
       spec_type == :from ? today.beginning_of_semimonth : today.end_of_semimonth
     when /^last_?semimonth/
@@ -143,8 +143,8 @@ class Date
     when /^(this_?)?bimonth/
       spec_type == :from ? today.beginning_of_bimonth : today.end_of_bimonth
     when /^last_?bimonth/
-      spec_type == :from ? (today - 1.month).beginning_of_bimonth :
-        (today - 1.month).end_of_bimonth
+      spec_type == :from ? (today - 2.month).beginning_of_bimonth :
+        (today - 2.month).end_of_bimonth
     when /^(this_?)?quarter/
       spec_type == :from ? today.beginning_of_quarter : today.end_of_quarter
     when /^last_?quarter/
