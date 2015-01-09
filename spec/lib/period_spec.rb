@@ -462,6 +462,14 @@ describe Period do
       expect((month & year).class).to eq(Period)
     end
 
+    it "should alias narrow_to to intersection" do
+      period1 = Period.parse_spec('2014')
+      period2 = Period.new('2014-06-01', '2015-02-28')
+      period3 = period1.narrow_to(period2)
+      expect(period3.first).to eq(period2.first)
+      expect(period3.last).to eq(period1.last)
+    end
+
     it "should return nil if no intersection" do
       year = Period.parse_spec('2014')
       month = Period.parse_spec('2013-05')

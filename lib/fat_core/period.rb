@@ -280,6 +280,7 @@ class Period
     end
   end
   alias_method :&, :intersection
+  alias_method :narrow_to, :intersection
 
   def union(other)
     result = self.to_range.union(other.to_range)
