@@ -462,6 +462,12 @@ describe Period do
       expect((month & year).class).to eq(Period)
     end
 
+    it "should return nil if no intersection" do
+      year = Period.parse_spec('2014')
+      month = Period.parse_spec('2013-05')
+      expect(year & month).to be_nil
+    end
+
     it "should know its union with other period" do
       last_month = Period.parse_spec('last_month')
       month = Period.parse_spec('this_month')

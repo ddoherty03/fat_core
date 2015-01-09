@@ -4,7 +4,7 @@ class Period
   include Enumerable
   include Comparable
 
-  attr_accessor :first, :last
+  attr_reader :first, :last
 
   def initialize(first, last)
     case first
@@ -273,7 +273,11 @@ class Period
 
   def intersection(other)
     result = self.to_range.intersection(other.to_range)
-    Period.new(result.first, result.last)
+    if result.nil?
+      nil
+    else
+      Period.new(result.first, result.last)
+    end
   end
   alias_method :&, :intersection
 
