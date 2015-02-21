@@ -726,6 +726,23 @@ describe Date do
         # Weekends are holidays, regardless
         expect(Date.parse('2014-11-22')).to be_nyse_holiday
         expect(Date.parse('2014-11-23')).to be_nyse_holiday
+
+        # 1968 Paperwork Crisis (Closed every Wed unless other holiday in
+        # week) from June 12 to December 31, 1968
+        expect(Date.parse('1968-06-12')).to be_nyse_holiday
+        expect(Date.parse('1968-07-03')).not_to be_nyse_holiday
+        expect(Date.parse('1968-08-21')).to be_nyse_holiday
+
+        # 9-11 Attacks
+        expect(Date.parse('2001-09-11')).to be_nyse_holiday
+        expect(Date.parse('2001-09-14')).to be_nyse_holiday
+
+        # Hurricane Sandy
+        expect(Date.parse('2012-10-29')).to be_nyse_holiday
+        expect(Date.parse('2012-10-30')).to be_nyse_holiday
+
+        # Death of President Ford
+        expect(Date.parse('2007-01-02')).to be_nyse_holiday
       end
 
       it "should know if it is a Federal workday" do

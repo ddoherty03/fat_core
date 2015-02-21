@@ -651,25 +651,144 @@ class Date
     # rigged to fall on Monday except Thanksgiving
 
     # No moveable feasts in certain months
-    if [ 6, 7, 8, 10, 12 ].include?(self.month)
-      false
-    elsif self.wday == 1
-      # MLK's Birthday (Third Monday in Jan)
-      return true if self.nth_wday_in_month?(3, 1, 1)
+    return false if [ 6, 7, 8, 10, 12 ].include?(self.month)
+
+    case month
+    when 1
+      # MLK's Birthday (Third Monday in Jan) since 1998
+      year >= 1998 && nth_wday_in_month?(3, 1, 1)
+    when 2
+      # Lincoln's birthday until 1953
       # Washington's Birthday (Third Monday in Feb)
-      return true if self.nth_wday_in_month?(3, 1, 2)
+      (year <= 1953 && month == 2 && day == 12) ||
+        (year <= 1970 ? (month == 2 && day == 22)
+         : nth_wday_in_month?(3, 1, 2))
+    when 3, 4
+      # Good Friday
+      if self.wday != 5
+        false
+      else
+        # Good Friday, the Friday before Easter, except certain years
+        if [1898, 1906, 1907].include?(year)
+          false
+        else
+          (self + 2).easter?
+        end
+      end
+    when 5
       # Memorial Day (Last Monday in May)
-      return true if self.nth_wday_in_month?(-1, 1, 5)
+      year <= 1970 ? (month == 5 && day == 30) : nth_wday_in_month?(-1, 1, 5)
+    when 9
       # Labor Day (First Monday in Sep)
-      return true if self.nth_wday_in_month?(1, 1, 9)
-      # Other Mondays
+      nth_wday_in_month?(1, 1, 9)
+    when 10
+      # Columbus Day (Oct 12) 1909--1953
+      year >= 1909 && year <= 1953 && day == 12
+    when 11
+      if wday == 2
+        # Election Day. Until 1968 all Election Days.  From 1972 to 1980
+        # Election Day in presidential years only.  Election Day is the first
+        # Tuesday after the first Monday in November.
+        first_tuesday = Date.nth_wday_in_year_month(1, 1, year, 11) + 1
+        is_election_day = (self == first_tuesday)
+        if year <= 1968
+          is_election_day
+        elsif year <= 1980
+          is_election_day && (year % 4 == 0)
+        else
+          false
+        end
+      elsif wday == 4
+        # Historically Thanksgiving (NYSE closed all day) had been declared to be
+        #   the last Thursday in November until 1938;
+        #   the next-to-last Thursday in November from 1939 to 1941
+        #     (therefore the 3rd Thursday in 1940 and 1941);
+        #   the last Thursday in November in 1942;
+        #   the fourth Thursday in November since 1943;
+        if year < 1938
+          nth_wday_in_month?(-1, 4, 11)
+        elsif year <= 1941
+          nth_wday_in_month?(3, 4, 11)
+        elsif year == 1942
+          nth_wday_in_month?(-1, 4, 11)
+        else
+          nth_wday_in_month?(4, 4, 11)
+        end
+      elsif day == 11
+        # Armistice or Veterans Day.  1918--1921; 1934--1953.
+        (year >= 1918 && year <= 1921) || (year >= 1934 && year <= 1953)
+      else
+        false
+      end
+    else
       false
-    elsif self.wday == 4
-      # Thanksgiving Day (Fourth Thur in Nov)
-      self.nth_wday_in_month?(4, 4, 11)
-    elsif self.wday == 5
-      # Good Friday, the Friday before Easter
-      (self + 2).easter?
+    end
+  end
+
+  # They NYSE has closed on several occasions outside its normal holiday
+  # rules.  This detects those dates beginning in 1960.  Closing for part of a
+  # day is not counted. See http://www1.nyse.com/pdfs/closings.pdf
+  def nyse_special_holiday
+    return false unless self > Date.parse('1960-01-01')
+    case self
+    when Date.parse('1961-05-29')
+      # Day before Decoaration Day
+      true
+    when Date.parse('1963-11-25')
+      # President Kennedy's funeral
+      true
+    when Date.parse('1965-12-24')
+      # Christmas eve unscheduled for normal holiday
+      true
+    when Date.parse('1968-02-12')
+      # Lincoln birthday
+      true
+    when Date.parse('1968-04-09')
+      # Mourning MLK
+      true
+    when Date.parse('1968-07-05')
+      # Day after Independence Day
+      true
+    when (Date.parse('1968-06-12')..Date.parse('1968-12-31'))
+      # Paperwork crisis (closed on Wednesdays if no other holiday in week)
+      wday == 3 && (self - 2).nyse_workday? && (self - 1).nyse_workday? &&
+        (self + 1).nyse_workday? && (self + 2).nyse_workday?
+    when Date.parse('1969-02-10')
+      # Heavy snow
+      true
+    when Date.parse('1969-05-31')
+      # Eisenhower Funeral
+      true
+    when Date.parse('1969-07-21')
+      # Moon landing
+      true
+    when Date.parse('1972-12-28')
+      # Truman Funeral
+      true
+    when Date.parse('1973-01-25')
+      # Johnson Funeral
+      true
+    when Date.parse('1977-07-14')
+      # Electrical blackout NYC
+      true
+    when Date.parse('1985-09-27')
+      # Hurricane Gloria
+      true
+    when Date.parse('1994-04-27')
+      # Nixon Funeral
+      true
+    when (Date.parse('2001-09-11')..Date.parse('2001-09-14'))
+      # 9-11 Attacks
+      true
+    when (Date.parse('2004-06-11')..Date.parse('2001-09-14'))
+      # Reagan Funeral
+      true
+    when Date.parse('2007-01-02')
+      # Observance death of President Ford
+      true
+    when Date.parse('2012-10-29'), Date.parse('2012-10-30')
+      # Hurricane Sandy
+      true
     else
       false
     end
@@ -681,6 +800,8 @@ class Date
 
     # Is self a fixed holiday
     return true if self.nyse_fixed_holiday? || self.nyse_moveable_feast?
+
+    return true if nyse_special_holiday
 
     if self.wday == 5
       # A Friday is a holiday if a fixed-date holiday
