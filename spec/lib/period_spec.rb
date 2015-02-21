@@ -199,6 +199,17 @@ describe Period do
       expect(pp === Date.parse('2012-07-04')).to be false
     end
 
+    it "should be able to enumerate its days" do
+      Period.parse_spec('2014-12').each do |dy|
+        expect(dy.class).to eq Date
+      end
+    end
+
+    it "should be able to return the trading days within period" do
+      tds = Period.parse_spec('2014-12').trading_days
+      expect(tds.count).to eq(22)
+    end
+
     it "should know its size" do
       pp = Period.new('2013-01-01', '2013-12-31')
       expect(pp.size).to eq 365

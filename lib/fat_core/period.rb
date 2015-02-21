@@ -100,6 +100,10 @@ class Period
     self.contains?(date)
   end
 
+  def trading_days
+    select(&:nyse_workday?)
+  end
+
   # Return a period based on two date specs (see Date.parse_spec), a '''from'
   # and a 'to' spec.  If the to-spec is not given or is nil, the from-spec is
   # used for both the from- and to-spec.  If no from-spec is given, return
