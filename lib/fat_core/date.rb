@@ -796,20 +796,26 @@ class Date
 
   def nyse_holiday?
     # All Saturdays and Sundays are "holidays"
-    return true if self.weekend?
+    return true if weekend?
 
     # Is self a fixed holiday
-    return true if self.nyse_fixed_holiday? || self.nyse_moveable_feast?
+    return true if nyse_fixed_holiday? || nyse_moveable_feast?
 
     return true if nyse_special_holiday
 
-    if self.wday == 5
-      # A Friday is a holiday if a fixed-date holiday
-      # would fall on the following Saturday
-      (self + 1).nyse_fixed_holiday? || (self + 1).nyse_moveable_feast?
-    elsif self.wday == 1
-      # A Monday is a holiday if a fixed-date holiday
-      # would fall on the preceding Sunday
+    if friday? && (self >= Date.parse('1959-07-03'))
+      # A Friday is a holiday if a holiday would fall on the following
+      # Saturday.  The rule does not apply if the Friday "ends a monthly or
+      # yearly accounting period." Adopted July 3, 1959. E.g, December 31,
+      # 2010, fell on a Friday, so New Years was on Saturday, but the NYSE
+      # opened because it ended a yearly accounting period.  I believe 12/31
+      # is the only date to which the exception can apply since only New
+      # Year's can fall on the first of the month.
+      !end_of_quarter? &&
+        ((self + 1).nyse_fixed_holiday? || (self + 1).nyse_moveable_feast?)
+    elsif monday?
+      # A Monday is a holiday if a holiday would fall on the
+      # preceding Sunday.  This has apparently always been the rule.
       (self - 1).nyse_fixed_holiday? || (self - 1).nyse_moveable_feast?
     else
       false
