@@ -298,61 +298,61 @@ class Date
   end
 
   def beginning_of_year?
-    self.beginning_of_year == self
+    beginning_of_year == self
   end
 
   def end_of_year?
-    self.end_of_year == self
+    end_of_year == self
   end
 
   def beginning_of_quarter?
-    self.beginning_of_quarter == self
+    beginning_of_quarter == self
   end
 
   def end_of_quarter?
-    self.end_of_quarter == self
+    end_of_quarter == self
   end
 
   def beginning_of_bimonth?
     month % 2 == 1 &&
-      self.beginning_of_month == self
+      beginning_of_month == self
   end
 
   def end_of_bimonth?
     month % 2 == 0 &&
-      self.end_of_month == self
+      end_of_month == self
   end
 
   def beginning_of_month?
-    self.beginning_of_month == self
+    beginning_of_month == self
   end
 
   def end_of_month?
-    self.end_of_month == self
+    end_of_month == self
   end
 
   def beginning_of_semimonth?
-    self.beginning_of_semimonth == self
+    beginning_of_semimonth == self
   end
 
   def end_of_semimonth?
-    self.end_of_semimonth == self
+    end_of_semimonth == self
   end
 
   def beginning_of_biweek?
-    self.beginning_of_biweek == self
+    beginning_of_biweek == self
   end
 
   def end_of_biweek?
-    self.end_of_biweek == self
+    end_of_biweek == self
   end
 
   def beginning_of_week?
-    self.beginning_of_week == self
+    beginning_of_week == self
   end
 
   def end_of_week?
-    self.end_of_week == self
+    end_of_week == self
   end
 
   def expand_to_period(sym)
@@ -518,12 +518,12 @@ class Date
 
   def easter_this_year
     # Return the date of Easter in self's year
-    Date.easter(self.year)
+    Date.easter(year)
   end
 
   def easter?
     # Am I Easter?
-    self == self.easter_this_year
+    self == easter_this_year
   end
 
   def nth_wday_in_month?(n, wday, month)
@@ -538,16 +538,16 @@ class Date
   #######################################################
   def fed_fixed_holiday?
     # Fixed-date holidays on weekdays
-    if self.mon == 1 && self.mday == 1
+    if mon == 1 && mday == 1
       # New Years (January 1),
       true
-    elsif self.mon == 7 && self.mday == 4
+    elsif mon == 7 && mday == 4
       # Independence Day (July 4),
       true
-    elsif self.mon == 11 && self.mday == 11
+    elsif mon == 11 && mday == 11
       # Veterans Day (November 11),
       true
-    elsif self.mon == 12 && self.mday == 25
+    elsif mon == 12 && mday == 25
       # Christmas (December 25), and
       true
     else
@@ -560,25 +560,25 @@ class Date
     # rigged to fall on Monday except Thanksgiving
 
     # No moveable feasts in certain months
-    if [ 3, 4, 6, 7, 8, 12 ].include?(self.month)
+    if [ 3, 4, 6, 7, 8, 12 ].include?(month)
       false
-    elsif self.wday == 1
+    elsif monday?
       moveable_mondays = []
       # MLK's Birthday (Third Monday in Jan)
-      moveable_mondays << self.nth_wday_in_month?(3, 1, 1)
+      moveable_mondays << nth_wday_in_month?(3, 1, 1)
       # Washington's Birthday (Third Monday in Feb)
-      moveable_mondays << self.nth_wday_in_month?(3, 1, 2)
+      moveable_mondays << nth_wday_in_month?(3, 1, 2)
       # Memorial Day (Last Monday in May)
-      moveable_mondays << self.nth_wday_in_month?(-1, 1, 5)
+      moveable_mondays << nth_wday_in_month?(-1, 1, 5)
       # Labor Day (First Monday in Sep)
-      moveable_mondays << self.nth_wday_in_month?(1, 1, 9)
+      moveable_mondays << nth_wday_in_month?(1, 1, 9)
       # Columbus Day (Second Monday in Oct)
-      moveable_mondays << self.nth_wday_in_month?(2, 1, 10)
+      moveable_mondays << nth_wday_in_month?(2, 1, 10)
       # Other Mondays
       moveable_mondays.any?
-    elsif self.wday == 4
+    elsif thursday?
       # Thanksgiving Day (Fourth Thur in Nov)
-      self.nth_wday_in_month?(4, 4, 11)
+      nth_wday_in_month?(4, 4, 11)
     else
       false
     end
@@ -586,23 +586,23 @@ class Date
 
   def fed_holiday?
     # All Saturdays and Sundays are "holidays"
-    return true if self.weekend?
+    return true if weekend?
 
     # Some days are holidays by executive decree
     return true if FED_DECREED_HOLIDAYS.include?(self)
 
     # Is self a fixed holiday
-    return true if (self.fed_fixed_holiday? || self.fed_moveable_feast?)
+    return true if (fed_fixed_holiday? || fed_moveable_feast?)
 
-    if self.wday == 5 and self.month == 12 and self.day == 26
+    if friday? && month == 12 && day == 26
       # If Christmas falls on a Thursday, apparently, the Friday after is
       # treated as a holiday as well.  See 2003, 2008, for example.
       true
-    elsif self.wday == 5
+    elsif friday?
       # A Friday is a holiday if a fixed-date holiday
       # would fall on the following Saturday
       (self + 1).fed_fixed_holiday? || (self + 1).fed_moveable_feast?
-    elsif self.wday == 1
+    elsif monday?
       # A Monday is a holiday if a fixed-date holiday
       # would fall on the preceding Sunday
       (self - 1).fed_fixed_holiday? || (self - 1).fed_moveable_feast?
@@ -632,13 +632,13 @@ class Date
 
   def nyse_fixed_holiday?
     # Fixed-date holidays
-    if self.mon == 1 && self.mday == 1
+    if mon == 1 && mday == 1
       # New Years (January 1),
       true
-    elsif self.mon == 7 && self.mday == 4
+    elsif mon == 7 && mday == 4
       # Independence Day (July 4),
       true
-    elsif self.mon == 12 && self.mday == 25
+    elsif mon == 12 && mday == 25
       # Christmas (December 25), and
       true
     else
@@ -651,7 +651,7 @@ class Date
     # rigged to fall on Monday except Thanksgiving
 
     # No moveable feasts in certain months
-    return false if [ 6, 7, 8, 10, 12 ].include?(self.month)
+    return false if [ 6, 7, 8, 10, 12 ].include?(month)
 
     case month
     when 1
@@ -665,7 +665,7 @@ class Date
          : nth_wday_in_month?(3, 1, 2))
     when 3, 4
       # Good Friday
-      if self.wday != 5
+      if !friday?
         false
       else
         # Good Friday, the Friday before Easter, except certain years
@@ -685,7 +685,7 @@ class Date
       # Columbus Day (Oct 12) 1909--1953
       year >= 1909 && year <= 1953 && day == 12
     when 11
-      if wday == 2
+      if tuesday?
         # Election Day. Until 1968 all Election Days.  From 1972 to 1980
         # Election Day in presidential years only.  Election Day is the first
         # Tuesday after the first Monday in November.
@@ -698,7 +698,7 @@ class Date
         else
           false
         end
-      elsif wday == 4
+      elsif thursday?
         # Historically Thanksgiving (NYSE closed all day) had been declared to be
         #   the last Thursday in November until 1938;
         #   the next-to-last Thursday in November from 1939 to 1941
@@ -751,7 +751,7 @@ class Date
       true
     when (Date.parse('1968-06-12')..Date.parse('1968-12-31'))
       # Paperwork crisis (closed on Wednesdays if no other holiday in week)
-      wday == 3 && (self - 2).nyse_workday? && (self - 1).nyse_workday? &&
+      wednesday? && (self - 2).nyse_workday? && (self - 1).nyse_workday? &&
         (self + 1).nyse_workday? && (self + 2).nyse_workday?
     when Date.parse('1969-02-10')
       # Heavy snow
@@ -823,11 +823,11 @@ class Date
   end
 
   def fed_workday?
-    !self.fed_holiday?
+    !fed_holiday?
   end
 
   def nyse_workday?
-    !self.nyse_holiday?
+    !nyse_holiday?
   end
 
   def add_fed_business_days(n)
@@ -845,11 +845,11 @@ class Date
   end
 
   def next_fed_workday
-    self.add_fed_business_days(1)
+    add_fed_business_days(1)
   end
 
   def prior_fed_workday
-    self.add_fed_business_days(-1)
+    add_fed_business_days(-1)
   end
 
   def add_nyse_business_days(n)
@@ -867,10 +867,10 @@ class Date
   end
 
   def next_nyse_workday
-    self.add_nyse_business_days(1)
+    add_nyse_business_days(1)
   end
 
   def prior_nyse_workday
-    self.add_nyse_business_days(-1)
+    add_nyse_business_days(-1)
   end
 end
