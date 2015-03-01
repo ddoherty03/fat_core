@@ -789,6 +789,10 @@ describe Date do
         # Weekends are holidays, regardless
         expect(Date.parse('2014-11-22')).not_to be_nyse_workday
         expect(Date.parse('2014-11-23')).not_to be_nyse_workday
+
+        # Alias to trading_day?
+        expect(Date.parse('2014-11-22')).not_to be_trading_day
+        expect(Date.parse('2014-11-23')).not_to be_trading_day
       end
 
       it "should know the next federal workday" do
@@ -816,6 +820,8 @@ describe Date do
           .to eq Date.parse('2016-04-21')
         expect(Date.parse('2016-04-22').next_nyse_workday)
           .to eq Date.parse('2016-04-25')
+        expect(Date.parse('2016-04-22').next_trading_day)
+          .to eq Date.parse('2016-04-25')
       end
 
       it "should know the prior NYSE workday" do
@@ -828,6 +834,8 @@ describe Date do
         expect(Date.parse('2016-04-21').prior_nyse_workday)
           .to eq Date.parse('2016-04-20')
         expect(Date.parse('2016-04-25').prior_nyse_workday)
+          .to eq Date.parse('2016-04-22')
+        expect(Date.parse('2016-04-25').prior_trading_day)
           .to eq Date.parse('2016-04-22')
       end
     end

@@ -829,6 +829,7 @@ class Date
   def nyse_workday?
     !nyse_holiday?
   end
+  alias :trading_day? :nyse_workday?
 
   def add_fed_business_days(n)
     d = self.dup
@@ -869,8 +870,10 @@ class Date
   def next_nyse_workday
     add_nyse_business_days(1)
   end
+  alias :next_trading_day :next_nyse_workday
 
   def prior_nyse_workday
     add_nyse_business_days(-1)
   end
+  alias :prior_trading_day :prior_nyse_workday
 end
