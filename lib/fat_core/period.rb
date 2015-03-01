@@ -100,6 +100,25 @@ class Period
     self.contains?(date)
   end
 
+  # Return the number of days in the period
+  def days
+    last - first + 1
+  end
+
+  # Return the fractional number of months in the period.  By default, use the
+  # average number of days in a month, but allow the user to override the
+  # assumption with a parameter.
+  def months(days_in_month = 30.436875)
+    (days / days_in_month).to_f
+  end
+
+  # Return the fractional number of years in the period.  By default, use the
+  # average number of days in a year, but allow the user to override the
+  # assumption with a parameter.
+  def years(days_in_year = 365.2425)
+    (days / days_in_year).to_f
+  end
+
   def trading_days
     select(&:nyse_workday?)
   end

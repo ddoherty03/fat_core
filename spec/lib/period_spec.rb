@@ -199,6 +199,24 @@ describe Period do
       expect(pp === Date.parse('2012-07-04')).to be false
     end
 
+    it "should be able to convert itself to days" do
+      expect(Period.new('2013-01-01', '2013-01-01').days).to eq(1)
+      expect(Period.new('2013-01-01', '2013-12-31').days).to eq(365)
+    end
+
+    it "should be able to convert itself to fractional months" do
+      expect(Period.new('2013-01-01', '2013-01-01').months).to eq(1/30.436875)
+      expect(Period.new('2013-01-01', '2013-12-31').months(30)).
+        to eq(365 / 30.0)
+      expect(Period.new('2013-01-01', '2013-06-30').months.round(0)).to eq(6.0)
+    end
+
+    it "should be able to convert itself to fractional years" do
+      expect(Period.new('2013-01-01', '2013-01-01').years).to eq(1/365.2425)
+      expect(Period.new('2013-01-01', '2013-12-31').years(365)).to eq(1.0)
+      expect(Period.new('2013-01-01', '2013-06-30').years.round(1)).to eq(0.5)
+    end
+
     it "should be able to enumerate its days" do
       Period.parse_spec('2014-12').each do |dy|
         expect(dy.class).to eq Date
