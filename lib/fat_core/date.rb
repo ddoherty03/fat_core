@@ -866,6 +866,7 @@ class Date
      end
     d
   end
+  alias :add_trading_days :add_nyse_business_days
 
   def next_nyse_workday
     add_nyse_business_days(1)

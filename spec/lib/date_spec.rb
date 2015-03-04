@@ -853,6 +853,14 @@ describe Date do
         expect(Date.parse('2014-03-30').next_until_trading_day)
           .to eq(Date.parse('2014-03-31'))
       end
+
+      it "should be able to add n trading days" do
+        # Add n trading days
+        expect(Date.parse('2014-03-30').add_trading_days(10))
+          .to eq(Date.parse('2014-04-11'))
+        expect(Date.parse('2014-03-30').add_trading_days(-10))
+          .to eq(Date.parse('2014-03-17'))
+      end
     end
   end
 end
