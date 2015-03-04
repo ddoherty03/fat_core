@@ -876,4 +876,24 @@ class Date
     add_nyse_business_days(-1)
   end
   alias :prior_trading_day :prior_nyse_workday
+
+  # Return self if its a trading day, otherwise skip back to the first prior
+  # trading day.
+  def prior_until_trading_day
+    date = self
+    while !date.trading_day?
+      date -= 1
+    end
+    date
+  end
+
+  # Return self if its a trading day, otherwise skip forward to the first
+  # later trading day.
+  def next_until_trading_day
+    date = self
+    while !date.trading_day?
+      date += 1
+    end
+    date
+  end
 end

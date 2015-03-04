@@ -838,6 +838,21 @@ describe Date do
         expect(Date.parse('2016-04-25').prior_trading_day)
           .to eq Date.parse('2016-04-22')
       end
+
+      it "should be able to skip until it hits a trading day" do
+        # A Wednesday
+        expect(Date.parse('2014-03-26').prior_until_trading_day)
+          .to eq(Date.parse('2014-03-26'))
+        # A Sunday
+        expect(Date.parse('2014-03-30').prior_until_trading_day)
+          .to eq(Date.parse('2014-03-28'))
+        # A Wednesday
+        expect(Date.parse('2014-03-26').next_until_trading_day)
+          .to eq(Date.parse('2014-03-26'))
+        # A Sunday
+        expect(Date.parse('2014-03-30').next_until_trading_day)
+          .to eq(Date.parse('2014-03-31'))
+      end
     end
   end
 end
