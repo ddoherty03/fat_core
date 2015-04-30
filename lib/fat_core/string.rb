@@ -81,6 +81,13 @@ class String
     self
   end
 
+  def number?
+    Float(self)
+    true
+  rescue ArgumentError
+    return false
+  end
+
   def wrap(width=70, hang=0)
     offset = 0
     trip = 1

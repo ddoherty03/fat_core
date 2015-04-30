@@ -96,6 +96,17 @@ the people, for the people, shall not perish from the earth."
       expect("{hello}".tex_quote).to eq("\\{hello\\}")
     end
 
+    it "should be able to determine is it's a valid number" do
+      expect('88'.number?).to be true
+      expect('-88'.number?).to be true
+      expect('8.008'.number?).to be true
+      expect('-8.008'.number?).to be true
+      expect('8.008e33'.number?).to be true
+      expect('-8.008e33'.number?).to be true
+      expect('0x8.008'.number?).to be false
+      expect('hello world'.number?).to be false
+    end
+
     it "should be able to convert a string to a regular expression" do
       re = "/hello((\s+)(world))?/".to_regexp
       expect(re.class).to eq Regexp
