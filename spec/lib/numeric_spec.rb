@@ -21,6 +21,11 @@ describe Numeric do
     expect(BigDecimal('33.45').inspect).to eq '33.45'
   end
 
+  it "should be able to report if its a whole number" do
+    expect(236.whole?).to be true
+    expect(236.5555.whole?).to be false
+  end
+
   it "should properly round up" do
     expect(236.5555.commas(2)).to eq '236.56'
     expect(-236.5555.commas(2)).to eq '-236.56'

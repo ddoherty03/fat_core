@@ -57,10 +57,15 @@ class Numeric
     end
   end
 
+  # Determine if this is a whole number.
+  def whole?
+    self.floor == self
+  end
+
   # Return an integer type, but only if the fractional part of self
   # is zero
   def int_if_whole
-    self.floor == self ? self.floor : self
+     whole? ? self.floor : self
   end
 
   def secs_to_hms
