@@ -64,6 +64,10 @@ the people, for the people, shall not perish from the earth."
   end
 
   describe "instance methods" do
+    it "should be able to clean up white space in a string" do
+      expect('   string    here  '.clean).to eq 'string here'
+    end
+
     it "should be able to convert a digital date to iso form" do
       expect("20140521".digdate2iso).to eq '2014-05-21'
     end

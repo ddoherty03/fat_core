@@ -1,6 +1,12 @@
 require 'damerau-levenshtein'
 
 class String
+  # Remove leading and trailing white space and compress internal runs of
+  # white space to a single space.
+  def clean
+    self.strip.squeeze(' ')
+  end
+
   def distance(other, block_size: 1, max_distance: 10)
     dl = DamerauLevenshtein
     # NOTE: DL 'gives up after' max_distance, so the distance function
