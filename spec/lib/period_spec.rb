@@ -124,6 +124,12 @@ describe Period do
       expect(periods[1].last).to eq(Date.parse('2012-07-31'))
       expect(periods[2].last).to eq(Date.parse('2012-08-31'))
     end
+
+    it "should return nil if comparing incomparables" do
+      pd = Period.new('2012-08-01', '2012-08-31')
+      rg = (Date.parse('2012-08-01')..Date.parse('2012-08-31'))
+      expect(pd <=> rg).to be_nil
+    end
   end
 
   describe "instance methods" do
