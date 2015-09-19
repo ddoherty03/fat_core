@@ -133,6 +133,36 @@ class Period
     Period.new(Date.parse_spec(from, :from), Date.parse_spec(to, :to))
   end
 
+  def self.parse(spec = nil, default_spec: 'this_year', truncate: false)
+    spec = default_spec if spec.blank?
+    from, to = parse_from_to_spec(spec)
+    to ||= from
+    from ||= to
+    d1 = Date.parse_spec(from, :from) if from
+    d2 = Date.parse_spec(to, :to) if to
+    d1 ||= Date::BOT
+    d2 ||= Date::EOT
+    d2 = Date.current if truncate
+    Period.new(d1, d2)
+  end
+
+  # Extract start and end dates
+  def self.parse_from_to_spec(spec)
+    spec = spec.clean
+    if spec =~ /\Afrom (.*) to (.*)\z/
+      from_spec = $~[1]
+      to_spec = $~[2]
+    elsif spec =~ /\Afrom (.*)\z/
+      from_spec = $~[1]
+      to_spec = nil
+    elsif spec =~ /\Ato (.*)\z/
+      to_spec = $~[1]
+    else
+      to_spec = spec
+    end
+    [from_spec, to_spec]
+  end
+
   # Possibly useful class method to take an array of periods and join all the
   # contiguous ones, then return an array of the disjoint periods not
   # contiguous to one another.  An array of periods with no gaps should return

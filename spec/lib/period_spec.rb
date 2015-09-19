@@ -42,15 +42,48 @@ describe Period do
   end
 
   describe "class methods" do
+    it 'should be able to parse a period spec' do
+      pd = Period.parse
+      expect(pd.first).to eq(Date.parse('2012-01-01'))
+      expect(pd.last).to eq(Date.parse('2012-12-31'))
 
-    it "should know how to parse a pair of date specs" do
+      pd = Period.parse('from 2012-07 to 2012')
+      expect(pd.first).to eq(Date.parse('2012-07-01'))
+      expect(pd.last).to eq(Date.parse('2012-12-31'))
+
+      pd = Period.parse('to 2012')
+      expect(pd.first).to eq(Date.parse('2012-01-01'))
+      expect(pd.last).to eq(Date.parse('2012-12-31'))
+
+      pd = Period.parse('from 2012')
+      expect(pd.first).to eq(Date.parse('2012-01-01'))
+      expect(pd.last).to eq(Date.parse('2012-12-31'))
+
+      pd = Period.parse('2012')
+      expect(pd.first).to eq(Date.parse('2012-01-01'))
+      expect(pd.last).to eq(Date.parse('2012-12-31'))
+
+      pd = Period.parse('this_year')
+      expect(pd.first).to eq(Date.parse('2012-01-01'))
+      expect(pd.last).to eq(Date.parse('2012-12-31'))
+
+      pd = Period.parse('from last_year to this_year')
+      expect(pd.first).to eq(Date.parse('2011-01-01'))
+      expect(pd.last).to eq(Date.parse('2012-12-31'))
+
+      pd = Period.parse('from last_year to this_year', truncate: true)
+      expect(pd.first).to eq(Date.parse('2011-01-01'))
+      expect(pd.last).to eq(Date.parse('2012-07-18'))
+    end
+
+    it 'should know how to parse a pair of date specs' do
       expect(Period.parse_spec.first).to eq Date.current
       expect(Period.parse_spec('2014-3Q').first).to eq Date.parse('2014-07-01')
       expect(Period.parse_spec('2014-3Q').last).to eq Date.parse('2014-09-30')
       expect(Period.parse_spec(nil, '2014-3Q').last).to eq Date.parse('2014-09-30')
     end
 
-    it "should know what the valid chunk syms are" do
+    it 'should know what the valid chunk syms are' do
       expect(Period.chunk_syms.size).to eq 9
     end
 
