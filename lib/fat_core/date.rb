@@ -1,4 +1,3 @@
-
 class Date
   # Constants for Begining of Time (BOT) and End of Time (EOT)
   # Both outside the range of what we would find in an accounting app.
