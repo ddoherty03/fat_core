@@ -155,7 +155,7 @@ class Range
           cur_point = rr.max.succ
         end
       end
-      if cur_point < max
+      if cur_point <= max
         gaps << (cur_point..max)
       end
       gaps
