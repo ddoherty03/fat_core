@@ -237,6 +237,22 @@ describe Date do
         }.to raise_error
       end
 
+      it "should parse year-half specs such as YYYY-NH or YYYY-HN" do
+        expect(Date.parse_spec('2011-2H', :from)).to eq Date.parse('2011-07-01')
+        expect(Date.parse_spec('2011-2H', :to)).to eq Date.parse('2011-12-31')
+        expect(Date.parse_spec('2011-H1', :from)).to eq Date.parse('2011-01-01')
+        expect(Date.parse_spec('2011-H1', :to)).to eq Date.parse('2011-06-30')
+        expect { Date.parse_spec('2011-3H') }.to raise_error
+      end
+
+      it "should parse half-only specs such as NQ or QN" do
+        expect(Date.parse_spec('2H', :from)).to eq Date.parse('2012-07-01')
+        expect(Date.parse_spec('H2', :to)).to eq Date.parse('2012-12-31')
+        expect(Date.parse_spec('1H', :from)).to eq Date.parse('2012-01-01')
+        expect(Date.parse_spec('H1', :to)).to eq Date.parse('2012-06-30')
+        expect { Date.parse_spec('8H') }.to raise_error
+      end
+
       it "should parse year-quarter specs such as YYYY-NQ or YYYY-QN" do
         expect(Date.parse_spec('2011-4Q', :from)).to eq Date.parse('2011-10-01')
         expect(Date.parse_spec('2011-4Q', :to)).to eq Date.parse('2011-12-31')
@@ -333,6 +349,14 @@ describe Date do
         expect(Date.parse_spec('last_quarter', :to)).to eq Date.parse('2012-06-30')
       end
 
+      # Today is set to '2012-07-18'
+      it "should parse relative halves: this_half, last_half" do
+        expect(Date.parse_spec('this_half')).to eq Date.parse('2012-07-01')
+        expect(Date.parse_spec('this_half', :to)).to eq Date.parse('2012-12-31')
+        expect(Date.parse_spec('last_half')).to eq Date.parse('2012-01-01')
+        expect(Date.parse_spec('last_half', :to)).to eq Date.parse('2012-06-30')
+      end
+
       it "should parse relative years: this_year, last_year" do
         expect(Date.parse_spec('this_year')).to eq Date.parse('2012-01-01')
         expect(Date.parse_spec('this_year', :to)).to eq Date.parse('2012-12-31')
@@ -426,6 +450,16 @@ describe Date do
         expect(Date.parse('2013-12-30')).to_not be_end_of_year
       end
 
+      it "should know about halves" do
+        expect(Date.parse('2013-01-01')).to be_beginning_of_half
+        expect(Date.parse('2013-12-31')).to be_end_of_half
+        expect(Date.parse('2013-07-01')).to be_beginning_of_half
+        expect(Date.parse('2013-06-30')).to be_end_of_half
+        expect(Date.parse('2013-05-01')).to_not be_beginning_of_half
+        expect(Date.parse('2013-05-01').half).to eq(1)
+        expect(Date.parse('2013-07-31').half).to eq(2)
+      end
+
       it "should know about quarters" do
         expect(Date.parse('2013-01-01')).to be_beginning_of_quarter
         expect(Date.parse('2013-12-31')).to be_end_of_quarter
@@ -486,6 +520,7 @@ describe Date do
 
       it "should know the beginning of chunks" do
         expect(Date.parse('2013-11-04').beginning_of_chunk(:year)).to eq Date.parse('2013-01-01')
+        expect(Date.parse('2013-11-04').beginning_of_chunk(:half)).to eq Date.parse('2013-07-01')
         expect(Date.parse('2013-11-04').beginning_of_chunk(:quarter)).to eq Date.parse('2013-10-01')
         expect(Date.parse('2013-12-04').beginning_of_chunk(:bimonth)).to eq Date.parse('2013-11-01')
         expect(Date.parse('2013-11-04').beginning_of_chunk(:month)).to eq Date.parse('2013-11-01')
@@ -501,6 +536,7 @@ describe Date do
       it "should be able to add a chuck sym to itself" do
         # Date.today is '2012-07-18'
         expect(Date.today.add_chunk(:year)).to eq(Date.parse('2013-07-18'))
+        expect(Date.today.add_chunk(:half)).to eq(Date.parse('2013-01-18'))
         expect(Date.today.add_chunk(:quarter)).to eq(Date.parse('2012-10-18'))
         expect(Date.today.add_chunk(:bimonth)).to eq(Date.parse('2012-09-18'))
         expect(Date.today.add_chunk(:month)).to eq(Date.parse('2012-08-18'))
@@ -516,6 +552,7 @@ describe Date do
 
       it "should know the end of chunks" do
         expect(Date.parse('2013-07-04').end_of_chunk(:year)).to eq Date.parse('2013-12-31')
+        expect(Date.parse('2013-05-04').end_of_chunk(:half)).to eq Date.parse('2013-06-30')
         expect(Date.parse('2013-07-04').end_of_chunk(:quarter)).to eq Date.parse('2013-09-30')
         expect(Date.parse('2013-12-04').end_of_chunk(:bimonth)).to eq Date.parse('2013-12-31')
         expect(Date.parse('2013-07-04').end_of_chunk(:month)).to eq Date.parse('2013-07-31')
@@ -530,6 +567,7 @@ describe Date do
 
       it "should know how to expand to chunk periods" do
         expect(Date.parse('2013-07-04').expand_to_period(:year)).to eq Period.new('2013-01-01', '2013-12-31')
+        expect(Date.parse('2013-07-04').expand_to_period(:half)).to eq Period.new('2013-07-01', '2013-12-31')
         expect(Date.parse('2013-07-04').expand_to_period(:quarter)).to eq Period.new('2013-07-01', '2013-09-30')
         expect(Date.parse('2013-07-04').expand_to_period(:bimonth)).to eq Period.new('2013-07-01', '2013-08-31')
         expect(Date.parse('2013-07-04').expand_to_period(:month)).to eq Period.new('2013-07-01', '2013-07-31')

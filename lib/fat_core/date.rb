@@ -104,6 +104,22 @@ class Date
       quarter = $1.to_i
       date = Date.new(this_year, quarter * 3, 15)
       spec_type == :from ? date.beginning_of_quarter : date.end_of_quarter
+    when /^(\d\d\d\d)-(\d)[Hh]$/, /^(\d\d\d\d)-[Hh](\d)$/
+      # Year-Half
+      year = $1.to_i
+      half = $2.to_i
+      unless [1, 2].include?(half)
+        raise ArgumentError, "bad date format: #{spec}"
+      end
+      month = half * 6
+      spec_type == :from ? Date.new(year, month, 15).beginning_of_half :
+        Date.new(year, month, 1).end_of_half
+    when /^([12])[hH]$/, /^[hH]([12])$/
+      # Half only
+      this_year = today.year
+      half = $1.to_i
+      date = Date.new(this_year, half * 6, 15)
+      spec_type == :from ? date.beginning_of_half : date.end_of_half
     when /^(\d\d\d\d)-(\d\d?)*$/
       # Year-Month only
       spec_type == :from ? Date.new($1.to_i, $2.to_i, 1) :
@@ -149,6 +165,11 @@ class Date
     when /^last_?quarter/
       spec_type == :from ? (today - 3.months).beginning_of_quarter :
         (today - 3.months).end_of_quarter
+    when /^(this_?)?half/
+      spec_type == :from ? today.beginning_of_half : today.end_of_half
+    when /^last_?half/
+      spec_type == :from ? (today - 6.months).beginning_of_half :
+        (today - 6.months).end_of_half
     when /^(this_?)?year/
       spec_type == :from ? today.beginning_of_year : today.end_of_year
     when /^last_?year/
@@ -216,6 +237,16 @@ class Date
     !weekend?
   end
 
+  # Self's calendar half: 1 or 2
+  def half
+    case month
+    when (1..6)
+      1
+    when (7..12)
+      2
+    end
+  end
+
   # Self's calendar quarter: 1, 2, 3, or 4
   def quarter
     case month
@@ -227,6 +258,28 @@ class Date
       3
     when (10..12)
       4
+    end
+  end
+
+  # The date that is the first day of the half-year in which self falls.
+  def beginning_of_half
+    if month > 9
+      (beginning_of_quarter - 15).beginning_of_quarter
+    elsif month > 6
+      beginning_of_quarter
+    else
+      beginning_of_year
+    end
+  end
+
+  # The date that is the last day of the half-year in which self falls.
+  def end_of_half
+    if month < 4
+      (end_of_quarter + 15).end_of_quarter
+    elsif month < 7
+      end_of_quarter
+    else
+      end_of_year
     end
   end
 
@@ -304,6 +357,14 @@ class Date
     end_of_year == self
   end
 
+  def beginning_of_half?
+    beginning_of_half == self
+  end
+
+  def end_of_half?
+    end_of_half == self
+  end
+
   def beginning_of_quarter?
     beginning_of_quarter == self
   end
@@ -363,6 +424,8 @@ class Date
     case chunk
     when :year
       next_year
+    when :half
+      next_month(6)
     when :quarter
       next_month(3)
     when :bimonth
@@ -386,6 +449,8 @@ class Date
     case sym
     when :year
       beginning_of_year
+    when :half
+      beginning_of_half
     when :quarter
       beginning_of_quarter
     when :bimonth
@@ -409,6 +474,8 @@ class Date
     case sym
     when :year
       end_of_year
+    when :half
+      end_of_half
     when :quarter
       end_of_quarter
     when :bimonth

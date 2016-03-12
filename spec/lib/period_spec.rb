@@ -41,7 +41,7 @@ describe Period do
     end
   end
 
-  describe "class methods" do
+  describe 'class methods' do
     it 'should be able to parse a period spec' do
       pd = Period.parse
       expect(pd.first).to eq(Date.parse('2012-01-01'))
@@ -50,6 +50,38 @@ describe Period do
       pd = Period.parse('from 2012-07 to 2012')
       expect(pd.first).to eq(Date.parse('2012-07-01'))
       expect(pd.last).to eq(Date.parse('2012-12-31'))
+
+      pd = Period.parse('from 2Q')
+      expect(pd.first).to eq(Date.parse('2012-04-01'))
+      expect(pd.last).to eq(Date.parse('2012-06-30'))
+
+      pd = Period.parse('to 3Q')
+      expect(pd.first).to eq(Date.parse('2012-07-01'))
+      expect(pd.last).to eq(Date.parse('2012-09-30'))
+
+      pd = Period.parse('to 2012-2Q')
+      expect(pd.first).to eq(Date.parse('2012-04-01'))
+      expect(pd.last).to eq(Date.parse('2012-06-30'))
+
+      pd = Period.parse('from 2012-1Q')
+      expect(pd.first).to eq(Date.parse('2012-01-01'))
+      expect(pd.last).to eq(Date.parse('2012-03-31'))
+
+      pd = Period.parse('from 2H')
+      expect(pd.first).to eq(Date.parse('2012-07-01'))
+      expect(pd.last).to eq(Date.parse('2012-12-31'))
+
+      pd = Period.parse('to 1H')
+      expect(pd.first).to eq(Date.parse('2012-01-01'))
+      expect(pd.last).to eq(Date.parse('2012-06-30'))
+
+      pd = Period.parse('to 2012-2H')
+      expect(pd.first).to eq(Date.parse('2012-07-01'))
+      expect(pd.last).to eq(Date.parse('2012-12-31'))
+
+      pd = Period.parse('from 2012-1H')
+      expect(pd.first).to eq(Date.parse('2012-01-01'))
+      expect(pd.last).to eq(Date.parse('2012-06-30'))
 
       pd = Period.parse('to 2012')
       expect(pd.first).to eq(Date.parse('2012-01-01'))
