@@ -7,7 +7,7 @@ Gem::Specification.new do |spec|
   spec.name          = "fat_core"
   spec.version       = FatCore::VERSION
   spec.authors       = ["Daniel E. Doherty"]
-  spec.email         = ["ded-law@ddoherty.net"]
+  spec.email         = ["ded@ddoherty.net"]
   spec.summary       = %q{fat_core provides some useful core extensions}
   spec.description   = %q{Write a longer description. Optional.}
   spec.homepage      = ""
