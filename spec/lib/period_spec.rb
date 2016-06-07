@@ -42,77 +42,76 @@ describe Period do
   end
 
   describe 'class methods' do
-    it 'should be able to parse a period spec' do
-      pd = Period.parse
+    it 'should be able to parse a period phrase' do
+      pd = Period.parse_phrase('from this_year')
       expect(pd.first).to eq(Date.parse('2012-01-01'))
       expect(pd.last).to eq(Date.parse('2012-12-31'))
 
-      pd = Period.parse('from 2012-07 to 2012')
+      pd = Period.parse_phrase('from 2012-07 to 2012')
       expect(pd.first).to eq(Date.parse('2012-07-01'))
       expect(pd.last).to eq(Date.parse('2012-12-31'))
 
-      pd = Period.parse('from 2Q')
+      pd = Period.parse_phrase('from 2Q')
       expect(pd.first).to eq(Date.parse('2012-04-01'))
       expect(pd.last).to eq(Date.parse('2012-06-30'))
 
-      pd = Period.parse('to 3Q')
+      pd = Period.parse_phrase('to 3Q')
       expect(pd.first).to eq(Date.parse('2012-07-01'))
       expect(pd.last).to eq(Date.parse('2012-09-30'))
 
-      pd = Period.parse('to 2012-2Q')
+      pd = Period.parse_phrase('to 2012-2Q')
       expect(pd.first).to eq(Date.parse('2012-04-01'))
       expect(pd.last).to eq(Date.parse('2012-06-30'))
 
-      pd = Period.parse('from 2012-1Q')
+      pd = Period.parse_phrase('from 2012-1Q')
       expect(pd.first).to eq(Date.parse('2012-01-01'))
       expect(pd.last).to eq(Date.parse('2012-03-31'))
 
-      pd = Period.parse('from 2H')
+      pd = Period.parse_phrase('from 2H')
       expect(pd.first).to eq(Date.parse('2012-07-01'))
       expect(pd.last).to eq(Date.parse('2012-12-31'))
 
-      pd = Period.parse('to 1H')
+      pd = Period.parse_phrase('to 1H')
       expect(pd.first).to eq(Date.parse('2012-01-01'))
       expect(pd.last).to eq(Date.parse('2012-06-30'))
 
-      pd = Period.parse('to 2012-2H')
+      pd = Period.parse_phrase('to 2012-2H')
       expect(pd.first).to eq(Date.parse('2012-07-01'))
       expect(pd.last).to eq(Date.parse('2012-12-31'))
 
-      pd = Period.parse('from 2012-1H')
+      pd = Period.parse_phrase('from 2012-1H')
       expect(pd.first).to eq(Date.parse('2012-01-01'))
       expect(pd.last).to eq(Date.parse('2012-06-30'))
 
-      pd = Period.parse('to 2012')
+      pd = Period.parse_phrase('to 2012')
       expect(pd.first).to eq(Date.parse('2012-01-01'))
       expect(pd.last).to eq(Date.parse('2012-12-31'))
 
-      pd = Period.parse('from 2012')
+      pd = Period.parse_phrase('from 2012')
       expect(pd.first).to eq(Date.parse('2012-01-01'))
       expect(pd.last).to eq(Date.parse('2012-12-31'))
 
-      pd = Period.parse('2012')
+      pd = Period.parse_phrase('2012')
       expect(pd.first).to eq(Date.parse('2012-01-01'))
       expect(pd.last).to eq(Date.parse('2012-12-31'))
 
-      pd = Period.parse('this_year')
+      pd = Period.parse_phrase('this_year')
       expect(pd.first).to eq(Date.parse('2012-01-01'))
       expect(pd.last).to eq(Date.parse('2012-12-31'))
 
-      pd = Period.parse('from last_year to this_year')
+      pd = Period.parse_phrase('from last_year to this_year')
       expect(pd.first).to eq(Date.parse('2011-01-01'))
       expect(pd.last).to eq(Date.parse('2012-12-31'))
 
-      pd = Period.parse('from last_year to this_year', truncate: true)
+      pd = Period.parse_phrase('from last_year to this_year')
       expect(pd.first).to eq(Date.parse('2011-01-01'))
-      expect(pd.last).to eq(Date.parse('2012-07-18'))
+      expect(pd.last).to eq(Date.parse('2012-12-31'))
     end
 
     it 'should know how to parse a pair of date specs' do
-      expect(Period.parse_spec.first).to eq Date.current
-      expect(Period.parse_spec('2014-3Q').first).to eq Date.parse('2014-07-01')
-      expect(Period.parse_spec('2014-3Q').last).to eq Date.parse('2014-09-30')
-      expect(Period.parse_spec(nil, '2014-3Q').last).to eq Date.parse('2014-09-30')
+      expect(Period.parse('2014-3Q').first).to eq Date.parse('2014-07-01')
+      expect(Period.parse('2014-3Q').last).to eq Date.parse('2014-09-30')
+      expect(Period.parse('2014-3Q').last).to eq Date.parse('2014-09-30')
     end
 
     it 'should know what the valid chunk syms are' do
@@ -289,13 +288,13 @@ describe Period do
     end
 
     it "should be able to enumerate its days" do
-      Period.parse_spec('2014-12').each do |dy|
+      Period.parse('2014-12').each do |dy|
         expect(dy.class).to eq Date
       end
     end
 
     it "should be able to return the trading days within period" do
-      tds = Period.parse_spec('2014-12').trading_days
+      tds = Period.parse('2014-12').trading_days
       expect(tds.count).to eq(22)
     end
 
@@ -500,62 +499,62 @@ describe Period do
     end
 
     it "should know if it's a subset of another period" do
-      year = Period.parse_spec('this_year')
-      month = Period.parse_spec('this_month')
+      year = Period.parse('this_year')
+      month = Period.parse('this_month')
       expect(month.subset_of?(year)).to be true
       expect(year.subset_of?(year)).to be true
     end
 
     it "should know if it's a proper subset of another period" do
-      year = Period.parse_spec('this_year')
-      month = Period.parse_spec('this_month')
+      year = Period.parse('this_year')
+      month = Period.parse('this_month')
       expect(month.proper_subset_of?(year)).to be true
       expect(year.proper_subset_of?(year)).to be false
     end
 
     it "should know if it's a superset of another period" do
-      year = Period.parse_spec('this_year')
-      month = Period.parse_spec('this_month')
+      year = Period.parse('this_year')
+      month = Period.parse('this_month')
       expect(year.superset_of?(month)).to be true
       expect(year.superset_of?(year)).to be true
     end
 
     it "should know if it's a proper superset of another period" do
-      year = Period.parse_spec('this_year')
-      month = Period.parse_spec('this_month')
+      year = Period.parse('this_year')
+      month = Period.parse('this_month')
       expect(year.proper_superset_of?(month)).to be true
       expect(year.proper_superset_of?(year)).to be false
     end
 
     it "should know if it overlaps another period" do
-      period1 = Period.parse_spec('2013')
-      period2 = Period.parse_spec('2012-10', '2013-03')
-      period3 = Period.parse_spec('2014')
+      period1 = Period.parse('2013')
+      period2 = Period.parse('2012-10', '2013-03')
+      period3 = Period.parse('2014')
       expect(period1.overlaps?(period2)).to be true
       expect(period2.overlaps?(period1)).to be true
       expect(period1.overlaps?(period3)).to be false
     end
 
     it "should know whether an array of periods have overlaps within it" do
-      months = (1..12).to_a.map{ |k| Period.parse_spec("2013-#{k}") }
-      year = Period.parse_spec("2013")
+      months = (1..12).to_a.map{ |k| Period.parse("2013-#{k}") }
+      year = Period.parse("2013")
       expect(year.has_overlaps_within?(months)).to be false
-      months << Period.parse_spec("2013-09-15", "2013-10-02")
+      months << Period.parse("2013-09-15", "2013-10-02")
       expect(year.has_overlaps_within?(months)).to be true
     end
 
     it "should know whether an array of periods span it" do
-      months = (1..12).to_a.map{ |k| Period.parse_spec("2013-#{k}") }
-      year = Period.parse_spec("2013")
+      months = (1..12).to_a.map{ |k| Period.parse("2013-#{k}") }
+      year = Period.parse("2013")
       expect(year.spanned_by?(months)).to be true
 
-      months = (2..12).to_a.map{ |k| Period.parse_spec("2013-#{k}") }
+      months = (2..12).to_a.map{ |k| Period.parse("2013-#{k}") }
       expect(year.spanned_by?(months)).to be false
     end
 
     it "should know its intersection with other period" do
-      year = Period.parse_spec('this_year')
-      month = Period.parse_spec('this_month')
+      year = Period.parse('this_year')
+      month = Period.parse('this_month')
       expect(year & month).to eq(month)
       expect(month & year).to eq(month)
       # It should return a Period, not a Range
@@ -563,7 +562,7 @@ describe Period do
     end
 
     it "should alias narrow_to to intersection" do
-      period1 = Period.parse_spec('2014')
+      period1 = Period.parse('2014')
       period2 = Period.new('2014-06-01', '2015-02-28')
       period3 = period1.narrow_to(period2)
       expect(period3.first).to eq(period2.first)
@@ -571,14 +570,14 @@ describe Period do
     end
 
     it "should return nil if no intersection" do
-      year = Period.parse_spec('2014')
-      month = Period.parse_spec('2013-05')
+      year = Period.parse('2014')
+      month = Period.parse('2013-05')
       expect(year & month).to be_nil
     end
 
     it "should know its union with other period" do
-      last_month = Period.parse_spec('last_month')
-      month = Period.parse_spec('this_month')
+      last_month = Period.parse('last_month')
+      month = Period.parse('this_month')
       expect((last_month + month).first).to eq(last_month.first)
       expect((last_month + month).last).to eq(month.last)
       # It should return a Period, not a Range
@@ -586,8 +585,8 @@ describe Period do
     end
 
     it "should know its differences with other period" do
-      year = Period.parse_spec('this_year')
-      month = Period.parse_spec('this_month')
+      year = Period.parse('this_year')
+      month = Period.parse('this_month')
       # Note: the difference operator returns an Array of Periods resulting
       # from removing other from self.
       expect((year - month).first)
@@ -599,21 +598,21 @@ describe Period do
         expect(p.class).to eq(Period)
       end
 
-      last_year = Period.parse_spec('last_year')
-      month = Period.parse_spec('this_month')
+      last_year = Period.parse('last_year')
+      month = Period.parse('this_month')
       expect(last_year - month).to eq([last_year])
     end
 
     it "should be able to find gaps from an array of periods" do
-      pp = Period.parse_spec('2014-2Q')
+      pp = Period.parse('2014-2Q')
       periods = [
-                 Period.parse_spec('2013-11', '2013-12-20'),
-                 Period.parse_spec('2014-01', '2014-04-20'),
+                 Period.parse('2013-11', '2013-12-20'),
+                 Period.parse('2014-01', '2014-04-20'),
                  # Gap 2014-04-21 to 2014-04-30
-                 Period.parse_spec('2014-05', '2014-05-11'),
+                 Period.parse('2014-05', '2014-05-11'),
                  # Gap 2014-05-12 to 2014-05-24
-                 Period.parse_spec('2014-05-25', '2014-07-11'),
-                 Period.parse_spec('2014-09')
+                 Period.parse('2014-05-25', '2014-07-11'),
+                 Period.parse('2014-09')
                 ]
       gaps = pp.gaps(periods)
       expect(gaps.size).to eq(2)

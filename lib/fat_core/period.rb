@@ -123,44 +123,38 @@ class Period
     select(&:nyse_workday?)
   end
 
-  # Return a period based on two date specs (see Date.parse_spec), a '''from'
-  # and a 'to' spec.  If the to-spec is not given or is nil, the from-spec is
-  # used for both the from- and to-spec.  If no from-spec is given, return
-  # today as the period.
-  def self.parse_spec(from = 'today', to = nil)
+  # Return a period based on two date specs passed as strings (see
+  # Date.parse_spec), a '''from' and a 'to' spec.  If the to-spec is not given
+  # or is nil, the from-spec is used for both the from- and to-spec.
+  #
+  # Period.parse('2014-11') => Period.new('2014-11-01', 2014-11-30')
+  # Period.parse('2014-11', '2015-3Q')
+  #  => Period.new('2014-11-01', 2015-09-30')
+  def self.parse(from, to = nil)
+    raise ArgumentError, 'Period.parse missing argument' unless from
     to ||= from
-    from ||= to
     Period.new(Date.parse_spec(from, :from), Date.parse_spec(to, :to))
   end
 
-  def self.parse(spec = nil, default_spec: 'this_year', truncate: false)
-    spec = default_spec if spec.blank?
-    from, to = parse_from_to_spec(spec)
-    to ||= from
-    from ||= to
-    d1 = Date.parse_spec(from, :from) if from
-    d2 = Date.parse_spec(to, :to) if to
-    d1 ||= Date::BOT
-    d2 ||= Date::EOT
-    d2 = Date.current if truncate
-    Period.new(d1, d2)
-  end
-
-  # Extract start and end dates
-  def self.parse_from_to_spec(spec)
-    spec = spec.clean
-    if spec =~ /\Afrom (.*) to (.*)\z/
-      from_spec = $~[1]
-      to_spec = $~[2]
-    elsif spec =~ /\Afrom (.*)\z/
-      from_spec = $~[1]
-      to_spec = nil
-    elsif spec =~ /\Ato (.*)\z/
-      to_spec = $~[1]
+  # Return a period from a phrase in which the from date is introduced with
+  # 'from' and, optionally, the to-date is introduced with 'to'.
+  #
+  # Period.parse_phrase('from 2014-11 to 2015-3Q')
+  #  => Period('2014-11-01', '2015-09-30')
+  def self.parse_phrase(phrase)
+    phrase = phrase.clean
+    if phrase =~ /\Afrom (.*) to (.*)\z/
+      from_phrase = $~[1]
+      to_phrase = $~[2]
+    elsif phrase =~ /\Afrom (.*)\z/
+      from_phrase = $~[1]
+      to_phrase = nil
+    elsif phrase =~ /\Ato (.*)\z/
+      from_phrase = $~[1]
     else
-      to_spec = spec
+      from_phrase = phrase
     end
-    [from_spec, to_spec]
+    parse(from_phrase, to_phrase)
   end
 
   # Possibly useful class method to take an array of periods and join all the
