@@ -108,6 +108,10 @@ describe Period do
       expect(pd.last).to eq(Date.parse('2012-12-31'))
     end
 
+    it 'should return nil when parsing never' do
+      expect(Period.parse('never')).to be_nil
+    end
+
     it 'should know how to parse a pair of date specs' do
       expect(Period.parse('2014-3Q').first).to eq Date.parse('2014-07-01')
       expect(Period.parse('2014-3Q').last).to eq Date.parse('2014-09-30')

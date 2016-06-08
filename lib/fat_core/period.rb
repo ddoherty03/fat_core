@@ -133,7 +133,9 @@ class Period
   def self.parse(from, to = nil)
     raise ArgumentError, 'Period.parse missing argument' unless from
     to ||= from
-    Period.new(Date.parse_spec(from, :from), Date.parse_spec(to, :to))
+    first = Date.parse_spec(from, :from)
+    second = Date.parse_spec(to, :to)
+    Period.new(first, second) if first && second
   end
 
   # Return a period from a phrase in which the from date is introduced with
