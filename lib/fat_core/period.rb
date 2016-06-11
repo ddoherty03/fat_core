@@ -450,51 +450,42 @@ class Period
       case size
       when :year
         unless partial_first
-          until chunk_start.beginning_of_year?
-            chunk_start += 1.day
-          end
+          chunk_start += 1.day until chunk_start.beginning_of_year?
         end
         chunk_end = chunk_start.end_of_year
+      when :half
+        unless partial_first
+          chunk_start += 1.day until chunk_start.beginning_of_half?
+        end
+        chunk_end = chunk_start.end_of_half
       when :quarter
         unless partial_first
-          until chunk_start.beginning_of_quarter?
-            chunk_start += 1.day
-          end
+          chunk_start += 1.day until chunk_start.beginning_of_quarter?
         end
         chunk_end = chunk_start.end_of_quarter
       when :bimonth
         unless partial_first
-          until chunk_start.beginning_of_bimonth?
-            chunk_start += 1.day
-          end
+           chunk_start += 1.day until chunk_start.beginning_of_bimonth?
         end
         chunk_end = (chunk_start.end_of_month + 1.day).end_of_month
       when :month
         unless partial_first
-          until chunk_start.beginning_of_month?
-            chunk_start += 1.day
-          end
+           chunk_start += 1.day until chunk_start.beginning_of_month?
         end
         chunk_end = chunk_start.end_of_month
       when :semimonth
         unless partial_first
-          until chunk_start.beginning_of_semimonth?
-            chunk_start += 1.day
-          end
+           chunk_start += 1.day until chunk_start.beginning_of_semimonth?
         end
         chunk_end = chunk_start.end_of_semimonth
       when :biweek
         unless partial_first
-          until chunk_start.beginning_of_biweek?
-            chunk_start += 1.day
-          end
+           chunk_start += 1.day until chunk_start.beginning_of_biweek?
         end
         chunk_end = chunk_start.end_of_biweek
       when :week
         unless partial_first
-          until chunk_start.beginning_of_week?
-            chunk_start += 1.day
-          end
+           chunk_start += 1.day until chunk_start.beginning_of_week?
         end
         chunk_end = chunk_start.end_of_week
       when :day
