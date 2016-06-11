@@ -493,7 +493,7 @@ class Period
       when :day
         chunk_end = chunk_start
       else
-        chunk_end = last
+        raise ArgumentError, "invalid chunk size '#{size}'"
       end
       if chunk_end <= last
         result << Period.new(chunk_start, chunk_end)

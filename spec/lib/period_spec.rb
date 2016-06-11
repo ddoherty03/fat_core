@@ -453,6 +453,12 @@ describe Period do
       expect(chunks.last.last.iso).to eq('2012-12-31')
     end
 
+    it 'should raise error for invalid chunk name' do
+      expect do
+        Period.new('2012-12-28', '2012-12-31').chunks(size: :wally)
+      end.to raise_error(ArgumentError)
+    end
+
     it 'should not include a partial final chunk by default' do
       chunks = Period.new('2012-01-01', '2012-03-30').chunks(size: :month)
       expect(chunks.size).to eq(2)
