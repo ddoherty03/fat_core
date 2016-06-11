@@ -65,7 +65,7 @@ class Date
   def self.parse_spec(spec, spec_type = :from)
     spec = spec.to_s.strip
     unless [:from, :to].include?(spec_type)
-      raise ArgumentError "invalid date spec type: '#{spec_type}'"
+      raise ArgumentError, "invalid date spec type: '#{spec_type}'"
     end
 
     today = Date.current
@@ -491,7 +491,7 @@ class Date
     when :day
       self
     else
-      raise LogicError, "unknown chunk sym: '#{sym}'"
+      raise ArgumentError, "unknown chunk sym: '#{sym}'"
     end
   end
 
