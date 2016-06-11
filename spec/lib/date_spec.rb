@@ -5,13 +5,13 @@ describe Date do
   before :each do
     # Pretend it is this date. Not at beg or end of year, quarter,
     # month, or week.  It is a Wednesday
-    allow(Date).to receive_messages(:today => Date.parse('2012-07-18'))
-    allow(Date).to receive_messages(:current => Date.parse('2012-07-18'))
+    allow(Date).to receive_messages(today: Date.parse('2012-07-18'))
+    allow(Date).to receive_messages(current: Date.parse('2012-07-18'))
   end
 
-  describe "class methods" do
-    describe "date arithmetic" do
-      it "should know the number of days in a month" do
+  describe 'class methods' do
+    describe 'date arithmetic' do
+      it 'should know the number of days in a month' do
         expect(Date.days_in_month(2000, 1)).to eq 31
         expect(Date.days_in_month(1900, 2)).to eq 28
         expect(Date.days_in_month(2000, 2)).to eq 29
@@ -30,7 +30,7 @@ describe Date do
         expect { Date.days_in_month(2004, 13) }.to raise_error(ArgumentError)
       end
 
-      it "should know the nth weekday in a year, month" do
+      it 'should know the nth weekday in a year, month' do
         # Sunday is 0, Saturday is 6
         #     January 2014
         # Su Mo Tu We Th Fr Sa
@@ -76,7 +76,7 @@ describe Date do
         }.to raise_error(ArgumentError)
       end
 
-      it "should know Easter for a given year" do
+      it 'should know Easter for a given year' do
         # Grabbed these dates of Easter from
         # http://tlarsen2.tripod.com/thomaslarsen/easterdates.html
         easters = {
@@ -179,7 +179,7 @@ describe Date do
           2096 => '2096-04-15',
           2097 => '2097-03-31',
           2098 => '2098-04-20',
-          2099 => '2099-04-12',
+          2099 => '2099-04-12'
         }
         easters.each_pair do |year, date|
           expect(Date.easter(year)).to eq Date.parse(date)
@@ -187,8 +187,8 @@ describe Date do
       end
     end
 
-    describe "parsing" do
-      it "should be able to parse an American-style date" do
+    describe 'parsing' do
+      it 'should be able to parse an American-style date' do
         expect(Date.parse_american('2/12/2011').iso).to eq('2011-02-12')
         expect(Date.parse_american('2 / 12/ 2011').iso).to eq('2011-02-12')
         expect(Date.parse_american('2 / 1 / 2011').iso).to eq('2011-02-01')
@@ -225,7 +225,7 @@ describe Date do
         }.to raise_error(ArgumentError)
       end
 
-      it "should parse year-week numbers such as 'YYYY-W23' or 'YYYY-23W' correctly" do
+      it 'should parse year-week numbers \'YYYY-W23\' correctly' do
         expect(Date.parse_spec('2003-W1')).to eq Date.parse('2002-12-30')
         expect(Date.parse_spec('2003-W1', :to)).to eq Date.parse('2003-01-05')
         expect(Date.parse_spec('2003-W23')).to eq Date.parse('2003-06-02')
@@ -237,7 +237,7 @@ describe Date do
         }.to raise_error(ArgumentError)
       end
 
-      it "should parse year-half specs such as YYYY-NH or YYYY-HN" do
+      it 'should parse year-half specs such as YYYY-NH or YYYY-HN' do
         expect(Date.parse_spec('2011-2H', :from)).to eq Date.parse('2011-07-01')
         expect(Date.parse_spec('2011-2H', :to)).to eq Date.parse('2011-12-31')
         expect(Date.parse_spec('2011-H1', :from)).to eq Date.parse('2011-01-01')
@@ -245,7 +245,7 @@ describe Date do
         expect { Date.parse_spec('2011-3H') }.to raise_error(ArgumentError)
       end
 
-      it "should parse half-only specs such as NQ or QN" do
+      it 'should parse half-only specs such as NH or HN' do
         expect(Date.parse_spec('2H', :from)).to eq Date.parse('2012-07-01')
         expect(Date.parse_spec('H2', :to)).to eq Date.parse('2012-12-31')
         expect(Date.parse_spec('1H', :from)).to eq Date.parse('2012-01-01')
@@ -253,7 +253,7 @@ describe Date do
         expect { Date.parse_spec('8H') }.to raise_error(ArgumentError)
       end
 
-      it "should parse year-quarter specs such as YYYY-NQ or YYYY-QN" do
+      it 'should parse year-quarter specs such as YYYY-NQ or YYYY-QN' do
         expect(Date.parse_spec('2011-4Q', :from)).to eq Date.parse('2011-10-01')
         expect(Date.parse_spec('2011-4Q', :to)).to eq Date.parse('2011-12-31')
         expect(Date.parse_spec('2011-Q4', :from)).to eq Date.parse('2011-10-01')
@@ -261,7 +261,7 @@ describe Date do
         expect { Date.parse_spec('2011-5Q') }.to raise_error(ArgumentError)
       end
 
-      it "should parse quarter-only specs such as NQ or QN" do
+      it 'should parse quarter-only specs such as NQ or QN' do
         expect(Date.parse_spec('4Q', :from)).to eq Date.parse('2012-10-01')
         expect(Date.parse_spec('4Q', :to)).to eq Date.parse('2012-12-31')
         expect(Date.parse_spec('Q4', :from)).to eq Date.parse('2012-10-01')
@@ -269,102 +269,117 @@ describe Date do
         expect { Date.parse_spec('5Q') }.to raise_error(ArgumentError)
       end
 
-      it "should parse year-month specs such as YYYY-MM" do
+      it 'should parse year-month specs such as YYYY-MM' do
         expect(Date.parse_spec('2010-5', :from)).to eq Date.parse('2010-05-01')
         expect(Date.parse_spec('2010-5', :to)).to eq Date.parse('2010-05-31')
         expect { Date.parse_spec('2010-13') }.to raise_error(ArgumentError)
       end
 
-      it "should parse month-only specs such as MM" do
+      it 'should parse month-only specs such as MM' do
         expect(Date.parse_spec('10', :from)).to eq Date.parse('2012-10-01')
         expect(Date.parse_spec('10', :to)).to eq Date.parse('2012-10-31')
         expect { Date.parse_spec('99') }.to raise_error(ArgumentError)
         expect { Date.parse_spec('011') }.to raise_error(ArgumentError)
       end
 
-      it "should parse year-only specs such as YYYY" do
+      it 'should parse year-only specs such as YYYY' do
         expect(Date.parse_spec('2010', :from)).to eq Date.parse('2010-01-01')
         expect(Date.parse_spec('2010', :to)).to eq Date.parse('2010-12-31')
         expect { Date.parse_spec('99999') }.to raise_error(ArgumentError)
       end
 
-      it "should parse relative day names: today, yesterday" do
+      it 'should parse relative day names: today, yesterday' do
         expect(Date.parse_spec('today')).to eq Date.current
         expect(Date.parse_spec('this_day')).to eq Date.current
         expect(Date.parse_spec('yesterday')).to eq Date.current - 1.day
         expect(Date.parse_spec('last_day')).to eq Date.current - 1.day
       end
 
-      it "should parse relative weeks: this_week, last_week" do
+      it 'should parse relative weeks: this_week, last_week' do
         expect(Date.parse_spec('this_week')).to eq Date.parse('2012-07-16')
         expect(Date.parse_spec('this_week', :to)).to eq Date.parse('2012-07-22')
         expect(Date.parse_spec('last_week')).to eq Date.parse('2012-07-09')
         expect(Date.parse_spec('last_week', :to)).to eq Date.parse('2012-07-15')
       end
 
-      it "should parse relative biweeks: this_biweek, last_biweek" do
+      it 'should parse relative biweeks: this_biweek, last_biweek' do
         expect(Date.parse_spec('this_biweek')).to eq Date.parse('2012-07-16')
-        expect(Date.parse_spec('this_biweek', :to)).to eq Date.parse('2012-07-29')
+        expect(Date.parse_spec('this_biweek', :to))
+          .to eq Date.parse('2012-07-29')
         expect(Date.parse_spec('last_biweek')).to eq Date.parse('2012-07-02')
-        expect(Date.parse_spec('last_biweek', :to)).to eq Date.parse('2012-07-15')
+        expect(Date.parse_spec('last_biweek', :to))
+          .to eq Date.parse('2012-07-15')
       end
 
-      it "should parse relative months: this_semimonth, last_semimonth" do
+      it 'should parse relative months: this_semimonth, last_semimonth' do
         expect(Date.parse_spec('this_semimonth')).to eq Date.parse('2012-07-16')
-        expect(Date.parse_spec('this_semimonth', :to)).to eq Date.parse('2012-07-31')
-        expect(Date.parse_spec('last_semimonth')).to eq Date.parse('2012-07-01')
-        expect(Date.parse_spec('last_semimonth', :to)).to eq Date.parse('2012-07-15')
+        expect(Date.parse_spec('this_semimonth', :to))
+          .to eq Date.parse('2012-07-31')
+        expect(Date.parse_spec('last_semimonth'))
+          .to eq Date.parse('2012-07-01')
+        expect(Date.parse_spec('last_semimonth', :to))
+          .to eq Date.parse('2012-07-15')
       end
 
-      it "should parse relative months: this_month, last_month" do
+      it 'should parse relative months: this_month, last_month' do
         expect(Date.parse_spec('this_month')).to eq Date.parse('2012-07-01')
-        expect(Date.parse_spec('this_month', :to)).to eq Date.parse('2012-07-31')
+        expect(Date.parse_spec('this_month', :to))
+          .to eq Date.parse('2012-07-31')
         expect(Date.parse_spec('last_month')).to eq Date.parse('2012-06-01')
-        expect(Date.parse_spec('last_month', :to)).to eq Date.parse('2012-06-30')
+        expect(Date.parse_spec('last_month', :to))
+          .to eq Date.parse('2012-06-30')
       end
 
-      it "should parse relative bimonths: this_bimonth, last_bimonth" do
+      it 'should parse relative bimonths: this_bimonth, last_bimonth' do
         expect(Date.parse_spec('this_bimonth')).to eq Date.parse('2012-07-01')
-        expect(Date.parse_spec('this_bimonth', :to)).to eq Date.parse('2012-08-31')
-        expect(Date.parse_spec('last_bimonth')).to eq Date.parse('2012-05-01')
-        expect(Date.parse_spec('last_bimonth', :to)).to eq Date.parse('2012-06-30')
+        expect(Date.parse_spec('this_bimonth', :to))
+          .to eq Date.parse('2012-08-31')
+        expect(Date.parse_spec('last_bimonth'))
+          .to eq Date.parse('2012-05-01')
+        expect(Date.parse_spec('last_bimonth', :to))
+          .to eq Date.parse('2012-06-30')
 
         # Set today to 2014-12-12: Found that last_bimonth was reporting
         # current bimonth when today was in the second month of the current
         # bimonth, i.e., an even month
-        allow(Date).to receive_messages(:today => Date.parse('2014-12-12'))
-        allow(Date).to receive_messages(:current => Date.parse('2014-12-12'))
+        allow(Date).to receive_messages(today: Date.parse('2014-12-12'))
+        allow(Date).to receive_messages(current: Date.parse('2014-12-12'))
 
-        expect(Date.parse_spec('last_bimonth')).to eq Date.parse('2014-09-01')
-        expect(Date.parse_spec('last_bimonth', :to)).to eq Date.parse('2014-10-31')
+        expect(Date.parse_spec('last_bimonth'))
+          .to eq Date.parse('2014-09-01')
+        expect(Date.parse_spec('last_bimonth', :to))
+          .to eq Date.parse('2014-10-31')
 
-        allow(Date).to receive_messages(:today => Date.parse('2012-07-18'))
-        allow(Date).to receive_messages(:current => Date.parse('2012-07-18'))
+        allow(Date).to receive_messages(today: Date.parse('2012-07-18'))
+        allow(Date).to receive_messages(current: Date.parse('2012-07-18'))
       end
 
-      it "should parse relative quarters: this_quarter, last_quarter" do
+      it 'should parse relative quarters: this_quarter, last_quarter' do
         expect(Date.parse_spec('this_quarter')).to eq Date.parse('2012-07-01')
-        expect(Date.parse_spec('this_quarter', :to)).to eq Date.parse('2012-09-30')
-        expect(Date.parse_spec('last_quarter')).to eq Date.parse('2012-04-01')
-        expect(Date.parse_spec('last_quarter', :to)).to eq Date.parse('2012-06-30')
+        expect(Date.parse_spec('this_quarter', :to))
+          .to eq Date.parse('2012-09-30')
+        expect(Date.parse_spec('last_quarter'))
+          .to eq Date.parse('2012-04-01')
+        expect(Date.parse_spec('last_quarter', :to))
+          .to eq Date.parse('2012-06-30')
       end
 
       # Today is set to '2012-07-18'
-      it "should parse relative halves: this_half, last_half" do
+      it 'should parse relative halves: this_half, last_half' do
         expect(Date.parse_spec('this_half')).to eq Date.parse('2012-07-01')
         expect(Date.parse_spec('this_half', :to)).to eq Date.parse('2012-12-31')
         expect(Date.parse_spec('last_half')).to eq Date.parse('2012-01-01')
         expect(Date.parse_spec('last_half', :to)).to eq Date.parse('2012-06-30')
       end
 
-      it "should parse relative years: this_year, last_year" do
+      it 'should parse relative years: this_year, last_year' do
         expect(Date.parse_spec('this_year')).to eq Date.parse('2012-01-01')
         expect(Date.parse_spec('this_year', :to)).to eq Date.parse('2012-12-31')
         expect(Date.parse_spec('last_year')).to eq Date.parse('2011-01-01')
         expect(Date.parse_spec('last_year', :to)).to eq Date.parse('2011-12-31')
       end
 
-      it "should parse forever and never" do
+      it 'should parse forever and never' do
         expect(Date.parse_spec('forever')).to eq Date::BOT
         expect(Date.parse_spec('forever', :to)).to eq Date::EOT
         expect(Date.parse_spec('never')).to be_nil
@@ -372,47 +387,47 @@ describe Date do
     end
   end
 
-  describe "instance methods" do
-    describe "print as string" do
-      it "should be able to print itself as an American-style date" do
+  describe 'instance methods' do
+    describe 'print as string' do
+      it 'should be able to print itself as an American-style date' do
         expect(Date.parse('2011-02-12').american).to eq('2/12/2011')
       end
 
-      it "should be able to print itself in iso form" do
+      it 'should be able to print itself in iso form' do
         expect(Date.today.iso).to eq '2012-07-18'
       end
 
-      it "should be able to print itself in tex_quote form" do
+      it 'should be able to print itself in tex_quote form' do
         expect(Date.today.tex_quote).to eq '2012-07-18'
       end
 
-      it "should be able to print itself in org form" do
+      it 'should be able to print itself in org form' do
         expect(Date.today.org).to eq('[2012-07-18 Wed]')
         expect((Date.today + 1.day).org).to eq('[2012-07-19 Thu]')
       end
 
-      it "should be able to print itself in eng form" do
+      it 'should be able to print itself in eng form' do
         expect(Date.today.eng).to eq('July 18, 2012')
         expect((Date.today + 1.day).eng).to eq('July 19, 2012')
       end
 
-      it "should be able to print itself in numeric form" do
+      it 'should be able to print itself in numeric form' do
         expect(Date.today.num).to eq('20120718')
         expect((Date.today + 1.day).num).to eq('20120719')
       end
     end
 
-    describe "date arithmetic" do
-      it "should know if its the nth weekday in a given month" do
-        expect(Date.parse('2014-11-13').nth_wday_in_month?(2, 4, 11)).
-          to be true
-        expect(Date.parse('2014-11-13').nth_wday_in_month?(-3, 4, 11)).
-          to be true
-        expect(Date.parse('2014-11-13').nth_wday_in_month?(2, 4, 10)).
-          to be false
+    describe 'date arithmetic' do
+      it 'should know if its the nth weekday in a given month' do
+        expect(Date.parse('2014-11-13').nth_wday_in_month?(2, 4, 11))
+          .to be true
+        expect(Date.parse('2014-11-13').nth_wday_in_month?(-3, 4, 11))
+          .to be true
+        expect(Date.parse('2014-11-13').nth_wday_in_month?(2, 4, 10))
+          .to be false
       end
 
-      it "should know if its a weekend or a weekday" do
+      it 'should know if its a weekend or a weekday' do
         expect(Date.parse('2014-05-17')).to be_weekend
         expect(Date.parse('2014-05-17')).to_not be_weekday
         expect(Date.parse('2014-05-18')).to be_weekend
@@ -422,12 +437,12 @@ describe Date do
         expect(Date.parse('2014-05-22')).to_not be_weekend
       end
 
-      it "should know its pred and succ (for Range)" do
-        expect(Date.today.pred).to eq (Date.today - 1)
-        expect(Date.today.succ).to eq (Date.today + 1)
+      it 'should know its pred and succ (for Range)' do
+        expect(Date.today.pred).to eq(Date.today - 1)
+        expect(Date.today.succ).to eq(Date.today + 1)
       end
 
-      it "should be able to state its quarter" do
+      it 'should be able to state its quarter' do
         expect(Date.today.quarter).to eq(3)
         expect(Date.parse('2012-02-29').quarter).to eq(1)
         expect(Date.parse('2012-01-01').quarter).to eq(1)
@@ -443,14 +458,14 @@ describe Date do
         expect(Date.parse('2012-12-31').quarter).to eq(4)
       end
 
-      it "should know about years" do
+      it 'should know about years' do
         expect(Date.parse('2013-01-01')).to be_beginning_of_year
         expect(Date.parse('2013-12-31')).to be_end_of_year
         expect(Date.parse('2013-04-01')).to_not be_beginning_of_year
         expect(Date.parse('2013-12-30')).to_not be_end_of_year
       end
 
-      it "should know about halves" do
+      it 'should know about halves' do
         expect(Date.parse('2013-01-01')).to be_beginning_of_half
         expect(Date.parse('2013-12-31')).to be_end_of_half
         expect(Date.parse('2013-07-01')).to be_beginning_of_half
@@ -460,7 +475,7 @@ describe Date do
         expect(Date.parse('2013-07-31').half).to eq(2)
       end
 
-      it "should know about quarters" do
+      it 'should know about quarters' do
         expect(Date.parse('2013-01-01')).to be_beginning_of_quarter
         expect(Date.parse('2013-12-31')).to be_end_of_quarter
         expect(Date.parse('2013-04-01')).to be_beginning_of_quarter
@@ -469,9 +484,11 @@ describe Date do
         expect(Date.parse('2013-07-31')).to_not be_end_of_quarter
       end
 
-      it "should know about bimonths" do
-        expect(Date.parse('2013-11-04').beginning_of_bimonth).to eq Date.parse('2013-11-01')
-        expect(Date.parse('2013-11-04').end_of_bimonth).to eq Date.parse('2013-12-31')
+      it 'should know about bimonths' do
+        expect(Date.parse('2013-11-04').beginning_of_bimonth)
+          .to eq Date.parse('2013-11-01')
+        expect(Date.parse('2013-11-04').end_of_bimonth)
+          .to eq Date.parse('2013-12-31')
         expect(Date.parse('2013-03-01')).to be_beginning_of_bimonth
         expect(Date.parse('2013-04-30')).to be_end_of_bimonth
         expect(Date.parse('2013-01-01')).to be_beginning_of_bimonth
@@ -482,7 +499,7 @@ describe Date do
         expect(Date.parse('2013-07-31')).to_not be_end_of_bimonth
       end
 
-      it "should know about months" do
+      it 'should know about months' do
         expect(Date.parse('2013-01-01')).to be_beginning_of_month
         expect(Date.parse('2013-12-31')).to be_end_of_month
         expect(Date.parse('2013-05-01')).to be_beginning_of_month
@@ -491,25 +508,35 @@ describe Date do
         expect(Date.parse('2013-07-30')).to_not be_end_of_month
       end
 
-      it "should know about semimonths" do
-        expect(Date.parse('2013-11-24').beginning_of_semimonth).to eq Date.parse('2013-11-16')
-        expect(Date.parse('2013-11-04').beginning_of_semimonth).to eq Date.parse('2013-11-01')
-        expect(Date.parse('2013-11-04').end_of_semimonth).to eq Date.parse('2013-11-15')
-        expect(Date.parse('2013-11-24').end_of_semimonth).to eq Date.parse('2013-11-30')
-        expect(Date.parse('2013-03-01')).to be_beginning_of_semimonth
-        expect(Date.parse('2013-03-16')).to be_beginning_of_semimonth
-        expect(Date.parse('2013-04-15')).to be_end_of_semimonth
-        expect(Date.parse('2013-04-30')).to be_end_of_semimonth
+      it 'should know about semimonths' do
+        expect(Date.parse('2013-11-24').beginning_of_semimonth)
+          .to eq Date.parse('2013-11-16')
+        expect(Date.parse('2013-11-04').beginning_of_semimonth)
+          .to eq Date.parse('2013-11-01')
+        expect(Date.parse('2013-11-04').end_of_semimonth)
+          .to eq Date.parse('2013-11-15')
+        expect(Date.parse('2013-11-24').end_of_semimonth)
+          .to eq Date.parse('2013-11-30')
+        expect(Date.parse('2013-03-01'))
+          .to be_beginning_of_semimonth
+        expect(Date.parse('2013-03-16'))
+          .to be_beginning_of_semimonth
+        expect(Date.parse('2013-04-15'))
+          .to be_end_of_semimonth
+        expect(Date.parse('2013-04-30'))
+          .to be_end_of_semimonth
       end
 
-      it "should know about biweeks" do
-        expect(Date.parse('2013-11-07').beginning_of_biweek).to eq Date.parse('2013-11-04')
-        expect(Date.parse('2013-11-07').end_of_biweek).to eq Date.parse('2013-11-17')
+      it 'should know about biweeks' do
+        expect(Date.parse('2013-11-07').beginning_of_biweek)
+          .to eq Date.parse('2013-11-04')
+        expect(Date.parse('2013-11-07').end_of_biweek)
+          .to eq Date.parse('2013-11-17')
         expect(Date.parse('2013-03-11')).to be_beginning_of_biweek
         expect(Date.parse('2013-03-24')).to be_end_of_biweek
       end
 
-      it "should know about weeks" do
+      it 'should know about weeks' do
         expect(Date.parse('2013-11-04')).to be_beginning_of_week
         expect(Date.parse('2013-11-10')).to be_end_of_week
         expect(Date.parse('2013-12-02')).to be_beginning_of_week
@@ -518,22 +545,31 @@ describe Date do
         expect(Date.parse('2013-10-19')).to_not be_end_of_week
       end
 
-      it "should know the beginning of chunks" do
-        expect(Date.parse('2013-11-04').beginning_of_chunk(:year)).to eq Date.parse('2013-01-01')
-        expect(Date.parse('2013-11-04').beginning_of_chunk(:half)).to eq Date.parse('2013-07-01')
-        expect(Date.parse('2013-11-04').beginning_of_chunk(:quarter)).to eq Date.parse('2013-10-01')
-        expect(Date.parse('2013-12-04').beginning_of_chunk(:bimonth)).to eq Date.parse('2013-11-01')
-        expect(Date.parse('2013-11-04').beginning_of_chunk(:month)).to eq Date.parse('2013-11-01')
-        expect(Date.parse('2013-11-04').beginning_of_chunk(:semimonth)).to eq Date.parse('2013-11-01')
-        expect(Date.parse('2013-11-24').beginning_of_chunk(:semimonth)).to eq Date.parse('2013-11-16')
-        expect(Date.parse('2013-11-08').beginning_of_chunk(:biweek)).to eq Date.parse('2013-11-04')
-        expect(Date.parse('2013-11-08').beginning_of_chunk(:week)).to eq Date.parse('2013-11-04')
+      it 'should know the beginning of chunks' do
+        expect(Date.parse('2013-11-04').beginning_of_chunk(:year))
+          .to eq Date.parse('2013-01-01')
+        expect(Date.parse('2013-11-04').beginning_of_chunk(:half))
+          .to eq Date.parse('2013-07-01')
+        expect(Date.parse('2013-11-04').beginning_of_chunk(:quarter))
+          .to eq Date.parse('2013-10-01')
+        expect(Date.parse('2013-12-04').beginning_of_chunk(:bimonth))
+          .to eq Date.parse('2013-11-01')
+        expect(Date.parse('2013-11-04').beginning_of_chunk(:month))
+          .to eq Date.parse('2013-11-01')
+        expect(Date.parse('2013-11-04').beginning_of_chunk(:semimonth))
+          .to eq Date.parse('2013-11-01')
+        expect(Date.parse('2013-11-24').beginning_of_chunk(:semimonth))
+          .to eq Date.parse('2013-11-16')
+        expect(Date.parse('2013-11-08').beginning_of_chunk(:biweek))
+          .to eq Date.parse('2013-11-04')
+        expect(Date.parse('2013-11-08').beginning_of_chunk(:week))
+          .to eq Date.parse('2013-11-04')
         expect {
           Date.parse('2013-11-04').beginning_of_chunk(:wek)
         }.to raise_error(ArgumentError)
       end
 
-      it "should be able to add a chuck sym to itself" do
+      it 'should be able to add a chuck sym to itself' do
         # Date.today is '2012-07-18'
         expect(Date.today.add_chunk(:year)).to eq(Date.parse('2013-07-18'))
         expect(Date.today.add_chunk(:half)).to eq(Date.parse('2013-01-18'))
@@ -550,31 +586,49 @@ describe Date do
         }.to raise_error(ArgumentError)
       end
 
-      it "should know the end of chunks" do
-        expect(Date.parse('2013-07-04').end_of_chunk(:year)).to eq Date.parse('2013-12-31')
-        expect(Date.parse('2013-05-04').end_of_chunk(:half)).to eq Date.parse('2013-06-30')
-        expect(Date.parse('2013-07-04').end_of_chunk(:quarter)).to eq Date.parse('2013-09-30')
-        expect(Date.parse('2013-12-04').end_of_chunk(:bimonth)).to eq Date.parse('2013-12-31')
-        expect(Date.parse('2013-07-04').end_of_chunk(:month)).to eq Date.parse('2013-07-31')
-        expect(Date.parse('2013-11-04').end_of_chunk(:semimonth)).to eq Date.parse('2013-11-15')
-        expect(Date.parse('2013-11-24').end_of_chunk(:semimonth)).to eq Date.parse('2013-11-30')
-        expect(Date.parse('2013-11-08').end_of_chunk(:biweek)).to eq Date.parse('2013-11-17')
-        expect(Date.parse('2013-07-04').end_of_chunk(:week)).to eq Date.parse('2013-07-07')
+      it 'should know the end of chunks' do
+        expect(Date.parse('2013-07-04').end_of_chunk(:year))
+          .to eq Date.parse('2013-12-31')
+        expect(Date.parse('2013-05-04').end_of_chunk(:half))
+          .to eq Date.parse('2013-06-30')
+        expect(Date.parse('2013-07-04').end_of_chunk(:quarter))
+          .to eq Date.parse('2013-09-30')
+        expect(Date.parse('2013-12-04').end_of_chunk(:bimonth))
+          .to eq Date.parse('2013-12-31')
+        expect(Date.parse('2013-07-04').end_of_chunk(:month))
+          .to eq Date.parse('2013-07-31')
+        expect(Date.parse('2013-11-04').end_of_chunk(:semimonth))
+          .to eq Date.parse('2013-11-15')
+        expect(Date.parse('2013-11-24').end_of_chunk(:semimonth))
+          .to eq Date.parse('2013-11-30')
+        expect(Date.parse('2013-11-08').end_of_chunk(:biweek))
+          .to eq Date.parse('2013-11-17')
+        expect(Date.parse('2013-07-04').end_of_chunk(:week))
+          .to eq Date.parse('2013-07-07')
         expect {
           Date.parse('2013-11-04').end_of_chunk(:wek)
         }.to raise_error(ArgumentError)
       end
 
-      it "should know how to expand to chunk periods" do
-        expect(Date.parse('2013-07-04').expand_to_period(:year)).to eq Period.new('2013-01-01', '2013-12-31')
-        expect(Date.parse('2013-07-04').expand_to_period(:half)).to eq Period.new('2013-07-01', '2013-12-31')
-        expect(Date.parse('2013-07-04').expand_to_period(:quarter)).to eq Period.new('2013-07-01', '2013-09-30')
-        expect(Date.parse('2013-07-04').expand_to_period(:bimonth)).to eq Period.new('2013-07-01', '2013-08-31')
-        expect(Date.parse('2013-07-04').expand_to_period(:month)).to eq Period.new('2013-07-01', '2013-07-31')
-        expect(Date.parse('2013-07-04').expand_to_period(:semimonth)).to eq Period.new('2013-07-01', '2013-07-15')
-        expect(Date.parse('2013-07-04').expand_to_period(:biweek)).to eq Period.new('2013-07-01', '2013-07-14')
-        expect(Date.parse('2013-07-04').expand_to_period(:week)).to eq Period.new('2013-07-01', '2013-07-07')
-        expect(Date.parse('2013-07-04').expand_to_period(:day)).to eq Period.new('2013-07-04', '2013-07-04')
+      it 'should know how to expand to chunk periods' do
+        expect(Date.parse('2013-07-04').expand_to_period(:year))
+          .to eq Period.new('2013-01-01', '2013-12-31')
+        expect(Date.parse('2013-07-04').expand_to_period(:half))
+          .to eq Period.new('2013-07-01', '2013-12-31')
+        expect(Date.parse('2013-07-04').expand_to_period(:quarter))
+          .to eq Period.new('2013-07-01', '2013-09-30')
+        expect(Date.parse('2013-07-04').expand_to_period(:bimonth))
+          .to eq Period.new('2013-07-01', '2013-08-31')
+        expect(Date.parse('2013-07-04').expand_to_period(:month))
+          .to eq Period.new('2013-07-01', '2013-07-31')
+        expect(Date.parse('2013-07-04').expand_to_period(:semimonth))
+          .to eq Period.new('2013-07-01', '2013-07-15')
+        expect(Date.parse('2013-07-04').expand_to_period(:biweek))
+          .to eq Period.new('2013-07-01', '2013-07-14')
+        expect(Date.parse('2013-07-04').expand_to_period(:week))
+          .to eq Period.new('2013-07-01', '2013-07-07')
+        expect(Date.parse('2013-07-04').expand_to_period(:day))
+          .to eq Period.new('2013-07-04', '2013-07-04')
       end
 
       it "should know if it's within 6 months of another date" do
@@ -593,14 +647,14 @@ describe Date do
       end
     end
 
-    describe "holidays" do
-      it "should know Easter in its year" do
+    describe 'holidays' do
+      it 'should know Easter in its year' do
         expect(Date.today.easter_this_year).to eq(Date.parse('2012-04-08'))
         expect(Date.parse('2014-04-20').easter?).to be true
         expect(Date.parse('2014-03-20').easter?).to be false
       end
 
-      it "should know if its a federal holiday" do
+      it 'should know if its a federal holiday' do
         # Got these from:
         # http://www.opm.gov/policy-data-oversight/snow-dismissal-procedures/federal-holidays/
 
@@ -702,11 +756,11 @@ describe Date do
         expect(Date.parse('2014-11-23')).to be_fed_holiday
       end
 
-      it "should know if its an NYSE holiday" do
+      it 'should know if its an NYSE holiday' do
         #################  2014         2015       2016
-        # New Year’s Day  January 1   January 1   January 1
+        # New Year's Day  January 1   January 1   January 1
         # Martin Luther King, Jr. Day   January 20  January 19  January 18
-        # Washington’s Birthday   February 17   February 16   February 15
+        # Washington's Birthday   February 17   February 16   February 15
         # Good Friday   April 18  April 3   March 25
         # Memorial Day  May 26  May 25  May 30
         # Independence Day  July 4  July 3  July 4
@@ -783,7 +837,7 @@ describe Date do
         expect(Date.parse('2007-01-02')).to be_nyse_holiday
       end
 
-      it "should know if it is a Federal workday" do
+      it 'should know if it is a Federal workday' do
         # Some holidays
         expect(Date.parse('2017-02-20')).not_to be_fed_workday
         expect(Date.parse('2017-05-29')).not_to be_fed_workday
@@ -806,7 +860,7 @@ describe Date do
         expect(Date.parse('2014-11-23')).not_to be_fed_workday
       end
 
-      it "should know if it is an NYSE workday" do
+      it 'should know if it is an NYSE workday' do
         # Some holidays
         expect(Date.parse('2016-01-01')).not_to be_nyse_workday
         expect(Date.parse('2016-01-18')).not_to be_nyse_workday
@@ -833,7 +887,7 @@ describe Date do
         expect(Date.parse('2014-11-23')).not_to be_trading_day
       end
 
-      it "should know the next federal workday" do
+      it 'should know the next federal workday' do
         expect(Date.parse('2015-12-31').next_fed_workday)
           .to eq Date.parse('2016-01-04')
         expect(Date.parse('2016-04-20').next_fed_workday)
@@ -842,7 +896,7 @@ describe Date do
           .to eq Date.parse('2016-04-25')
       end
 
-      it "should know the prior federal workday" do
+      it 'should know the prior federal workday' do
         expect(Date.parse('2016-01-04').prior_fed_workday)
           .to eq Date.parse('2015-12-31')
         expect(Date.parse('2016-04-21').prior_fed_workday)
@@ -851,7 +905,7 @@ describe Date do
           .to eq Date.parse('2016-04-22')
       end
 
-      it "should know the next NYSE workday" do
+      it 'should know the next NYSE workday' do
         expect(Date.parse('2015-12-31').next_nyse_workday)
           .to eq Date.parse('2016-01-04')
         expect(Date.parse('2016-04-20').next_nyse_workday)
@@ -862,7 +916,7 @@ describe Date do
           .to eq Date.parse('2016-04-25')
       end
 
-      it "should know the prior NYSE workday" do
+      it 'should know the prior NYSE workday' do
         # The Monday after Easter; go to prior Thur since Good Friday
         # is an NYSE holiday.
         expect(Date.parse('2014-04-21').prior_nyse_workday)
@@ -877,7 +931,7 @@ describe Date do
           .to eq Date.parse('2016-04-22')
       end
 
-      it "should be able to skip until it hits a trading day" do
+      it 'should be able to skip until it hits a trading day' do
         # A Wednesday
         expect(Date.parse('2014-03-26').prior_until_trading_day)
           .to eq(Date.parse('2014-03-26'))
@@ -892,7 +946,7 @@ describe Date do
           .to eq(Date.parse('2014-03-31'))
       end
 
-      it "should be able to add n trading days" do
+      it 'should be able to add n trading days' do
         # Add n trading days
         expect(Date.parse('2014-03-30').add_trading_days(10))
           .to eq(Date.parse('2014-04-11'))
