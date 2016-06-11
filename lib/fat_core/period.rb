@@ -205,6 +205,8 @@ class Period
       60
     when :quarter
       90
+    when :half
+      180
     when :year
       365
     when :irregular
@@ -225,6 +227,8 @@ class Period
       62
     when :quarter
       92
+    when :half
+      183
     when :year
       366
     when :irregular
@@ -245,6 +249,8 @@ class Period
     case days
     when 356..376
       :year
+    when 180..183
+      :half
     when 86..96
       :quarter
     when 59..62
