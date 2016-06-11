@@ -27,7 +27,7 @@ describe Date do
         expect(Date.days_in_month(2004, 10)).to eq 31
         expect(Date.days_in_month(2004, 11)).to eq 30
         expect(Date.days_in_month(2004, 12)).to eq 31
-        expect { Date.days_in_month(2004, 13) }.to raise_error ArgumentError
+        expect { Date.days_in_month(2004, 13) }.to raise_error(ArgumentError)
       end
 
       it "should know the nth weekday in a year, month" do
@@ -65,15 +65,15 @@ describe Date do
         expect {
           # N is zero
           Date.nth_wday_in_year_month(0, 6, 2014, 1)
-        }.to raise_error ArgumentError
+        }.to raise_error(ArgumentError)
         expect {
           # Wday too big
           Date.nth_wday_in_year_month(3, 7, 2014, 1)
-        }.to raise_error ArgumentError
+        }.to raise_error(ArgumentError)
         expect {
           # Month too big
           Date.nth_wday_in_year_month(3, 1, 2014, 13)
-        }.to raise_error ArgumentError
+        }.to raise_error(ArgumentError)
       end
 
       it "should know Easter for a given year" do
@@ -196,20 +196,20 @@ describe Date do
         expect(Date.parse_american('  2 / 1 / 15  ').iso).to eq('2015-02-01')
         expect {
           Date.parse_american('xx/1/15')
-        }.to raise_error ArgumentError
+        }.to raise_error(ArgumentError)
       end
     end
 
-    describe "parse_spec" do
+    describe 'parse_spec' do
       # For these tests, today is 2012-07-18
 
-      it "should choke if spec type is neither :from or :to" do
+      it 'should choke if spec type is neither :from or :to' do
         expect {
           Date.parse_spec('2011-07-15', :form)
-        }.to raise_error
+        }.to raise_error(ArgumentError)
       end
 
-      it "should parse plain iso dates correctly" do
+      it 'should parse plain iso dates correctly' do
         expect(Date.parse_spec('2011-07-15')).to eq Date.parse('2011-07-15')
         expect(Date.parse_spec('2011-08-05')).to eq Date.parse('2011-08-05')
       end
@@ -222,7 +222,7 @@ describe Date do
         expect(Date.parse_spec('23W', :to)).to eq Date.parse('2012-06-10')
         expect {
           Date.parse_spec('W83', :to)
-        }.to raise_error
+        }.to raise_error(ArgumentError)
       end
 
       it "should parse year-week numbers such as 'YYYY-W23' or 'YYYY-23W' correctly" do
@@ -234,7 +234,7 @@ describe Date do
         expect(Date.parse_spec('2003-23W', :to)).to eq Date.parse('2003-06-08')
         expect {
           Date.parse_spec('2003-W83', :to)
-        }.to raise_error
+        }.to raise_error(ArgumentError)
       end
 
       it "should parse year-half specs such as YYYY-NH or YYYY-HN" do
@@ -242,7 +242,7 @@ describe Date do
         expect(Date.parse_spec('2011-2H', :to)).to eq Date.parse('2011-12-31')
         expect(Date.parse_spec('2011-H1', :from)).to eq Date.parse('2011-01-01')
         expect(Date.parse_spec('2011-H1', :to)).to eq Date.parse('2011-06-30')
-        expect { Date.parse_spec('2011-3H') }.to raise_error
+        expect { Date.parse_spec('2011-3H') }.to raise_error(ArgumentError)
       end
 
       it "should parse half-only specs such as NQ or QN" do
@@ -250,7 +250,7 @@ describe Date do
         expect(Date.parse_spec('H2', :to)).to eq Date.parse('2012-12-31')
         expect(Date.parse_spec('1H', :from)).to eq Date.parse('2012-01-01')
         expect(Date.parse_spec('H1', :to)).to eq Date.parse('2012-06-30')
-        expect { Date.parse_spec('8H') }.to raise_error
+        expect { Date.parse_spec('8H') }.to raise_error(ArgumentError)
       end
 
       it "should parse year-quarter specs such as YYYY-NQ or YYYY-QN" do
@@ -258,7 +258,7 @@ describe Date do
         expect(Date.parse_spec('2011-4Q', :to)).to eq Date.parse('2011-12-31')
         expect(Date.parse_spec('2011-Q4', :from)).to eq Date.parse('2011-10-01')
         expect(Date.parse_spec('2011-Q4', :to)).to eq Date.parse('2011-12-31')
-        expect { Date.parse_spec('2011-5Q') }.to raise_error
+        expect { Date.parse_spec('2011-5Q') }.to raise_error(ArgumentError)
       end
 
       it "should parse quarter-only specs such as NQ or QN" do
@@ -266,26 +266,26 @@ describe Date do
         expect(Date.parse_spec('4Q', :to)).to eq Date.parse('2012-12-31')
         expect(Date.parse_spec('Q4', :from)).to eq Date.parse('2012-10-01')
         expect(Date.parse_spec('Q4', :to)).to eq Date.parse('2012-12-31')
-        expect { Date.parse_spec('5Q') }.to raise_error
+        expect { Date.parse_spec('5Q') }.to raise_error(ArgumentError)
       end
 
       it "should parse year-month specs such as YYYY-MM" do
         expect(Date.parse_spec('2010-5', :from)).to eq Date.parse('2010-05-01')
         expect(Date.parse_spec('2010-5', :to)).to eq Date.parse('2010-05-31')
-        expect { Date.parse_spec('2010-13') }.to raise_error
+        expect { Date.parse_spec('2010-13') }.to raise_error(ArgumentError)
       end
 
       it "should parse month-only specs such as MM" do
         expect(Date.parse_spec('10', :from)).to eq Date.parse('2012-10-01')
         expect(Date.parse_spec('10', :to)).to eq Date.parse('2012-10-31')
-        expect { Date.parse_spec('99') }.to raise_error
-        expect { Date.parse_spec('011') }.to raise_error
+        expect { Date.parse_spec('99') }.to raise_error(ArgumentError)
+        expect { Date.parse_spec('011') }.to raise_error(ArgumentError)
       end
 
       it "should parse year-only specs such as YYYY" do
         expect(Date.parse_spec('2010', :from)).to eq Date.parse('2010-01-01')
         expect(Date.parse_spec('2010', :to)).to eq Date.parse('2010-12-31')
-        expect { Date.parse_spec('99999') }.to raise_error
+        expect { Date.parse_spec('99999') }.to raise_error(ArgumentError)
       end
 
       it "should parse relative day names: today, yesterday" do
@@ -530,7 +530,7 @@ describe Date do
         expect(Date.parse('2013-11-08').beginning_of_chunk(:week)).to eq Date.parse('2013-11-04')
         expect {
           Date.parse('2013-11-04').beginning_of_chunk(:wek)
-        }.to raise_error
+        }.to raise_error(ArgumentError)
       end
 
       it "should be able to add a chuck sym to itself" do
@@ -547,7 +547,7 @@ describe Date do
           to eq(Date.parse('2012-07-19'))
         expect {
           Date.today.add_chunk(:hour)
-        }.to raise_error ArgumentError
+        }.to raise_error(ArgumentError)
       end
 
       it "should know the end of chunks" do
@@ -562,7 +562,7 @@ describe Date do
         expect(Date.parse('2013-07-04').end_of_chunk(:week)).to eq Date.parse('2013-07-07')
         expect {
           Date.parse('2013-11-04').end_of_chunk(:wek)
-        }.to raise_error
+        }.to raise_error(ArgumentError)
       end
 
       it "should know how to expand to chunk periods" do
