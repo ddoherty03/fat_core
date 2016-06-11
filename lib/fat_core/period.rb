@@ -186,7 +186,7 @@ class Period
 
   def self.chunk_syms
     [:day, :week, :biweek, :semimonth, :month, :bimonth,
-     :quarter, :year, :irregular]
+     :quarter, :half, :year, :irregular]
   end
 
   def self.chunk_sym_to_days(sym)
@@ -238,10 +238,7 @@ class Period
     end
   end
 
-  # This is only used for inferring statement frequency based on the
-  # number of days between statements, so it will not consider all
-  # possible chunks, only :year, :quarter, :month, and :week.  And
-  # distinguishing between :semimonth and :biweek is impossible in
+  # Distinguishing between :semimonth and :biweek is impossible in
   # some cases since a :semimonth can be 14 days just like a :biweek.
   # This ignores that possiblity and requires a :semimonth to be at
   # least 15 days.
@@ -354,6 +351,9 @@ class Period
     if first.beginning_of_year? && last.end_of_year? &&
         (365..366) === last - first + 1
       :year
+    elsif first.beginning_of_half? && last.end_of_half? &&
+        (180..183) === last - first + 1
+      :half
     elsif first.beginning_of_quarter? && last.end_of_quarter? &&
         (90..92) === last - first + 1
       :quarter
@@ -388,6 +388,8 @@ class Period
     case Period.days_to_chunk_sym(length)
     when :year
       'Year'
+    when :half
+      'Half'
     when :quarter
       'Quarter'
     when :bimonth

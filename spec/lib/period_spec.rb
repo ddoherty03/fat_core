@@ -50,6 +50,14 @@ describe Period do
       expect(pd.first).to eq(Date.parse('2012-07-01'))
       expect(pd.last).to eq(Date.parse('2012-12-31'))
 
+      pd = Period.parse_phrase('from 1H')
+      expect(pd.first).to eq(Date.parse('2012-01-01'))
+      expect(pd.last).to eq(Date.parse('2012-06-30'))
+
+      pd = Period.parse_phrase('to 2H')
+      expect(pd.first).to eq(Date.parse('2012-07-01'))
+      expect(pd.last).to eq(Date.parse('2012-12-31'))
+
       pd = Period.parse_phrase('from 2Q')
       expect(pd.first).to eq(Date.parse('2012-04-01'))
       expect(pd.last).to eq(Date.parse('2012-06-30'))
@@ -118,7 +126,7 @@ describe Period do
     end
 
     it 'should know what the valid chunk syms are' do
-      expect(Period.chunk_syms.size).to eq 9
+      expect(Period.chunk_syms.size).to eq(10)
     end
 
     it 'should know the days in a chunk sym' do
@@ -154,6 +162,7 @@ describe Period do
 
     it 'should know the chunk sym for given days but only :year, :quarter, :month' do
       (356..376).each { |d| expect(Period.days_to_chunk_sym(d)).to eq(:year) }
+      (180..183).each { |d| expect(Period.days_to_chunk_sym(d)).to eq(:half) }
       (86..96).each { |d| expect(Period.days_to_chunk_sym(d)).to eq(:quarter) }
       (28..31).each { |d| expect(Period.days_to_chunk_sym(d)).to eq(:month) }
       expect(Period.days_to_chunk_sym(7)).to eq(:week)
@@ -162,6 +171,7 @@ describe Period do
 
     it 'should know what to call a chunk based on its size' do
       expect(Period.new('2011-01-01', '2011-12-31').chunk_name).to eq('Year')
+      expect(Period.new('2011-01-01', '2011-06-30').chunk_name).to eq('Half')
       expect(Period.new('2011-01-01', '2011-03-31').chunk_name).to eq('Quarter')
       expect(Period.new('2011-01-01', '2011-02-28').chunk_name)
         .to eq('Bi-month')
@@ -487,9 +497,12 @@ describe Period do
       expect(chunks.last.last).to eq(Date.parse('2012-03-31'))
     end
 
-    it 'should be able to its chunk_sym' do
+    it 'should be able to determine its chunk_sym' do
       expect(Period.new('2013-01-01', '2013-12-31').chunk_sym).to eq(:year)
       expect(Period.new('2012-01-01', '2013-12-31').chunk_sym).to_not eq(:year)
+
+      expect(Period.new('2013-01-01', '2013-06-30').chunk_sym).to eq(:half)
+      expect(Period.new('2012-01-01', '2013-05-31').chunk_sym).to_not eq(:half)
 
       expect(Period.new('2013-04-01', '2013-06-30').chunk_sym).to eq(:quarter)
       expect(Period.new('2013-04-01', '2013-09-30').chunk_sym)
