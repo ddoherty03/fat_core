@@ -2,6 +2,7 @@
 require 'date'
 require 'active_support'
 require 'active_support/core_ext'
+require 'csv'
 
 require "fat_core/version"
 
@@ -17,3 +18,4 @@ require 'fat_core/period'
 require 'fat_core/range'
 require 'fat_core/string'
 require 'fat_core/symbol'
+require 'fat_core/table'
