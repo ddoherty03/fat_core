@@ -146,26 +146,26 @@ class String
       elsif w =~ /^p\.?o\.?$/i
         # Post office
         newwords.push('P.O.')
-      elsif w =~ /{^[0-9]+(st|nd|rd|th)$/i
+      elsif w =~ /^[0-9]+(st|nd|rd|th)$/i
         # Ordinals
         newwords.push(w.downcase)
-      elsif w =~ /{^(cr|dr|st|rd|ave|pk|cir)$/i
+      elsif w =~ /^(cr|dr|st|rd|ave|pk|cir)$/i
         # Common abbrs to capitalize
         newwords.push(w.capitalize)
-      elsif w =~ /{^(us|ne|se|rr)$/i
+      elsif w =~ /^(us|ne|se|rr)$/i
         # Common 2-letter abbrs to upcase
         newwords.push(w.upcase)
-      elsif w =~ /{^[0-9].*$/i
+      elsif w =~ /^[0-9].*$/i
         # Other runs starting with numbers,
         # like 3-A
         newwords.push(w.upcase)
-      elsif w =~ /{^(N|S|E|W|NE|NW|SE|SW)$/i
+      elsif w =~ /^(N|S|E|W|NE|NW|SE|SW)$/i
         # Compass directions all caps
         newwords.push(w.upcase)
-      elsif w =~ /{^[^aeiouy]*$/i && w.size > 2
+      elsif w =~ /^[^aeiouy]*$/i && w.size > 2
         # All consonants and at least 3 chars, probably abbr
         newwords.push(w.upcase)
-      elsif w =~ /{^(\w+)-(\w+)$/i
+      elsif w =~ /^(\w+)-(\w+)$/i
         # Hypenated double word
         newwords.push($1.capitalize + '-' + $2.capitalize)
       elsif little_words.include?(w.downcase)
