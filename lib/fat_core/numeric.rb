@@ -13,11 +13,12 @@ class Numeric
     # By default, use zero places for whole numbers; four places for
     # numbers containing a fractional part to 4 places.
     if places.nil?
-      if abs.modulo(1).round(4) > 0.0
-        places = 4
-      else
-        places = 0
-      end
+      places =
+        if abs.modulo(1).round(4) > 0.0
+          4
+        else
+          0
+        end
     end
     group(places, ',')
   end

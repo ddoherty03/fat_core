@@ -4,7 +4,7 @@ require 'active_support'
 require 'active_support/core_ext'
 require 'csv'
 
-require "fat_core/version"
+require 'fat_core/version'
 
 require 'fat_core/array'
 require 'fat_core/date'

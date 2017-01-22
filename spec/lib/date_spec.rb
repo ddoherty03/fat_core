@@ -579,8 +579,7 @@ describe Date do
         expect(Date.today.add_chunk(:semimonth)).to eq(Date.parse('2012-08-02'))
         expect(Date.today.add_chunk(:biweek)).to eq(Date.parse('2012-08-01'))
         expect(Date.today.add_chunk(:week)).to eq(Date.parse('2012-07-25'))
-        expect(Date.today.add_chunk(:day)).
-          to eq(Date.parse('2012-07-19'))
+        expect(Date.today.add_chunk(:day)).to eq(Date.parse('2012-07-19'))
         expect {
           Date.today.add_chunk(:hour)
         }.to raise_error(ArgumentError)
@@ -681,9 +680,9 @@ describe Date do
         expect(Date.parse('2011-12-26')).to be_fed_holiday
 
         # For 2014:
-        # Wednesday, January 1  New Year’s Day
+        # Wednesday, January 1  New Year's Day
         # Monday, January 20  Birthday of Martin Luther King, Jr.
-        # Monday, February 17 Washington’s Birthday
+        # Monday, February 17 Washington's Birthday
         # Monday, May 26  Memorial Day
         # Friday, July 4  Independence Day
         # Monday, September 1   Labor Day
@@ -706,9 +705,9 @@ describe Date do
         expect(Date.parse('2014-04-18')).not_to be_fed_holiday
 
         # For 2017:
-        # Monday, January 2  New Year’s Day
+        # Monday, January 2  New Year's Day
         # Monday, January 16  Birthday of Martin Luther King, Jr.
-        # Monday, February 20   Washington’s Birthday
+        # Monday, February 20   Washington's Birthday
         # Monday, May 29  Memorial Day
         # Tuesday, July 4   Independence Day
         # Monday, September 4   Labor Day

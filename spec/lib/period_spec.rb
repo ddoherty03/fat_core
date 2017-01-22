@@ -35,7 +35,7 @@ describe Period do
 
     it 'should raise a ArgumentError if initialized otherwise' do
       expect {
-        Period.new(2013-01-01, 2013-12-31)
+        Period.new(2013 - 1 - 1, 2013 - 12 - 31)
       }.to raise_error ArgumentError
     end
   end
@@ -289,14 +289,13 @@ describe Period do
     end
 
     it 'should be able to convert itself to fractional months' do
-      expect(Period.new('2013-01-01', '2013-01-01').months).to eq(1/30.436875)
-      expect(Period.new('2013-01-01', '2013-12-31').months(30)).
-        to eq(365 / 30.0)
+      expect(Period.new('2013-01-01', '2013-01-01').months).to eq(1 / 30.436875)
+      expect(Period.new('2013-01-01', '2013-12-31').months(30)).to eq(365 / 30.0)
       expect(Period.new('2013-01-01', '2013-06-30').months.round(0)).to eq(6.0)
     end
 
     it 'should be able to convert itself to fractional years' do
-      expect(Period.new('2013-01-01', '2013-01-01').years).to eq(1/365.2425)
+      expect(Period.new('2013-01-01', '2013-01-01').years).to eq(1 / 365.2425)
       expect(Period.new('2013-01-01', '2013-12-31').years(365)).to eq(1.0)
       expect(Period.new('2013-01-01', '2013-06-30').years.round(1)).to eq(0.5)
     end
@@ -416,7 +415,7 @@ describe Period do
 
     it 'should be able to chunk into biweeks' do
       chunks = Period.new('2009-12-29', '2013-01-10').chunks(size: :biweek)
-      expect(chunks.size).to be >=(26*3)
+      expect(chunks.size).to be >= (26 * 3)
       expect(chunks[0].first.iso).to eq('2010-01-04')
       expect(chunks[0].last.iso).to eq('2010-01-17')
       expect(chunks[1].first.iso).to eq('2010-01-18')
@@ -454,9 +453,9 @@ describe Period do
     end
 
     it 'should raise error for invalid chunk name' do
-      expect do
+      expect {
         Period.new('2012-12-28', '2012-12-31').chunks(size: :wally)
-      end.to raise_error(ArgumentError)
+      }.to raise_error(ArgumentError)
     end
 
     it 'should not include a partial final chunk by default' do
@@ -466,7 +465,7 @@ describe Period do
 
     it 'should include a partial final chunk if partial_last' do
       chunks = Period.new('2012-01-01', '2012-03-30')
-                     .chunks(size: :month, partial_last: true)
+                 .chunks(size: :month, partial_last: true)
       expect(chunks.size).to eq(3)
       expect(chunks.last.first).to eq(Date.parse('2012-03-01'))
       expect(chunks.last.last).to eq(Date.parse('2012-03-30'))
@@ -474,7 +473,7 @@ describe Period do
 
     it 'should include a final chunk beyond end_date if round_up' do
       chunks = Period.new('2012-01-01', '2012-03-30')
-                     .chunks(size: :month, round_up_last: true)
+                 .chunks(size: :month, round_up_last: true)
       expect(chunks.size).to eq(3)
       expect(chunks.last.first).to eq(Date.parse('2012-03-01'))
       expect(chunks.last.last).to eq(Date.parse('2012-03-31'))
@@ -489,7 +488,7 @@ describe Period do
 
     it 'should include a partial initial chunk by if partial_first' do
       chunks = Period.new('2012-01-13', '2012-03-31')
-                     .chunks(size: :month, partial_first: true)
+                 .chunks(size: :month, partial_first: true)
       expect(chunks.size).to eq(3)
       expect(chunks[0].first).to eq(Date.parse('2012-01-13'))
       expect(chunks[0].last).to eq(Date.parse('2012-01-31'))
@@ -497,7 +496,7 @@ describe Period do
 
     it 'should include a final chunk beyond end_date if round_up' do
       chunks = Period.new('2012-01-01', '2012-03-30')
-                     .chunks(size: :month, round_up_last: true)
+                 .chunks(size: :month, round_up_last: true)
       expect(chunks.size).to eq(3)
       expect(chunks.last.first).to eq(Date.parse('2012-03-01'))
       expect(chunks.last.last).to eq(Date.parse('2012-03-31'))

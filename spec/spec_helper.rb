@@ -1,5 +1,5 @@
 require 'simplecov'
-SimpleCov.command_name "Rspec"
+SimpleCov.command_name 'Rspec'
 SimpleCov.start
 
 require 'bundler/setup'

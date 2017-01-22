@@ -218,6 +218,7 @@ EOS
       end
 
       it 'should be create-able from an Array of Arrays with header and hrule' do
+        # rubocop:disable Style/WordArray
         aoa = [
           ['First', 'Second', 'Third'],
           ['|---------+----------+---------|', nil, nil],
@@ -246,7 +247,7 @@ EOS
           ['1', '2', '3.2'],
           ['4', '5', '6.4'],
           ['7', '8', '9.0'],
-          [10,   11,  12.1]
+          [10, 11, 12.1]
         ]
         tab = Table.new(aoa)
         expect(tab.class).to eq(Table)
@@ -269,6 +270,7 @@ EOS
           ['7', '8', '9.0'],
           [7, 8, 9.3]
         ]
+        # rubocop:enable Style/WordArray
         tab = Table.new(aoa)
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to eq(4)
@@ -358,7 +360,7 @@ EOS
         tab = Table.new(aoh)
         expect(tab.column[:a].sum).to eq 12
         expect(tab.column[:c].sum).to eq 19_423
-        expect(tab.column[:c].sum.class).to eq Fixnum
+        expect(tab.column[:c].sum.is_a?(Integer)).to be true
       end
 
       it 'should be able to average a column' do
@@ -382,7 +384,7 @@ EOS
         tab = Table.new(aoh)
         expect(tab.column[:a].min).to eq 1
         expect(tab.column[:c].min.round(4)).to eq 3123
-        expect(tab.column[:c].min.class).to eq Fixnum
+        expect(tab.column[:c].min.is_a?(Integer)).to be true
         expect(tab.column[:d].min).to eq 'apple'
       end
 
@@ -395,7 +397,7 @@ EOS
         tab = Table.new(aoh)
         expect(tab.column[:a].max).to eq 7
         expect(tab.column[:c].max.round(4)).to eq 9888
-        expect(tab.column[:c].max.class).to eq Fixnum
+        expect(tab.column[:c].max.is_a?(Integer)).to be true
         expect(tab.column[:d].max).to eq 'pear'
       end
     end
@@ -490,7 +492,7 @@ EOS
         expect(tab.rows[2][:d]).to eq 'apple'
       end
 
-      it 'should be able to sort its rows on mixed forward and reverse columns' do
+      it 'should sort its rows on mixed forward and reverse columns' do
         aoh = [
           { a: '5', 'Two words' => '20', c: '3,123', d: 'apple' },
           { a: '4', 'Two words' => '5', c: 6412, d: 'orange' },

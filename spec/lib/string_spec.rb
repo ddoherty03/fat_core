@@ -55,33 +55,33 @@ the people, for the people, shall not perish from the earth."
     ##123456789012345678901234567890123456789012345678901234567890123456789|
   end
 
-  describe "class methods" do
-    it "should be able to generate a random string" do
+  describe 'class methods' do
+    it 'should be able to generate a random string' do
       ss = String.random(100)
       expect(ss.class).to eq String
       expect(ss.size).to eq 100
     end
   end
 
-  describe "instance methods" do
-    it "should be able to clean up white space in a string" do
+  describe 'instance methods' do
+    it 'should be able to clean up white space in a string' do
       expect('   string    here  '.clean).to eq 'string here'
     end
 
-    it "should be able to convert a digital date to iso form" do
-      expect("20140521".digdate2iso).to eq '2014-05-21'
+    it 'should be able to convert a digital date to iso form' do
+      expect('20140521'.digdate2iso).to eq '2014-05-21'
     end
 
-    it "should wrap a short string" do
-      expect("hello, world".wrap).to eq "hello, world"
+    it 'should wrap a short string' do
+      expect('hello, world'.wrap).to eq 'hello, world'
     end
 
-    it "should wrap a long string" do
-      @getty.wrap.split("\n").each {|l| expect(l.length).to be <= 70}
+    it 'should wrap a long string' do
+      @getty.wrap.split("\n").each { |l| expect(l.length).to be <= 70 }
     end
 
-    it "should wrap a long string with a hangining indent" do
-      @getty.wrap(70, 10).split("\n").each {|l| expect(l.length).to be <= 70}
+    it 'should wrap a long string with a hangining indent' do
+      @getty.wrap(70, 10).split("\n").each { |l| expect(l.length).to be <= 70 }
       @getty.wrap(70, 10).split("\n")[1..-1].each do |l|
         expect(l).to match(/^          /)
       end
@@ -93,14 +93,14 @@ the people, for the people, shall not perish from the earth."
       expect(@getty.wrap(70, 10).split("\n")[23]).to match(/^#{twenty_fourth_line}/)
     end
 
-    it "should be able to quote special TeX characters" do
-      expect("$10,000".tex_quote).to eq("\\$10,000")
-      expect("would~~have".tex_quote).to eq("would\\textasciitilde{}\\textasciitilde{}have")
-      expect("<hello>".tex_quote).to eq("\\textless{}hello\\textgreater{}")
-      expect("{hello}".tex_quote).to eq("\\{hello\\}")
+    it 'should be able to quote special TeX characters' do
+      expect('$10,000'.tex_quote).to eq('\\$10,000')
+      expect('would~~have'.tex_quote).to eq('would\\textasciitilde{}\\textasciitilde{}have')
+      expect('<hello>'.tex_quote).to eq('\\textless{}hello\\textgreater{}')
+      expect('{hello}'.tex_quote).to eq('\\{hello\\}')
     end
 
-    it "should be able to determine is it's a valid number" do
+    it 'should be able to determine is it\'s a valid number' do
       expect('88'.number?).to be true
       expect('-88'.number?).to be true
       expect('8.008'.number?).to be true
@@ -111,7 +111,7 @@ the people, for the people, shall not perish from the earth."
       expect('hello world'.number?).to be false
     end
 
-    it "should be able to convert a string to a regular expression" do
+    it 'should be able to convert a string to a regular expression' do
       re = "/hello((\s+)(world))?/".to_regexp
       expect(re.class).to eq Regexp
       expect(re.casefold?).to be true
@@ -129,101 +129,98 @@ the people, for the people, shall not perish from the earth."
       expect(re.multiline?).to be false
     end
 
-    it "should be able to convert itself to a sym" do
-      expect("joke".as_sym).to eq :joke
-      expect("hello world".as_sym).to eq :hello_world
+    it 'should be able to convert itself to a sym' do
+      expect('joke'.as_sym).to eq :joke
+      expect('hello world'.as_sym).to eq :hello_world
       expect("hello world   it's me".as_sym).to eq :hello_world_its_me
-      expect("Street1".as_sym).to eq :street1
+      expect('Street1'.as_sym).to eq :street1
     end
 
-    it "should do nothing in response to as_string" do
-      expect("joke".as_string).to eq "joke"
-      expect("hello world".as_string).to eq "hello world"
+    it 'should do nothing in response to as_string' do
+      expect('joke'.as_string).to eq 'joke'
+      expect('hello world'.as_string).to eq 'hello world'
       expect("hello world   it's me".as_string)
         .to eq "hello world   it's me"
     end
 
-    it "should be able to fuzzy match with another string" do
-      expect("Hello, world".fuzzy_match('or')).to be_truthy
-      expect("Hello, world".fuzzy_match('ox')).to be_falsy
+    it 'should be able to fuzzy match with another string' do
+      expect('Hello, world'.fuzzy_match('or')).to be_truthy
+      expect('Hello, world'.fuzzy_match('ox')).to be_falsy
     end
 
-    it "should be able to match with another string containing re" do
-      expect("Hello, world".matches_with('/or/')).to be_truthy
-      expect("Hello, world".matches_with('/ox/')).to be_falsy
+    it 'should be able to match with another string containing re' do
+      expect('Hello, world'.matches_with('/or/')).to be_truthy
+      expect('Hello, world'.matches_with('/ox/')).to be_falsy
     end
 
-    it "should be able to match with another string containing string" do
-      expect("Hello, world".matches_with('or')).to be_truthy
-      expect("Hello, world".matches_with('ox')).to be_falsy
+    it 'should be able to match with another string containing string' do
+      expect('Hello, world'.matches_with('or')).to be_truthy
+      expect('Hello, world'.matches_with('ox')).to be_falsy
     end
 
-    it "should be able to fuzzy match space-separated parts" do
-      expect("Hello world".fuzzy_match('hel or')).to be_truthy
-      expect("Hello, world".fuzzy_match('hel ox')).to be_falsy
+    it 'should be able to fuzzy match space-separated parts' do
+      expect('Hello world'.fuzzy_match('hel or')).to be_truthy
+      expect('Hello, world'.fuzzy_match('hel ox')).to be_falsy
     end
 
-    it "should be able to fuzzy match colon-separated parts" do
-      expect("Hello:world".fuzzy_match('hel:or')).to be_truthy
-      expect("Hello:world".fuzzy_match('hel:ox')).to be_falsy
+    it 'should be able to fuzzy match colon-separated parts' do
+      expect('Hello:world'.fuzzy_match('hel:or')).to be_truthy
+      expect('Hello:world'.fuzzy_match('hel:ox')).to be_falsy
     end
 
-    it "should be able to fuzzy match colon-separated parts" do
-      expect("Hello:world".fuzzy_match('hel:or')).to be_truthy
-      expect("Hello:world".fuzzy_match('hel:ox')).to be_falsy
+    it 'should be able to fuzzy match colon-separated parts' do
+      expect('Hello:world'.fuzzy_match('hel:or')).to be_truthy
+      expect('Hello:world'.fuzzy_match('hel:ox')).to be_falsy
     end
 
-    it "should return the matched text" do
-      expect("Hello:world".fuzzy_match('hel')).to eq('Hel')
-      expect("Hello:world".fuzzy_match('hel:or')).to eq('Hello:wor')
-      expect("Hello:world".matches_with('/^h.*r/')).to eq('Hello:wor')
+    it 'should return the matched text' do
+      expect('Hello:world'.fuzzy_match('hel')).to eq('Hel')
+      expect('Hello:world'.fuzzy_match('hel:or')).to eq('Hello:wor')
+      expect('Hello:world'.matches_with('/^h.*r/')).to eq('Hello:wor')
     end
 
-    it "should ignore periods, commas, and apostrophes when matching" do
+    it 'should ignore periods, commas, and apostrophes when matching' do
       expect("St. Luke's".fuzzy_match('st lukes')).to eq('St Lukes')
-      expect("St Lukes".fuzzy_match('st. luke\'s')).to eq('St Lukes')
-      expect("St Lukes, Inc.".fuzzy_match('st luke inc')).to eq('St Lukes Inc')
-      expect("E*TRADE".fuzzy_match('etrade')).to eq('ETRADE')
+      expect('St Lukes'.fuzzy_match('st. luke\'s')).to eq('St Lukes')
+      expect('St Lukes, Inc.'.fuzzy_match('st luke inc')).to eq('St Lukes Inc')
+      expect('E*TRADE'.fuzzy_match('etrade')).to eq('ETRADE')
     end
 
-    it "should be able to properly capitalize a string as a title" do
+    it 'should be able to properly capitalize a string as a title' do
       # Capitalize little words only at beginning and end
-      expect("the cat in the hat".entitle).to eq('The Cat in the Hat')
-      expect("dr".entitle).to eq('Dr')
-      expect("cr".entitle).to eq('Cr')
+      expect('the cat in the hat'.entitle).to eq('The Cat in the Hat')
+      expect('dr'.entitle).to eq('Dr')
+      expect('cr'.entitle).to eq('Cr')
       # Capitalize all consonants size if >= 3
-      expect("tr".entitle).to eq('Tr')
-      expect("trd".entitle).to eq('TRD')
+      expect('tr'.entitle).to eq('Tr')
+      expect('trd'.entitle).to eq('TRD')
       # Don't capitalize c/o
-      expect("IBM c/o watson".entitle).to eq('Ibm c/o Watson')
+      expect('IBM c/o watson'.entitle).to eq('Ibm c/o Watson')
       # Capitlaize p.o.
-      expect("p.o. box 123".entitle).to eq('P.O. Box 123')
+      expect('p.o. box 123'.entitle).to eq('P.O. Box 123')
       # Don't capitalize ordinals
-      expect("22nd of september".entitle).to eq('22nd of September')
+      expect('22nd of september'.entitle).to eq('22nd of September')
       # Capitalize common abbrevs
-      expect("US BANK".entitle).to eq('US Bank')
-      expect("NW territory".entitle).to eq('NW Territory')
+      expect('US BANK'.entitle).to eq('US Bank')
+      expect('NW territory'.entitle).to eq('NW Territory')
       # Leave word starting with numbers alone
-      expect("apartment 33-B".entitle).to eq('Apartment 33-B')
+      expect('apartment 33-B'.entitle).to eq('Apartment 33-B')
       # Assume all consanants is an acronym
-      expect("the cbs network".entitle).to eq('The CBS Network')
+      expect('the cbs network'.entitle).to eq('The CBS Network')
       # Capitalize both parts of a hyphenated word
-      expect("the hitler-stalin pact".entitle).
-        to eq('The Hitler-Stalin Pact')
+      expect('the hitler-stalin pact'.entitle).to eq('The Hitler-Stalin Pact')
     end
 
-    it "should be able to compute its Levenshtein distance from another string" do
+    it 'should be able to compute its Levenshtein distance from another string' do
       expect('Something'.distance('Smoething')).to eq 1
       expect('Something'.distance('Smoething', block_size: 0)).to eq 2
       expect('Something'.distance('meSothing', block_size: 1)).to eq 4
       expect('Something'.distance('meSothing', block_size: 2)).to eq 2
       expect('SomethingElse'.distance('Encyclopedia')).to eq 10
-      expect('SomethingElseUnrelated'.
-              distance('EncyclopediaBritanica',
-                       max_distance: 40)).to eq 21
-      expect('SomethingElseUnrelated'.
-              distance('EncyclopediaBritanica',
-                       max_distance: 15)).to eq 15
+      expect('SomethingElseUnrelated'.distance('EncyclopediaBritanica', max_distance: 40))
+        .to eq 21
+      expect('SomethingElseUnrelated'.distance('EncyclopediaBritanica',
+                                               max_distance: 15)).to eq 15
     end
   end
 end

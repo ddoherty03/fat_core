@@ -24,8 +24,7 @@ class String
     other = other.gsub(/[\*.,']/, '')
     target = gsub(/[\*.,']/, '')
     matchers = other.split(/[: ]+/)
-    regexp_string = matchers.map { |m| ".*?#{Regexp.escape(m)}.*?" }
-                      .join('[: ]')
+    regexp_string = matchers.map { |m| ".*?#{Regexp.escape(m)}.*?" }.join('[: ]')
     regexp_string.sub!(/^\.\*\?/, '')
     regexp_string.sub!(/\.\*\?$/, '')
     regexp = /#{regexp_string}/i
@@ -166,7 +165,7 @@ class String
         # All consonants and at least 3 chars, probably abbr
         newwords.push(w.upcase)
       elsif w =~ /^(\w+)-(\w+)$/i
-        # Hypenated double word
+        # Hyphenated double word
         newwords.push($1.capitalize + '-' + $2.capitalize)
       elsif little_words.include?(w.downcase)
         # Only capitalize at beginning or end

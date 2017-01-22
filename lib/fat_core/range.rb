@@ -74,7 +74,6 @@ class Range
            other.max.respond_to?(:succ) && other.min.respond_to?(:pred)
       raise 'Range difference requires objects have pred and succ methods'
     end
-    # return [self] unless self.overlaps?(other)
     if subset_of?(other)
       # (4..7) - (0..10)
       []
@@ -95,7 +94,7 @@ class Range
 
   # Return whether any of the ranges that are within self overlap one
   # another
-  def overlaps_within?(ranges)
+  def has_overlaps_within?(ranges)
     result = false
     unless ranges.empty?
       ranges.each do |r1|

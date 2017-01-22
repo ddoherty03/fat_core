@@ -146,13 +146,13 @@ class Period
   def self.parse_phrase(phrase)
     phrase = phrase.clean
     if phrase =~ /\Afrom (.*) to (.*)\z/
-      from_phrase = $~[1]
-      to_phrase = $~[2]
+      from_phrase = $1
+      to_phrase = $2
     elsif phrase =~ /\Afrom (.*)\z/
-      from_phrase = $~[1]
+      from_phrase = $1
       to_phrase = nil
     elsif phrase =~ /\Ato (.*)\z/
-      from_phrase = $~[1]
+      from_phrase = $1
     else
       from_phrase = phrase
     end
@@ -319,10 +319,6 @@ class Period
     to_range.proper_superset_of?(other.to_range)
   end
 
-  def overlaps?(other)
-    to_range.overlaps?(other.to_range)
-  end
-
   def intersection(other)
     result = to_range.intersection(other.to_range)
     if result.nil?
@@ -349,28 +345,28 @@ class Period
   # returns the chunk sym represented by the period
   def chunk_sym
     if first.beginning_of_year? && last.end_of_year? &&
-        (365..366) === last - first + 1
+       (365..366) === last - first + 1
       :year
     elsif first.beginning_of_half? && last.end_of_half? &&
-        (180..183) === last - first + 1
+          (180..183) === last - first + 1
       :half
     elsif first.beginning_of_quarter? && last.end_of_quarter? &&
-        (90..92) === last - first + 1
+          (90..92) === last - first + 1
       :quarter
     elsif first.beginning_of_bimonth? && last.end_of_bimonth? &&
-        (58..62) === last - first + 1
+          (58..62) === last - first + 1
       :bimonth
     elsif first.beginning_of_month? && last.end_of_month? &&
-        (28..31) === last - first + 1
+          (28..31) === last - first + 1
       :month
     elsif first.beginning_of_semimonth? && last.end_of_semimonth &&
-        (13..16) === last - first + 1
+          (13..16) === last - first + 1
       :semimonth
     elsif first.beginning_of_biweek? && last.end_of_biweek? &&
-        last - first + 1 == 14
+          last - first + 1 == 14
       :biweek
     elsif first.beginning_of_week? && last.end_of_week? &&
-        last - first + 1 == 7
+          last - first + 1 == 7
       :week
     elsif first == last
       :day

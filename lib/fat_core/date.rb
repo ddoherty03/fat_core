@@ -33,34 +33,31 @@ class Date
     Date.new(year, month, day)
   end
 
-=begin
-  Convert a 'date spec' to a Date.  A date spec is a short-hand way of
-  specifying a date, relative to the computer clock.  A date spec can
-  interpreted as either a 'from spec' or a 'to spec'.
-
-  @example
-  Assuming that Date.current at the time of execution is 2014-07-26 and
-  using the default spec_type of :from.  The return values are actually Date
-  objects, but are shown below as textual dates.
-
-  A fully specified date returns that date:
-      Date.parse_spec('2001-09-11')  # =>
-
-  Commercial weeks can be specified using, for example W32 or 32W, with the
-  week beginning on Monday, ending on Sunday.
-      Date.parse_spec('2012-W32')    # =>
-      Date.parse_spec('2012-W32', :to) # =>
-      Date.parse_spec('W32') # =>
-
-  A spec of the form Q3 or 3Q returns the beginning or end of calendar
-  quarters.
-      Date.parse_spec('Q3')         # =>
-
-  @param spec [#to_s] a stringling containing the spec to be interpreted
-  @param spec_type [:from, :to] interpret the spec as a from- or to-spec
-    respectively, defaulting to interpretation as a to-spec.
-  @return [Date] a date object equivalent to the date spec
-=end
+  # Convert a 'date spec' to a Date.  A date spec is a short-hand way of
+  # specifying a date, relative to the computer clock.  A date spec can
+  # interpreted as either a 'from spec' or a 'to spec'.
+  # @example
+  #
+  # Assuming that Date.current at the time of execution is 2014-07-26 and
+  # using the default spec_type of :from.  The return values are actually Date
+  # objects, but are shown below as textual dates.
+  #
+  # A fully specified date returns that date:
+  #     Date.parse_spec('2001-09-11')  # =>
+  # Commercial weeks can be specified using, for example W32 or 32W, with the
+  # week beginning on Monday, ending on Sunday.
+  #     Date.parse_spec('2012-W32')    # =>
+  #     Date.parse_spec('2012-W32', :to) # =>
+  #     Date.parse_spec('W32') # =>
+  #
+  # A spec of the form Q3 or 3Q returns the beginning or end of calendar
+  # quarters.
+  #     Date.parse_spec('Q3')         # =>
+  #
+  # @param spec [#to_s] a stringling containing the spec to be interpreted
+  # @param spec_type [:from, :to] interpret the spec as a from- or to-spec
+  #   respectively, defaulting to interpretation as a to-spec.
+  # @return [Date] a date object equivalent to the date spec
   def self.parse_spec(spec, spec_type = :from)
     spec = spec.to_s.strip
     unless [:from, :to].include?(spec_type)
@@ -279,7 +276,7 @@ class Date
 
   # Format as an ISO string.
   def iso
-    strftime("%Y-%m-%d")
+    strftime('%Y-%m-%d')
   end
 
   # Format date to TeX documents as ISO strings
