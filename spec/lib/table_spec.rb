@@ -313,9 +313,22 @@ EOS
           { a: '7', 'Two words' => '8', c: '$9,888', d: 'pear' }
         ]
         tab = Table.new(aoh)
-        expect(tab.column[:a].sum(:a)).to eq 12
+        expect(tab.column[:a].sum).to eq 12
         expect(tab.column[:two_words].sum).to eq 15
         expect(tab.column[:c].sum).to eq 19_423
+        expect(tab.column[:d].sum).to eq 'appleorangepear'
+      end
+
+      it 'should be able to sum a column ignoring nils' do
+        aoh = [
+          { a: '', 'Two words' => '2', c: '', d: 'apple' },
+          { a: '4', 'Two words' => '5', c: '6,412', d: 'orange' },
+          { a: '7', 'Two words' => '8', c: '$9,888', d: 'pear' }
+        ]
+        tab = Table.new(aoh)
+        expect(tab.column[:a].sum).to eq 11
+        expect(tab.column[:two_words].sum).to eq 15
+        expect(tab.column[:c].sum).to eq 16_300
         expect(tab.column[:d].sum).to eq 'appleorangepear'
       end
 
@@ -332,8 +345,8 @@ EOS
           { a: '7', 'Two words' => '8', c: '$9,888', d: 'pear' }
         ]
         tab = Table.new(aoh)
-        expect(tab.column[:a]).to eq [1, 4, 7]
-        expect(tab.column[:c]).to eq [3123, 6412, 9888]
+        expect(tab.column[:a].to_a).to eq [1, 4, 7]
+        expect(tab.column[:c].to_a).to eq [3123, 6412, 9888]
       end
 
       it 'should be able to sum a column' do

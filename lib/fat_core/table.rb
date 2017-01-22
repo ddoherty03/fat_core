@@ -112,7 +112,7 @@ module FatCore
     def add_row(row)
       row.each_pair do |k, v|
         key = k.as_sym
-        column[key] ||= []
+        column[key] ||= Column.new
         val = convert_to_type(v, key)
         column[key] << val
       end
