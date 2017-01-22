@@ -206,6 +206,29 @@ module FatCore
       from_array_of_arrays(rows)
     end
 
+    # This returns the table as an Array of Arrays with formatting applied.
+    # This would normally called after all calculations on the table are done
+    # and you want to return the results.  The Array of Arrays structure is
+    # what org-mode src blocks will render as an org table in the buffer.
+    def to_org(formats: {})
+      result = []
+      header_row = []
+      headers.each do |hdr|
+        header_row << hdr.entitle
+      end
+      result << header_row
+      # This causes org to place an hline under the header row
+      result << nil unless header_row.empty?
+
+      rows.each do |row|
+        out_row = []
+        headers.each do |hdr|
+          out_row << row[hdr].to_s.format_by(formats[hdr])
+        end
+        result << out_row
+      end
+      result
+    end
     # Convert val to the type of key, a ruby class constant, such as Date,
     # Numeric, etc. If type is NilClass, the type is open, and a non-blank val
     # will attempt conversion to one of the allowed types, typing it as a String
