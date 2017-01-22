@@ -18,3 +18,4 @@ tmp
 /GPATH
 /GRTAGS
 /GTAGS
+/.rubocop_todo.yml

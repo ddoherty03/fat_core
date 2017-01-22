@@ -1,0 +1,3 @@
+inherit-from:
+  - ~/.rubocop.yml
+  - .rubocop_todo.yml
