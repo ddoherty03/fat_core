@@ -108,6 +108,27 @@ module FatCore
       rows
     end
 
+    # Return a new Table sorted on the rows of this Table on the possibly
+    # multiple keys given in the array of syms in headers. Append a ! to the
+    # symbol name to indicate reverse sorting on that column.
+    def order_by(*headers)
+      headers = [headers].flatten
+      rheaders = headers.select { |col| col.to_s.ends_with?('!') }
+      headers = headers.map { |col| col.to_s.sub(/\!\z/, '').to_sym }
+      rheaders = rheaders.map { |col| col.to_s.sub(/\!\z/, '').to_sym }
+      new_rows = rows.sort! do |r1, r2|
+        key1 = headers.each
+                 .map { |col| rheaders.include?(col) ? r2[col] : r1[col] }
+        key2 = headers.each
+                 .map { |col| rheaders.include?(col) ? r1[col] : r2[col] }
+        key1 <=> key2
+      end
+      new_tab = Table.new
+      new_rows.each do |nrow|
+        new_tab.add_row(nrow)
+      end
+      new_tab
+    end
     # Add a row represented by a Hash having the headers as keys.
     def add_row(row)
       row.each_pair do |k, v|
