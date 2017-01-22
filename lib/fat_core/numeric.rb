@@ -13,7 +13,7 @@ class Numeric
     # By default, use zero places for whole numbers; four places for
     # numbers containing a fractional part to 4 places.
     if places.nil?
-      if self.abs.modulo(1).round(4) > 0.0
+      if abs.modulo(1).round(4) > 0.0
         places = 4
       else
         places = 0
@@ -29,11 +29,9 @@ class Numeric
 
     # Only convert to string numbers with exponent unless they are
     # less than 1 (to ensure that really small numbers round to 0.0)
-    if self.abs > 1.0 && self.to_s =~ /e/
-      return self.to_s
-    end
+    return to_s if abs > 1.0 && to_s =~ /e/
 
-    str = self.to_f.round(places).to_s
+    str = to_f.round(places).to_s
 
     # Break the number into parts
     str =~ /^(-)?(\d*)((\.)?(\d*))?$/
@@ -43,7 +41,7 @@ class Numeric
 
     # Pad out the fractional part with zeroes to the right
     n_zeroes = [places - frac.length, 0].max
-    frac += "0" * n_zeroes if n_zeroes > 0
+    frac += '0' * n_zeroes if n_zeroes > 0
 
     # Place the commas in the whole part only
     whole = whole.reverse
@@ -51,31 +49,31 @@ class Numeric
     whole.gsub!(/#{Regexp.escape(delim)}$/, '')
     whole.reverse!
     if frac.nil? || places <= 0
-      return neg + whole
+      neg + whole
     else
-      return neg + whole + '.' + frac
+      neg + whole + '.' + frac
     end
   end
 
   # Determine if this is a whole number.
   def whole?
-    self.floor == self
+    floor == self
   end
 
   # Return an integer type, but only if the fractional part of self
   # is zero
   def int_if_whole
-     whole? ? self.floor : self
+    whole? ? floor : self
   end
 
   def secs_to_hms
     frac = self % 1
-    mins, secs = self.divmod(60)
+    mins, secs = divmod(60)
     hrs, mins = mins.divmod(60)
     if frac.round(5) > 0.0
-      "%02d:%02d:%02d.%d" % [hrs, mins, secs, frac.round(5) * 100]
+      '%02d:%02d:%02d.%d' % [hrs, mins, secs, frac.round(5) * 100]
     else
-      "%02d:%02d:%02d" % [hrs, mins, secs]
+      '%02d:%02d:%02d' % [hrs, mins, secs]
     end
   end
 

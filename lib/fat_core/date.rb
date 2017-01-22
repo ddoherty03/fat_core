@@ -23,15 +23,14 @@ class Date
   # @param str [#to_s] a stringling of the form MM/DD/YYYY
   # @return [Date] the date represented by the string paramenter.
   def self.parse_american(str)
-    if str.to_s =~ %r{\A\s*(\d\d?)\s*/\s*(\d\d?)\s*/\s*(\d?\d?\d\d)\s*\z}
-      year, month, day = $3.to_i, $1.to_i, $2.to_i
-      if year < 100
-        year += 2000
-      end
-      Date.new(year, month, day)
-    else
+    unless str.to_s =~ %r{\A\s*(\d\d?)\s*/\s*(\d\d?)\s*/\s*(\d?\d?\d\d)\s*\z}
       raise ArgumentError, "date string must be of form 'MM?/DD?/YY(YY)?'"
     end
+    year = $3.to_i
+    month = $1.to_i
+    day = $2.to_i
+    year += 2000 if year < 100
+    Date.new(year, month, day)
   end
 
 =begin
@@ -78,16 +77,22 @@ class Date
       if week_num < 1 || week_num > 53
         raise ArgumentError, "invalid week number (1-53): 'W#{week_num}'"
       end
-      spec_type == :from ? Date.commercial(today.year, week_num).beginning_of_week :
+      if spec_type == :from
+        Date.commercial(today.year, week_num).beginning_of_week
+      else
         Date.commercial(today.year, week_num).end_of_week
+      end
     when /\A(\d\d\d\d)-W(\d\d?)\z/, /\A(\d\d\d\d)-(\d\d?)W\z/
       year = $1.to_i
       week_num = $2.to_i
       if week_num < 1 || week_num > 53
         raise ArgumentError, "invalid week number (1-53): 'W#{week_num}'"
       end
-      spec_type == :from ? Date.commercial(year, week_num).beginning_of_week :
+      if spec_type == :from
+        Date.commercial(year, week_num).beginning_of_week
+      else
         Date.commercial(year, week_num).end_of_week
+      end
     when /^(\d\d\d\d)-(\d)[Qq]$/, /^(\d\d\d\d)-[Qq](\d)$/
       # Year-Quarter
       year = $1.to_i
@@ -96,14 +101,21 @@ class Date
         raise ArgumentError, "bad date format: #{spec}"
       end
       month = quarter * 3
-      spec_type == :from ? Date.new(year, month, 1).beginning_of_quarter :
+      if spec_type == :from
+        Date.new(year, month, 1).beginning_of_quarter
+      else
         Date.new(year, month, 1).end_of_quarter
+      end
     when /^([1234])[qQ]$/, /^[qQ]([1234])$/
       # Quarter only
       this_year = today.year
       quarter = $1.to_i
       date = Date.new(this_year, quarter * 3, 15)
-      spec_type == :from ? date.beginning_of_quarter : date.end_of_quarter
+      if spec_type == :from
+        date.beginning_of_quarter
+      else
+        date.end_of_quarter
+      end
     when /^(\d\d\d\d)-(\d)[Hh]$/, /^(\d\d\d\d)-[Hh](\d)$/
       # Year-Half
       year = $1.to_i
@@ -112,25 +124,42 @@ class Date
         raise ArgumentError, "bad date format: #{spec}"
       end
       month = half * 6
-      spec_type == :from ? Date.new(year, month, 15).beginning_of_half :
+      if spec_type == :from
+        Date.new(year, month, 15).beginning_of_half
+      else
         Date.new(year, month, 1).end_of_half
+      end
     when /^([12])[hH]$/, /^[hH]([12])$/
       # Half only
       this_year = today.year
       half = $1.to_i
       date = Date.new(this_year, half * 6, 15)
-      spec_type == :from ? date.beginning_of_half : date.end_of_half
+      if spec_type == :from
+        date.beginning_of_half
+      else
+        date.end_of_half
+      end
     when /^(\d\d\d\d)-(\d\d?)*$/
       # Year-Month only
-      spec_type == :from ? Date.new($1.to_i, $2.to_i, 1) :
+      if spec_type == :from
+        Date.new($1.to_i, $2.to_i, 1)
+      else
         Date.new($1.to_i, $2.to_i, 1).end_of_month
+      end
     when /\A(\d\d?)\z/
       # Month only
-      spec_type == :from ? Date.new(today.year, $1.to_i, 1) :
+      if spec_type == :from
+        Date.new(today.year, $1.to_i, 1)
+      else
         Date.new(today.year, $1.to_i, 1).end_of_month
+      end
     when /^(\d\d\d\d)$/
       # Year only
-      spec_type == :from ? Date.new($1.to_i, 1, 1) : Date.new($1.to_i, 12, 31)
+      if spec_type == :from
+        Date.new($1.to_i, 1, 1)
+      else
+        Date.new($1.to_i, 12, 31)
+      end
     when /^(to|this_?)?day/
       today
     when /^(yester|last_?)?day/
@@ -138,45 +167,97 @@ class Date
     when /^(this_?)?week/
       spec_type == :from ? today.beginning_of_week : today.end_of_week
     when /last_?week/
-      spec_type == :from ? (today - 1.week).beginning_of_week :
+      if spec_type == :from
+        (today - 1.week).beginning_of_week
+      else
         (today - 1.week).end_of_week
+      end
     when /^(this_?)?biweek/
-      spec_type == :from ? today.beginning_of_biweek : today.end_of_biweek
+      if spec_type == :from
+        today.beginning_of_biweek
+      else
+        today.end_of_biweek
+      end
     when /last_?biweek/
-      spec_type == :from ? (today - 2.week).beginning_of_biweek :
+      if spec_type == :from
+        (today - 2.week).beginning_of_biweek
+      else
         (today - 2.week).end_of_biweek
+      end
     when /^(this_?)?semimonth/
       spec_type == :from ? today.beginning_of_semimonth : today.end_of_semimonth
     when /^last_?semimonth/
-      spec_type == :from ? (today - 15.days).beginning_of_semimonth :
+      if spec_type == :from
+        (today - 15.days).beginning_of_semimonth
+      else
         (today - 15.days).end_of_semimonth
+      end
     when /^(this_?)?month/
-      spec_type == :from ? today.beginning_of_month : today.end_of_month
+      if spec_type == :from
+        today.beginning_of_month
+      else
+        today.end_of_month
+      end
     when /^last_?month/
-      spec_type == :from ? (today - 1.month).beginning_of_month :
+      if spec_type == :from
+        (today - 1.month).beginning_of_month
+      else
         (today - 1.month).end_of_month
+      end
     when /^(this_?)?bimonth/
-      spec_type == :from ? today.beginning_of_bimonth : today.end_of_bimonth
+      if spec_type == :from
+        today.beginning_of_bimonth
+      else
+        today.end_of_bimonth
+      end
     when /^last_?bimonth/
-      spec_type == :from ? (today - 2.month).beginning_of_bimonth :
+      if spec_type == :from
+        (today - 2.month).beginning_of_bimonth
+      else
         (today - 2.month).end_of_bimonth
+      end
     when /^(this_?)?quarter/
-      spec_type == :from ? today.beginning_of_quarter : today.end_of_quarter
+      if spec_type == :from
+        today.beginning_of_quarter
+      else
+        today.end_of_quarter
+      end
     when /^last_?quarter/
-      spec_type == :from ? (today - 3.months).beginning_of_quarter :
+      if spec_type == :from
+        (today - 3.months).beginning_of_quarter
+      else
         (today - 3.months).end_of_quarter
+      end
     when /^(this_?)?half/
-      spec_type == :from ? today.beginning_of_half : today.end_of_half
+      if spec_type == :from
+        today.beginning_of_half
+      else
+        today.end_of_half
+      end
     when /^last_?half/
-      spec_type == :from ? (today - 6.months).beginning_of_half :
+      if spec_type == :from
+        (today - 6.months).beginning_of_half
+      else
         (today - 6.months).end_of_half
+      end
     when /^(this_?)?year/
-      spec_type == :from ? today.beginning_of_year : today.end_of_year
+      if spec_type == :from
+        today.beginning_of_year
+      else
+        today.end_of_year
+      end
     when /^last_?year/
-      spec_type == :from ? (today - 1.year).beginning_of_year :
+      if spec_type == :from
+        (today - 1.year).beginning_of_year
+      else
         (today - 1.year).end_of_year
+      end
     when /^forever/
-      spec_type == :from ? Date::BOT : Date::EOT
+      if spec_type == :from
+        Date::BOT
+      else
+        Date::EOT
+      end
     when /^never/
       nil
     else
@@ -208,23 +289,23 @@ class Date
 
   # Format as an all-numeric string, i.e. 'YYYYMMDD'
   def num
-    strftime("%Y%m%d")
+    strftime('%Y%m%d')
   end
 
   # Format as an inactive Org date (see emacs org-mode)
   def org
-    strftime("[%Y-%m-%d %a]")
+    strftime('[%Y-%m-%d %a]')
   end
 
   # Format as an English string
   def eng
-    strftime("%B %e, %Y")
+    strftime('%B %e, %Y')
   end
 
   # Format date in MM/DD/YYYY form, as typical for the short American
   # form.
   def american
-    strftime "%-m/%-d/%Y"
+    strftime '%-m/%-d/%Y'
   end
 
   # Does self fall on a weekend?
@@ -288,7 +369,7 @@ class Date
   # first day of the odd-numbered months.  E.g., 2014-01-01 to
   # 2014-02-28 is the first bimonth of 2014.
   def beginning_of_bimonth
-    if month % 2 == 1
+    if month.odd?
       beginning_of_month
     else
       (self - 1.month).beginning_of_month
@@ -300,7 +381,7 @@ class Date
   # day of the odd-numbered months.  E.g., 2014-01-01 to 2014-02-28 is
   # the first bimonth of 2014.
   def end_of_bimonth
-    if month % 2 == 1
+    if month.odd?
       (self + 1.month).end_of_month
     else
       end_of_month
@@ -334,7 +415,7 @@ class Date
   # Note: we use a Monday start of the week in the next two methods because
   # commercial week counting assumes a Monday start.
   def beginning_of_biweek
-    if cweek % 2 == 1
+    if cweek.odd?
       beginning_of_week(:monday)
     else
       (self - 1.week).beginning_of_week(:monday)
@@ -342,7 +423,7 @@ class Date
   end
 
   def end_of_biweek
-    if cweek % 2 == 1
+    if cweek.odd?
       (self + 1.week).end_of_week(:monday)
     else
       end_of_week(:monday)
@@ -374,13 +455,11 @@ class Date
   end
 
   def beginning_of_bimonth?
-    month % 2 == 1 &&
-      beginning_of_month == self
+    month.odd? && beginning_of_month == self
   end
 
   def end_of_bimonth?
-    month % 2 == 0 &&
-      end_of_month == self
+    month.even? && end_of_month == self
   end
 
   def beginning_of_month?
@@ -500,13 +579,11 @@ class Date
   #  executive-order-closing-executive-departments-and-agencies-federal-gover
   FED_DECREED_HOLIDAYS =
     [
-     Date.parse('2012-12-24')
-    ]
+      Date.parse('2012-12-24')
+    ].freeze
 
   def self.days_in_month(y, m)
-    if m < 1 || m > 12
-      raise ArgumentError, "illegal month number"
-    end
+    raise ArgumentError, 'illegal month number' if m < 1 || m > 12
     days = Time::COMMON_YEAR_DAYS_IN_MONTH[m]
     if m == 2
       Date.new(y, m, 1).leap? ? 29 : 28
@@ -519,20 +596,14 @@ class Date
     # Return the nth weekday in the given month
     # If n is negative, count from last day of month
     wday = wday.to_i
-    if wday < 0 || wday > 6
-      raise ArgumentError, "illegal weekday number"
-    end
+    raise ArgumentError, 'illegal weekday number' if wday < 0 || wday > 6
     month = month.to_i
-    if month < 1 || month > 12
-      raise ArgumentError, "illegal month number"
-    end
+    raise ArgumentError, 'illegal month number' if month < 1 || month > 12
     n = n.to_i
     if n > 0
       # Set d to the 1st wday in month
       d = Date.new(year, month, 1)
-      while d.wday != wday
-        d += 1
-      end
+      d += 1 while d.wday != wday
       # Set d to the nth wday in month
       nd = 1
       while nd != n
@@ -544,9 +615,7 @@ class Date
       n = -n
       # Set d to the last wday in month
       d = Date.new(year, month, 1).end_of_month
-      while d.wday != wday;
-        d -= 1
-      end
+      d -= 1 while d.wday != wday
       # Set d to the nth wday in month
       nd = 1
       while nd != n
@@ -576,11 +645,11 @@ class Date
     g = (b - f + 1) / 3
     h = (19 * a + b - d - g + 15) % 30
     i, k = c.divmod(4)
-    l = (32 + 2*e + 2*i - h - k) % 7
-    m = (a + 11*h + 22*l) / 451
-    n, p = (h + l - 7*m + 114).divmod(31)
+    l = (32 + 2 * e + 2 * i - h - k) % 7
+    m = (a + 11 * h + 22 * l) / 451
+    n, p = (h + l - 7 * m + 114).divmod(31)
     Date.new(y, n, p + 1)
-   end
+  end
 
   def easter_this_year
     # Return the date of Easter in self's year
@@ -595,7 +664,7 @@ class Date
   def nth_wday_in_month?(n, wday, month)
     # Is self the nth weekday in the given month of its year?
     # If n is negative, count from last day of month
-    self == Date.nth_wday_in_year_month(n, wday, self.year, month)
+    self == Date.nth_wday_in_year_month(n, wday, year, month)
   end
 
   #######################################################
@@ -626,7 +695,7 @@ class Date
     # rigged to fall on Monday except Thanksgiving
 
     # No moveable feasts in certain months
-    if [ 3, 4, 6, 7, 8, 12 ].include?(month)
+    if [3, 4, 6, 7, 8, 12].include?(month)
       false
     elsif monday?
       moveable_mondays = []
@@ -658,7 +727,7 @@ class Date
     return true if FED_DECREED_HOLIDAYS.include?(self)
 
     # Is self a fixed holiday
-    return true if (fed_fixed_holiday? || fed_moveable_feast?)
+    return true if fed_fixed_holiday? || fed_moveable_feast?
 
     if friday? && month == 12 && day == 26
       # If Christmas falls on a Thursday, apparently, the Friday after is
@@ -717,7 +786,7 @@ class Date
     # rigged to fall on Monday except Thanksgiving
 
     # No moveable feasts in certain months
-    return false if [ 6, 7, 8, 10, 12 ].include?(month)
+    return false if [6, 7, 8, 10, 12].include?(month)
 
     case month
     when 1
@@ -733,13 +802,11 @@ class Date
       # Good Friday
       if !friday?
         false
-      else
+      elsif [1898, 1906, 1907].include?(year)
         # Good Friday, the Friday before Easter, except certain years
-        if [1898, 1906, 1907].include?(year)
-          false
-        else
-          (self + 2).easter?
-        end
+        false
+      else
+        (self + 2).easter?
       end
     when 5
       # Memorial Day (Last Monday in May)
@@ -760,17 +827,16 @@ class Date
         if year <= 1968
           is_election_day
         elsif year <= 1980
-          is_election_day && (year % 4 == 0)
+          is_election_day && (year % 4).zero?
         else
           false
         end
       elsif thursday?
-        # Historically Thanksgiving (NYSE closed all day) had been declared to be
-        #   the last Thursday in November until 1938;
-        #   the next-to-last Thursday in November from 1939 to 1941
-        #     (therefore the 3rd Thursday in 1940 and 1941);
-        #   the last Thursday in November in 1942;
-        #   the fourth Thursday in November since 1943;
+        # Historically Thanksgiving (NYSE closed all day) had been declared to
+        #   be the last Thursday in November until 1938; the next-to-last
+        #   Thursday in November from 1939 to 1941 (therefore the 3rd Thursday
+        #   in 1940 and 1941); the last Thursday in November in 1942; the fourth
+        #   Thursday in November since 1943;
         if year < 1938
           nth_wday_in_month?(-1, 4, 11)
         elsif year <= 1941
@@ -895,19 +961,17 @@ class Date
   def nyse_workday?
     !nyse_holiday?
   end
-  alias :trading_day? :nyse_workday?
+  alias trading_day? nyse_workday?
 
   def add_fed_business_days(n)
-    d = self.dup
-    return d if n == 0
+    d = dup
+    return d if n.zero?
     incr = n < 0 ? -1 : 1
     n = n.abs
     while n > 0
       d += incr
-      if d.fed_workday?
-        n -= 1
-      end
-     end
+      n -= 1 if d.fed_workday?
+    end
     d
   end
 
@@ -920,37 +984,33 @@ class Date
   end
 
   def add_nyse_business_days(n)
-    d = self.dup
-    return d if n == 0
+    d = dup
+    return d if n.zero?
     incr = n < 0 ? -1 : 1
     n = n.abs
     while n > 0
       d += incr
-      if d.nyse_workday?
-        n -= 1
-      end
-     end
+      n -= 1 if d.nyse_workday?
+    end
     d
   end
-  alias :add_trading_days :add_nyse_business_days
+  alias add_trading_days add_nyse_business_days
 
   def next_nyse_workday
     add_nyse_business_days(1)
   end
-  alias :next_trading_day :next_nyse_workday
+  alias next_trading_day next_nyse_workday
 
   def prior_nyse_workday
     add_nyse_business_days(-1)
   end
-  alias :prior_trading_day :prior_nyse_workday
+  alias prior_trading_day prior_nyse_workday
 
   # Return self if its a trading day, otherwise skip back to the first prior
   # trading day.
   def prior_until_trading_day
     date = self
-    while !date.trading_day?
-      date -= 1
-    end
+    date -= 1 until date.trading_day?
     date
   end
 
@@ -958,9 +1018,7 @@ class Date
   # later trading day.
   def next_until_trading_day
     date = self
-    while !date.trading_day?
-      date += 1
-    end
+    date += 1 until date.trading_day?
     date
   end
 end

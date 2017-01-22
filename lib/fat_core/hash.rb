@@ -23,7 +23,7 @@ class Hash
   def remap_keys(key_map = {})
     new_hash = {}
     each_pair do |key, val|
-      if key_map.has_key?(key)
+      if key_map.key?(key)
         new_hash[key_map[key]] = val
       else
         new_hash[key] = val

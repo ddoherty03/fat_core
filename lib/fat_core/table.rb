@@ -18,7 +18,7 @@ module FatCore
   # 5. with an Array of Arrays,
   # 6. with an Array of Hashes, all having the same keys, which become the names
   #    of the column heads,
-  # 7. with an Array of any objects that respond to .keys and .values methods, or
+  # 7. with an Array of any objects that respond to .keys and .values methods,
   # 8. with another Table object.
   #
   # In the case of an array of arrays, if the second array's first element is a
@@ -73,10 +73,12 @@ module FatCore
         when Table
           from_table(input)
         else
-          raise ArgumentError, 'Cannot initialize Table with an array of an unknown type'
+          raise ArgumentError,
+                "Cannot initialize Table with an array of #{input[0].class}"
         end
       else
-        raise ArgumentError, 'Cannot initialize Table with unknown data type'
+        raise ArgumentError,
+              "Cannot initialize Table with #{input.class}"
       end
     end
 
@@ -98,7 +100,7 @@ module FatCore
     # Return the rows of the table as an array of hashes, keyed by the headers.
     def rows
       rows = []
-      0.upto(columns.first.last.size - 1) do |rnum|
+      0.upto(columns.first.last.last_i) do |rnum|
         row = {}
         columns.each_pair do |k, v|
           row[k] = v[rnum]
@@ -108,19 +110,22 @@ module FatCore
       rows
     end
 
+    ############################################################################
+    # SQL look-alikes. The following methods are based on SQL equivalents and
+    # all return a new Table object rather than modifying the table in place.
+    ############################################################################
+
     # Return a new Table sorted on the rows of this Table on the possibly
     # multiple keys given in the array of syms in headers. Append a ! to the
     # symbol name to indicate reverse sorting on that column.
-    def order_by(*headers)
-      headers = [headers].flatten
-      rheaders = headers.select { |col| col.to_s.ends_with?('!') }
-      headers = headers.map { |col| col.to_s.sub(/\!\z/, '').to_sym }
-      rheaders = rheaders.map { |col| col.to_s.sub(/\!\z/, '').to_sym }
-      new_rows = rows.sort! do |r1, r2|
-        key1 = headers.each
-                 .map { |col| rheaders.include?(col) ? r2[col] : r1[col] }
-        key2 = headers.each
-                 .map { |col| rheaders.include?(col) ? r1[col] : r2[col] }
+    def order_by(*sort_heads)
+      sort_heads = [sort_heads].flatten
+      rev_heads = sort_heads.select { |h| h.to_s.ends_with?('!') }
+      sort_heads = sort_heads.map { |h| h.to_s.sub(/\!\z/, '').to_sym }
+      rev_heads = rev_heads.map { |h| h.to_s.sub(/\!\z/, '').to_sym }
+      new_rows = rows.sort do |r1, r2|
+        key1 = sort_heads.map { |h| rev_heads.include?(h) ? r2[h] : r1[h] }
+        key2 = sort_heads.map { |h| rev_heads.include?(h) ? r1[h] : r2[h] }
         key1 <=> key2
       end
       new_tab = Table.new
@@ -129,7 +134,65 @@ module FatCore
       end
       new_tab
     end
-    # Add a row represented by a Hash having the headers as keys.
+
+    # Return a Table having the selected column expression. For example, ':date,
+    # :ref', would return at Table with only those columns in that order. For
+    # example, ':date > 2016-04-08'.
+    def select(*exprs)
+      tbl = Table.new
+    end
+
+    # Return a Table containing only rows matching the where expression.
+    def where(*expr)
+    end
+
+    # Return a Table that is this table with the rows of another table having
+    # the same number of columns stacked below this table. The headers of this
+    # table are used in the result. If there are more columns in other_tab than
+    # this one, the extra columns are ignored. If there are fewer columns in
+    # other_tab than this one, it is padded out with colum ns of nils. Return a
+    # Table that is this table with the rows of *another table having the same
+    # number of columns stacked below this table.
+    def union(other_tab)
+    end
+
+    def group_by
+    end
+
+    ############################################################################
+    # Table output methods.
+    ############################################################################
+
+    # This returns the table as an Array of Arrays with formatting applied.
+    # This would normally called after all calculations on the table are done
+    # and you want to return the results.  The Array of Arrays structure is
+    # what org-mode src blocks will render as an org table in the buffer.
+    def to_org(formats: {})
+      result = []
+      header_row = []
+      headers.each do |hdr|
+        header_row << hdr.entitle
+      end
+      result << header_row
+      # This causes org to place an hline under the header row
+      result << nil unless header_row.empty?
+
+      rows.each do |row|
+        out_row = []
+        headers.each do |hdr|
+          out_row << row[hdr].to_s.format_by(formats[hdr])
+        end
+        result << out_row
+      end
+      result
+    end
+
+    ############################################################################
+    # Table construction methods.
+    ############################################################################
+
+    # Add a row represented by a Hash having the headers as keys. All tables
+    # should be built ultimately using this method as a primitive.
     def add_row(row)
       row.each_pair do |k, v|
         key = k.as_sym
@@ -139,6 +202,8 @@ module FatCore
       end
       self
     end
+
+    private
 
     def from_array_of_hashes(rows)
       rows.each do |row|
@@ -185,11 +250,8 @@ module FatCore
       io.each do |line|
         unless table_found
           # Skip through the file until a table is found
-          if line =~ table_re
-            table_found = true
-          else
-            next
-          end
+          next unless line =~ table_re
+          table_found = true
         end
         break unless line =~ table_re
         if !header_found && line =~ hrule_re
@@ -206,29 +268,6 @@ module FatCore
       from_array_of_arrays(rows)
     end
 
-    # This returns the table as an Array of Arrays with formatting applied.
-    # This would normally called after all calculations on the table are done
-    # and you want to return the results.  The Array of Arrays structure is
-    # what org-mode src blocks will render as an org table in the buffer.
-    def to_org(formats: {})
-      result = []
-      header_row = []
-      headers.each do |hdr|
-        header_row << hdr.entitle
-      end
-      result << header_row
-      # This causes org to place an hline under the header row
-      result << nil unless header_row.empty?
-
-      rows.each do |row|
-        out_row = []
-        headers.each do |hdr|
-          out_row << row[hdr].to_s.format_by(formats[hdr])
-        end
-        result << out_row
-      end
-      result
-    end
     # Convert val to the type of key, a ruby class constant, such as Date,
     # Numeric, etc. If type is NilClass, the type is open, and a non-blank val
     # will attempt conversion to one of the allowed types, typing it as a String
@@ -252,11 +291,12 @@ module FatCore
                 convert_to_date_time(val) ||
                 convert_to_numeric(val) ||
                 convert_to_string(val)
-          if val.is_a?(Numeric)
-            type[key] = Numeric
-          else
-            type[key] = val.class
-          end
+          type[key] =
+            if val.is_a?(Numeric)
+              Numeric
+            else
+              val.class
+            end
           val
         end
       when 'TrueClass', 'FalseClass'
@@ -288,8 +328,7 @@ module FatCore
         end
         val
       else
-        binding.pry
-        x = x
+        raise "Unknown object of class #{type[key]} in Table"
       end
     end
 
@@ -319,13 +358,10 @@ module FatCore
       begin
         val = val.to_s.clean
         return nil if val.blank?
-        if val =~ %r{\b\d\d\d\d[-/]\d\d?[-/]\d\d?\b}
-          val = DateTime.parse(val.to_s.clean)
-          val = val.to_date if val.seconds_since_midnight.zero?
-          val
-        else
-          nil
-        end
+        return nil unless val =~ %r{\b\d\d\d\d[-/]\d\d?[-/]\d\d?\b}
+        val = DateTime.parse(val.to_s.clean)
+        val = val.to_date if val.seconds_since_midnight.zero?
+        val
       rescue ArgumentError
         return nil
       end

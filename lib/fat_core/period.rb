@@ -21,7 +21,7 @@ class Period
     when Date
       first = first
     else
-      raise ArgumentError, "use Date or String to initialize Period"
+      raise ArgumentError, 'use Date or String to initialize Period'
     end
 
     case last
@@ -38,7 +38,7 @@ class Period
     when Date
       last = last
     else
-      raise ArgumentError, "use Date or String to initialize Period"
+      raise ArgumentError, 'use Date or String to initialize Period'
     end
 
     @first = first
@@ -54,21 +54,21 @@ class Period
 
   # Need custom setters to ensure first <= last
   def first=(new_first)
-    unless new_first.kind_of?(Date)
+    unless new_first.is_a?(Date)
       raise ArgumentError, "can't set Period#first to non-date"
     end
     unless new_first <= last
-      raise ArgumentError, "cannot make Period#first > Period#last"
+      raise ArgumentError, 'cannot make Period#first > Period#last'
     end
     @first = new_first
   end
 
   def last=(new_last)
-    unless new_last.kind_of?(Date)
-      raise ArgumentError, "can't set Period#last to non-date"
+    unless new_last.is_a?(Date)
+      raise ArgumentError, 'cannot set Period#last to non-date'
     end
     unless new_last >= first
-      raise ArgumentError, "cannot make Period#last < Period#first"
+      raise ArgumentError, 'cannot make Period#last < Period#first'
     end
     @last = new_last
   end
@@ -91,13 +91,13 @@ class Period
     d = first
     while d <= last
       yield d
-      d = d + 1.day
+      d += 1.day
     end
   end
 
   # Case equality checks for inclusion of date in period.
-  def ===(date)
-    self.contains?(date)
+  def ===(other)
+    contains?(other)
   end
 
   # Return the number of days in the period
@@ -232,7 +232,7 @@ class Period
     when :year
       366
     when :irregular
-      raise ArgumentError, "no maximum period for :irregular chunk"
+      raise ArgumentError, 'no maximum period for :irregular chunk'
     else
       chunk_sym_to_days(sym)
     end
@@ -273,16 +273,16 @@ class Period
 
   def to_s
     if first.beginning_of_year? && last.end_of_year? && first.year == last.year
-      "#{first.year}"
+      first.year.to_s
     elsif first.beginning_of_quarter? &&
-        last.end_of_quarter? &&
-        first.year == last.year &&
-        first.quarter == last.quarter
+          last.end_of_quarter? &&
+          first.year == last.year &&
+          first.quarter == last.quarter
       "#{first.year}-#{first.quarter}Q"
     elsif first.beginning_of_month? &&
-        last.end_of_month? &&
-        first.year == last.year &&
-        first.month == last.month
+          last.end_of_month? &&
+          first.year == last.year &&
+          first.month == last.month
       "#{first.year}-%02d" % first.month
     else
       "#{first.iso} to #{last.iso}"
@@ -320,31 +320,31 @@ class Period
   end
 
   def overlaps?(other)
-    self.to_range.overlaps?(other.to_range)
+    to_range.overlaps?(other.to_range)
   end
 
   def intersection(other)
-    result = self.to_range.intersection(other.to_range)
+    result = to_range.intersection(other.to_range)
     if result.nil?
       nil
     else
       Period.new(result.first, result.last)
     end
   end
-  alias_method :&, :intersection
-  alias_method :narrow_to, :intersection
+  alias & intersection
+  alias narrow_to intersection
 
   def union(other)
-    result = self.to_range.union(other.to_range)
+    result = to_range.union(other.to_range)
     Period.new(result.first, result.last)
   end
-  alias_method :+, :union
+  alias + union
 
   def difference(other)
-    ranges = self.to_range.difference(other.to_range)
-    ranges.each.map{ |r| Period.new(r.first, r.last) }
+    ranges = to_range.difference(other.to_range)
+    ranges.each.map { |r| Period.new(r.first, r.last) }
   end
-  alias_method :-, :difference
+  alias - difference
 
   # returns the chunk sym represented by the period
   def chunk_sym
@@ -410,32 +410,28 @@ class Period
   end
 
   def contains?(date)
-    if date.respond_to?(:to_date)
-      date = date.to_date
-    end
-    unless (date.is_a? Date)
-      raise ArgumentError, "argument must be a Date"
-    end
-    self.to_range.cover?(date)
+    date = date.to_date if date.respond_to?(:to_date)
+    raise ArgumentError, 'argument must be a Date' unless date.is_a?(Date)
+    to_range.cover?(date)
   end
 
   def overlaps?(other)
-    self.to_range.overlaps?(other.to_range)
+    to_range.overlaps?(other.to_range)
   end
 
   # Return whether any of the Periods that are within self overlap one
   # another
   def has_overlaps_within?(periods)
-    self.to_range.has_overlaps_within?(periods.map{ |p| p.to_range})
+    to_range.has_overlaps_within?(periods.map(&:to_range))
   end
 
   def spanned_by?(periods)
-    to_range.spanned_by?(periods.map { |p| p.to_range })
+    to_range.spanned_by?(periods.map(&:to_range))
   end
 
   def gaps(periods)
-    to_range.gaps(periods.map { |p| p.to_range }).
-      map { |r| Period.new(r.first, r.last)}
+    to_range.gaps(periods.map(&:to_range))
+      .map { |r| Period.new(r.first, r.last) }
   end
 
   # Return an array of Periods wholly-contained within self in chunks of
@@ -444,7 +440,8 @@ class Period
   # respectively, are set true.  The last chunk can be made to extend beyond
   # the end of self to make it a whole chunk if round_up_last is set true,
   # in which case, partial_last is ignored.
-  def chunks(size: :month, partial_first: false, partial_last: false, round_up_last: false)
+  def chunks(size: :month, partial_first: false, partial_last: false,
+             round_up_last: false)
     size = size.to_sym
     result = []
     chunk_start = first.dup
@@ -467,27 +464,27 @@ class Period
         chunk_end = chunk_start.end_of_quarter
       when :bimonth
         unless partial_first
-           chunk_start += 1.day until chunk_start.beginning_of_bimonth?
+          chunk_start += 1.day until chunk_start.beginning_of_bimonth?
         end
         chunk_end = (chunk_start.end_of_month + 1.day).end_of_month
       when :month
         unless partial_first
-           chunk_start += 1.day until chunk_start.beginning_of_month?
+          chunk_start += 1.day until chunk_start.beginning_of_month?
         end
         chunk_end = chunk_start.end_of_month
       when :semimonth
         unless partial_first
-           chunk_start += 1.day until chunk_start.beginning_of_semimonth?
+          chunk_start += 1.day until chunk_start.beginning_of_semimonth?
         end
         chunk_end = chunk_start.end_of_semimonth
       when :biweek
         unless partial_first
-           chunk_start += 1.day until chunk_start.beginning_of_biweek?
+          chunk_start += 1.day until chunk_start.beginning_of_biweek?
         end
         chunk_end = chunk_start.end_of_biweek
       when :week
         unless partial_first
-           chunk_start += 1.day until chunk_start.beginning_of_week?
+          chunk_start += 1.day until chunk_start.beginning_of_week?
         end
         chunk_end = chunk_start.end_of_week
       when :day
@@ -497,14 +494,12 @@ class Period
       end
       if chunk_end <= last
         result << Period.new(chunk_start, chunk_end)
+      elsif round_up_last
+        result << Period.new(chunk_start, chunk_end)
+      elsif partial_last
+        result << Period.new(chunk_start, last)
       else
-        if round_up_last
-          result << Period.new(chunk_start, chunk_end)
-        elsif partial_last
-          result << Period.new(chunk_start, last)
-        else
-          break
-        end
+        break
       end
       chunk_start = result.last.last + 1.day
     end

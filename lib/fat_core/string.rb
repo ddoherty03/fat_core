@@ -4,7 +4,7 @@ class String
   # Remove leading and trailing white space and compress internal runs of
   # white space to a single space.
   def clean
-    self.strip.squeeze(' ')
+    strip.squeeze(' ')
   end
 
   def distance(other, block_size: 1, max_distance: 10)
@@ -13,7 +13,7 @@ class String
     # will return max_distance+1 if the distance is bigger than that.
     # Here we subtract 1 so the max_distance also becomes the max
     # return value.
-    dl.distance(self, other, block_size, max_distance-1)
+    dl.distance(self, other, block_size, max_distance - 1)
   end
 
   # See if self contains colon- or space-separated words that include
@@ -22,18 +22,17 @@ class String
   def fuzzy_match(other)
     # Remove periods, commas, and apostrophes
     other = other.gsub(/[\*.,']/, '')
-    target = self.gsub(/[\*.,']/, '')
-    matched_text = nil
+    target = gsub(/[\*.,']/, '')
     matchers = other.split(/[: ]+/)
-    regexp_string = matchers.map {|m| ".*?#{Regexp.escape(m)}.*?"}.join('[: ]')
+    regexp_string = matchers.map { |m| ".*?#{Regexp.escape(m)}.*?" }
+                      .join('[: ]')
     regexp_string.sub!(/^\.\*\?/, '')
     regexp_string.sub!(/\.\*\?$/, '')
     regexp = /#{regexp_string}/i
-    if match = regexp.match(target)
-      matched_text = match[0]
-    else
-      matched_text = nil
-    end
+    matched_text =
+      if (match = regexp.match(target))
+        match[0]
+      end
     matched_text
   end
 
@@ -44,15 +43,11 @@ class String
   def matches_with(str)
     if str.nil?
       nil
-    elsif str =~ /^\s*\//
+    elsif str =~ %r{^\s*/}
       re = str.to_regexp
-      if self.to_s =~ re
-        $&
-      else
-        nil
-      end
+      $& if to_s =~ re
     else
-      self.to_s.fuzzy_match(str)
+      to_s.fuzzy_match(str)
     end
   end
 
@@ -60,7 +55,7 @@ class String
   # make the regular expression case-insensitive by default and extend the
   # modifier syntax to allow '/I' to indicate case-sensitive.
   def to_regexp
-    if self =~ /^\s*\/([^\/]*)\/([Iixm]*)\s*$/
+    if self =~ %r{^\s*/([^/]*)/([Iixm]*)\s*$}
       body = $1
       opts = $2
       flags = Regexp::IGNORECASE
@@ -70,7 +65,7 @@ class String
         flags |= Regexp::EXTENDED if opts.include?('x')
         flags |= Regexp::MULTILINE if opts.include?('m')
       end
-      flags = nil if flags == 0
+      flags = nil if flags.zero?
       Regexp.new(body, flags)
     else
       Regexp.new(self)
@@ -79,8 +74,8 @@ class String
 
   # Convert to symbol "Hello World" -> :hello_world
   def as_sym
-    strip.squeeze(' ').gsub(/\s+/, '_').
-      gsub(/[^_A-Za-z0-9]/, '').downcase.to_sym
+    strip.squeeze(' ').gsub(/\s+/, '_')
+      .gsub(/[^_A-Za-z0-9]/, '').downcase.to_sym
   end
 
   def as_string
@@ -94,7 +89,7 @@ class String
     return false
   end
 
-  def wrap(width=70, hang=0)
+  def wrap(width = 70, hang = 0)
     offset = 0
     trip = 1
     result = ''
@@ -113,7 +108,7 @@ class String
   end
 
   def tex_quote
-    r = self.dup
+    r = dup
     r = r.gsub(/[{]/, 'XzXzXobXzXzX')
     r = r.gsub(/[}]/, 'XzXzXcbXzXzX')
     r = r.gsub(/\\/, '\textbackslash{}')
@@ -124,7 +119,7 @@ class String
     r = r.gsub(/\>/, '\textgreater{}')
     r = r.gsub(/([_$&%#])/) { |m| '\\' + m }
     r = r.gsub('XzXzXobXzXzX', '\\{')
-    r = r.gsub('XzXzXcbXzXzX', '\\}')
+    r.gsub('XzXzXcbXzXzX', '\\}')
   end
 
   def self.random(size = 8)
@@ -134,48 +129,48 @@ class String
   # Convert a string with an all-digit date to an iso string
   # E.g., "20090923" -> "2009-09-23"
   def digdate2iso
-    self.sub(/(\d\d\d\d)(\d\d)(\d\d)/, '\1-\2-\3')
+    sub(/(\d\d\d\d)(\d\d)(\d\d)/, '\1-\2-\3')
   end
 
   def entitle!
-    little_words = %w[ a an the and or in on under of from as by to ]
+    little_words = %w(a an the and or in on under of from as by to)
     newwords = []
     words = split(/\s+/)
     first_word = true
     num_words = words.length
     words.each_with_index do |w, k|
       last_word = (k + 1 == num_words)
-      if w =~ %r[c/o]i
+      if w =~ %r{c/o}i
         # Care of
-        newwords.push("c/o")
-      elsif w =~ %r[^p\.?o\.?$]i
+        newwords.push('c/o')
+      elsif w =~ /^p\.?o\.?$/i
         # Post office
-        newwords.push("P.O.")
-      elsif w =~ %r[^[0-9]+(st|nd|rd|th)$]i
+        newwords.push('P.O.')
+      elsif w =~ /{^[0-9]+(st|nd|rd|th)$/i
         # Ordinals
         newwords.push(w.downcase)
-      elsif w =~ %r[^(cr|dr|st|rd|ave|pk|cir)$]i
+      elsif w =~ /{^(cr|dr|st|rd|ave|pk|cir)$/i
         # Common abbrs to capitalize
         newwords.push(w.capitalize)
-      elsif w =~ %r[^(us|ne|se|rr)$]i
+      elsif w =~ /{^(us|ne|se|rr)$/i
         # Common 2-letter abbrs to upcase
         newwords.push(w.upcase)
-      elsif w =~ %r[^[0-9].*$]i
+      elsif w =~ /{^[0-9].*$/i
         # Other runs starting with numbers,
         # like 3-A
         newwords.push(w.upcase)
-      elsif w =~ %r[^(N|S|E|W|NE|NW|SE|SW)$]i
+      elsif w =~ /{^(N|S|E|W|NE|NW|SE|SW)$/i
         # Compass directions all caps
         newwords.push(w.upcase)
-      elsif w =~ %r[^[^aeiouy]*$]i && w.size > 2
+      elsif w =~ /{^[^aeiouy]*$/i && w.size > 2
         # All consonants and at least 3 chars, probably abbr
         newwords.push(w.upcase)
-      elsif w =~ %r[^(\w+)-(\w+)$]i
+      elsif w =~ /{^(\w+)-(\w+)$/i
         # Hypenated double word
         newwords.push($1.capitalize + '-' + $2.capitalize)
       elsif little_words.include?(w.downcase)
         # Only capitalize at beginning or end
-        newwords.push((first_word or last_word) ? w.capitalize : w.downcase)
+        newwords.push(first_word || last_word ? w.capitalize : w.downcase)
       else
         # All else
         newwords.push(w.capitalize)
@@ -186,7 +181,17 @@ class String
   end
 
   def entitle
-    self.dup.entitle!
+    dup.entitle!
+  end
+
+  # Format the string according to the given sprintf format.
+  def format_by(fmt)
+    return self unless fmt
+    begin
+      format fmt, self
+    rescue ArgumentError
+      return self
+    end
   end
 
   # Thanks to Eugene at stackoverflow for the following.
@@ -194,19 +199,55 @@ class String
   #   colorized-output-breaks-linewrapping-with-readline
   # These color strings without confusing readline about the length of
   # the prompt string in the shell. (Unlike the rainbow routines)
-  def console_red;          colorize(self, "\001\e[1m\e[31m\002");  end
-  def console_dark_red;     colorize(self, "\001\e[31m\002");       end
-  def console_green;        colorize(self, "\001\e[1m\e[32m\002");  end
-  def console_dark_green;   colorize(self, "\001\e[32m\002");       end
-  def console_yellow;       colorize(self, "\001\e[1m\e[33m\002");  end
-  def console_dark_yellow;  colorize(self, "\001\e[33m\002");       end
-  def console_blue;         colorize(self, "\001\e[1m\e[34m\002");  end
-  def console_dark_blue;    colorize(self, "\001\e[34m\002");       end
-  def console_purple;       colorize(self, "\001\e[1m\e[35m\002");  end
+  def console_red
+    colorize(self, "\001\e[1m\e[31m\002")
+  end
 
-  def console_def;          colorize(self, "\001\e[1m\002");  end
-  def console_bold;         colorize(self, "\001\e[1m\002");  end
-  def console_blink;        colorize(self, "\001\e[5m\002");  end
+  def console_dark_red
+    colorize(self, "\001\e[31m\002")
+  end
 
-  def colorize(text, color_code)  "#{color_code}#{text}\001\e[0m\002" end
+  def console_green
+    colorize(self, "\001\e[1m\e[32m\002")
+  end
+
+  def console_dark_green
+    colorize(self, "\001\e[32m\002")
+  end
+
+  def console_yellow
+    colorize(self, "\001\e[1m\e[33m\002")
+  end
+
+  def console_dark_yellow
+    colorize(self, "\001\e[33m\002")
+  end
+
+  def console_blue
+    colorize(self, "\001\e[1m\e[34m\002")
+  end
+
+  def console_dark_blue
+    colorize(self, "\001\e[34m\002")
+  end
+
+  def console_purple
+    colorize(self, "\001\e[1m\e[35m\002")
+  end
+
+  def console_def
+    colorize(self, "\001\e[1m\002")
+  end
+
+  def console_bold
+    colorize(self, "\001\e[1m\002")
+  end
+
+  def console_blink
+    colorize(self, "\001\e[5m\002")
+  end
+
+  def colorize(text, color_code)
+    "#{color_code}#{text}\001\e[0m\002"
+  end
 end

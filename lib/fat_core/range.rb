@@ -6,8 +6,6 @@ class Range
       Range.new(min, other.max)
     elsif right_contiguous?(other)
       Range.new(other.min, max)
-    else
-      nil
     end
   end
 
@@ -55,16 +53,16 @@ class Range
   end
 
   def intersection(other)
-    return nil unless self.overlaps?(other)
-    ([self.min, other.min].max..[self.max, other.max].min)
+    return nil unless overlaps?(other)
+    ([min, other.min].max..[max, other.max].min)
   end
-  alias_method :&, :intersection
+  alias & intersection
 
   def union(other)
-    return nil unless self.overlaps?(other) || self.contiguous?(other)
-    ([self.min, other.min].min..[self.max, other.max].max)
+    return nil unless overlaps?(other) || contiguous?(other)
+    ([min, other.min].min..[max, other.max].max)
   end
-  alias_method :+, :union
+  alias + union
 
   # The difference method, -, removes the overlapping part of the other
   # argument from self.  Because in the case where self is a superset of the
@@ -73,8 +71,8 @@ class Range
   # self is a subset of the other range, return an array of self
   def difference(other)
     unless max.respond_to?(:succ) && min.respond_to?(:pred) &&
-        other.max.respond_to?(:succ) && other.min.respond_to?(:pred)
-      raise "Range difference operation requires objects have pred and succ methods"
+           other.max.respond_to?(:succ) && other.min.respond_to?(:pred)
+      raise 'Range difference requires objects have pred and succ methods'
     end
     # return [self] unless self.overlaps?(other)
     if subset_of?(other)
@@ -85,28 +83,28 @@ class Range
       [(min..other.min.pred), (other.max.succ..max)]
     elsif overlaps?(other) && other.min <= min
       # (4..7) - (2..5) -> (6..7)
-      [(other.max.succ .. max)]
+      [(other.max.succ..max)]
     elsif overlaps?(other) && other.max >= max
       # (4..7) - (6..10) -> (4..5)
-      [(min .. other.min.pred)]
+      [(min..other.min.pred)]
     else
-      [ self ]
+      [self]
     end
   end
-  alias_method :-, :difference
+  alias - difference
 
   # Return whether any of the ranges that are within self overlap one
   # another
-  def has_overlaps_within?(ranges)
+  def overlaps_within?(ranges)
     result = false
     unless ranges.empty?
       ranges.each do |r1|
         next unless overlaps?(r1)
         result =
           ranges.any? do |r2|
-          r1.object_id != r2.object_id && overlaps?(r2) &&
-            r1.overlaps?(r2)
-        end
+            r1.object_id != r2.object_id && overlaps?(r2) &&
+              r1.overlaps?(r2)
+          end
         return true if result
       end
     end
@@ -117,7 +115,7 @@ class Range
   # without overlaps.
   def spanned_by?(ranges)
     joined_range = nil
-    ranges.sort_by {|r| r.min}.each do |r|
+    ranges.sort_by(&:min).each do |r|
       unless joined_range
         joined_range = r
         next
@@ -137,11 +135,11 @@ class Range
   # array.
   def gaps(ranges)
     if ranges.empty?
-      [self.clone]
+      [clone]
     elsif spanned_by?(ranges)
       []
     else
-      ranges = ranges.sort_by {|r| r.min}
+      ranges = ranges.sort_by(&:min)
       gaps = []
       cur_point = min
       ranges.each do |rr|
@@ -155,9 +153,7 @@ class Range
           cur_point = rr.max.succ
         end
       end
-      if cur_point <= max
-        gaps << (cur_point..max)
-      end
+      gaps << (cur_point..max) if cur_point <= max
       gaps
     end
   end
@@ -169,7 +165,7 @@ class Range
     if ranges.empty? || spanned_by?(ranges)
       []
     else
-      ranges = ranges.sort_by {|r| r.min}
+      ranges = ranges.sort_by(&:min)
       overlaps = []
       cur_point = nil
       ranges.each do |rr|
