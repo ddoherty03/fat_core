@@ -37,6 +37,8 @@ module FatCore
   class Table
     attr_reader :column, :type, :footer
 
+    TYPES = %w(NilClass TrueClass FalseClass Date DateTime Numeric String)
+
     def initialize(input = nil, ext = '.csv')
       @column = {}
       @type = {}
@@ -92,7 +94,7 @@ module FatCore
       @type
     end
 
-    # Return the headers for the table.
+    # Return the headers for the table as an array of symbols.
     def headers
       column.keys
     end
@@ -146,14 +148,26 @@ module FatCore
     def where(*expr)
     end
 
-    # Return a Table that is this table with the rows of another table having
-    # the same number of columns stacked below this table. The headers of this
-    # table are used in the result. If there are more columns in other_tab than
-    # this one, the extra columns are ignored. If there are fewer columns in
-    # other_tab than this one, it is padded out with colum ns of nils. Return a
-    # Table that is this table with the rows of *another table having the same
-    # number of columns stacked below this table.
-    def union(other_tab)
+    # Return a Table that combines this table with another table. The headers of
+    # this table are used in the result. There must be the same number of
+    # columns of the same type in the two tables, or an exception will be
+    # thrown. Unlike in SQL, no duplicates are eliminated from the result.
+    def union(other)
+      unless columns.size == other.columns.size
+        raise 'Cannot apply union to tables with a different number of columns.'
+      end
+      headers.each_with_index do |h, k|
+        unless type[h] == other.type[other.headers[k]]
+          raise 'Cannot apply union to tables with different column types'
+        end
+      end
+      result = Table.new
+      headers.each_with_index do |h, k|
+        our_items = column[h].items
+        their_items = other.column[other.headers[k]].items
+        result.add_column(h, type[h], our_items + their_items)
+      end
+      result
     end
 
     def group_by
@@ -200,6 +214,18 @@ module FatCore
         val = convert_to_type(v, key)
         column[key] << val
       end
+      self
+    end
+
+    def add_column(hdr, typ, items)
+      hdr = hdr.as_sym
+      typ = typ.to_s
+      raise "Table already has a column with header '#{hdr}'" if column.key?(hdr)
+      raise "Cannot add a column of unknown type '#{typ}'" unless TYPES.include?(typ)
+      type[hdr] = typ
+      # This may not be necessary since columns are presumably already typed.
+      items = items.map { |i| convert_to_type(i, hdr) }
+      column[hdr] = Column.new(items)
       self
     end
 
