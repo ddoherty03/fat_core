@@ -124,6 +124,10 @@ module FatCore
       rows
     end
 
+    def empty?
+      rows.empty?
+    end
+
     ############################################################################
     # SQL look-alikes. The following methods are based on SQL equivalents and
     # all return a new Table object rather than modifying the table in place.
