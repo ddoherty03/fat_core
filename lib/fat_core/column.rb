@@ -42,6 +42,19 @@ module FatCore
       Column.new(header: header, type: type, items: items + other.items)
     end
 
+    def first
+      items.compact.first
+    end
+
+    def last
+      items.compact.last
+    end
+
+    # Return a string that of the first and last values.
+    def rng_s
+      "#{first}..#{last}"
+    end
+
     def sum
       items.compact.sum
     end
@@ -55,7 +68,7 @@ module FatCore
     end
 
     def avg
-      sum / size.to_d
+      sum / items.compact.size.to_d
     end
 
     # Convert val to the type of key, a ruby class constant, such as Date,
