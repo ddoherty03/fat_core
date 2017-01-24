@@ -39,13 +39,13 @@ module FatCore
   # will extract the entire ~:age~ column and compute its average, since Column
   # objects respond to aggregate methods, such as ~sum~, ~min~, ~max~, and ~avg~.
   class Table
-    attr_reader :columns, :footer
+    attr_reader :columns, :footers
 
     TYPES = %w(NilClass TrueClass FalseClass Date DateTime Numeric String)
 
     def initialize(input = nil, ext = '.csv')
       @columns = []
-      @footer = {}
+      @footers = {}
       return self if input.nil?
       case input
       when IO, StringIO
@@ -320,6 +320,31 @@ module FatCore
 
     public
 
+    def add_footer(label: 'Total', aggregate: :sum, heads: [])
+      foot = {}
+      heads.each do |h|
+        foot[h] = column(h).send(aggregate)
+      end
+      @footers[label.as_sym] = foot
+      self
+    end
+
+    def add_sum_footer(cols, label = 'Total')
+      add_footer(heads: cols)
+    end
+
+    def add_avg_footer(cols, label = 'Average')
+      add_footer(label: label, aggregate: :avg, heads: cols)
+    end
+
+    def add_min_footer(cols, label = 'Minimum')
+      add_footer(label: label, aggregate: :min, heads: cols)
+    end
+
+    def add_max_footer(cols, label = 'Maximum')
+      add_footer(label: label, aggregate: :max, heads: cols)
+    end
+
     # This returns the table as an Array of Arrays with formatting applied.
     # This would normally called after all calculations on the table are done
     # and you want to return the results.  The Array of Arrays structure is
@@ -340,6 +365,14 @@ module FatCore
           out_row << row[hdr].to_s.format_by(formats[hdr])
         end
         result << out_row
+      end
+      footers.each_pair do |label, footer|
+        foot_row = []
+        columns.each do |hdr|
+          foot_row << footer[hdr].format_by(formats[hdr])
+        end
+        foot_row[0] = label.entitle
+        result << foot_row
       end
       result
     end

@@ -424,7 +424,7 @@ EOS
           { a: '7', 'Two words' => '8', c: '$9,888', d: 'pear' }
         ]
         tab = Table.new(aoh)
-        tab.add_average_footer([:a, :c, :two_words])
+        tab.add_avg_footer([:a, :c, :two_words])
         expect(tab.footers[:average][:a]).to eq 4
         expect(tab.footers[:average][:c].round(4)).to eq 6474.3333
         expect(tab.footers[:average][:two_words]).to eq 5
