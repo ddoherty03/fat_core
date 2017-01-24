@@ -597,6 +597,13 @@ EOS
       end
     end
 
+    describe 'where' do
+      it 'should be able to filter rows by expression' do
+        tab1 = Table.new(StringIO.new(@csv_file_body), '.csv')
+        tab2 = tab1.where("date < Date.parse('2006-06-01')")
+        expect(tab2[:date].max).to be < Date.parse('2006-06-01')
+      end
+    end
     describe 'output' do
       it 'should be able to return itself as an array of arrays' do
         aoh = [

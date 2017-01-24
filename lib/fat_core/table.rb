@@ -214,7 +214,14 @@ module FatCore
     end
 
     # Return a Table containing only rows matching the where expression.
-    def where(*expr)
+    def where(expr)
+      expr = expr.to_s
+      result = Table.new
+      ev = Evaluator.new(vars: { row: 0 }, before: '@row += 1')
+      rows.each do |row|
+        result.add_row(row) if ev.evaluate(expr, vars: row)
+      end
+      result
     end
 
     # Return a Table that combines this table with another table. The headers of
