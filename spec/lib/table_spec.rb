@@ -591,9 +591,9 @@ EOS
           { a: '7', 'Two words' => '8',  s: '$1821', c: '$1888' }
         ]
         tab1 = Table.new(aoh)
-        tab2 = tab1.select(row: '@row', s_squared: 's * s',
+        tab2 = tab1.select(:two_words, row: '@row', s_squared: 's * s',
                            arb: 's_squared / (a + c).to_d')
-        expect(tab2.headers).to eq [:row, :s_squared, :arb]
+        expect(tab2.headers).to eq [:two_words, :row, :s_squared, :arb]
       end
     end
 
