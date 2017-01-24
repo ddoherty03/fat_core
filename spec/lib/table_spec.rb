@@ -604,6 +604,16 @@ EOS
         expect(tab2[:date].max).to be < Date.parse('2006-06-01')
       end
     end
+
+    describe 'group_by' do
+      it 'should be able to group by equal columns' do
+        tab1 = Table.new(StringIO.new(@csv_file_body), '.csv')
+        tab2 = tab1.group_by(:date, :code, shares: :sum, ref: :first)
+        expect(tab2.headers).to eq([:date, :code, :sum_shares, :first_ref,
+                                    :first_rawshares, :first_price, :first_info])
+      end
+    end
+
     describe 'output' do
       it 'should be able to return itself as an array of arrays' do
         aoh = [

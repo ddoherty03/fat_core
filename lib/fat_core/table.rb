@@ -239,12 +239,82 @@ module FatCore
       result
     end
 
-    def group_by
+    # Return a Table in which all rows of the table are divided into groups
+    # where the value of all columns named as simple symbols are equal. All
+    # other columns are set to the result of aggregating the values of that
+    # column within the group according to the Column aggregate function (:sum,
+    # :min, :max, etc.) set in a hash parameter with the non-aggregate column
+    # name as a key and the symbol for the aggregate function as a value. For
+    # example, consider the following call:
+    #
+    # #+BEGIN_EXAMPLE
+    # tab.group_by(:date, :code, :price, shares: :sum, ).
+    # #+END_EXAMPLE
+    #
+    # The first three parameters are simple symbols, so the table is divided
+    # into groups of rows in which the value of :date, :code, and :price are
+    # equal. The :shares parameter is set to the aggregate function :sum, so it
+    # will appear in the result as the sum of all the :shares values in each
+    # group. Any non-aggregate columns that have no aggregate function set
+    # default to using the aggregate function :first. Note that because of the
+    # way Ruby parses parameters to a method call, all the grouping symbols must
+    # appear first in the parameter list.
+    def group_by(*exprs)
+      group_cols = []
+      agg_cols = {}
+      exprs.each do |xp|
+        case xp
+        when Symbol
+          group_cols << xp
+        when Hash
+          agg_cols = xp
+        else
+          raise "Cannot group by parameter '#{xp}"
+        end
+      end
+      default_agg_func = :first
+      default_cols = headers - group_cols - agg_cols.keys
+      default_cols.each do |h|
+        agg_cols[h] = default_agg_func
+      end
+
+      sorted_tab = order_by(group_cols)
+      groups = sorted_tab.rows.group_by do |r|
+        group_cols.map { |k| r[k] }
+      end
+      result_rows = []
+      groups.each_pair do |_vals, grp_rows|
+        result_rows << row_from_group(grp_rows, group_cols, agg_cols)
+      end
+      result = Table.new
+      result_rows.each do |row|
+        result.add_row(row)
+      end
+      result
+    end
+
+    private
+
+    def row_from_group(rows, grp_cols, agg_cols)
+      new_row = {}
+      grp_cols.each do |h|
+        new_row[h] = rows.first[h]
+      end
+      agg_cols.each_pair do |h, agg_func|
+        items = rows.map { |r| r[h] }
+        new_h = "#{agg_func}_#{h}"
+        new_row[new_h] = Column.new(header: h,
+                                items: items,
+                                type: column(h).type).send(agg_func)
+      end
+      new_row
     end
 
     ############################################################################
     # Table output methods.
     ############################################################################
+
+    public
 
     # This returns the table as an Array of Arrays with formatting applied.
     # This would normally called after all calculations on the table are done
