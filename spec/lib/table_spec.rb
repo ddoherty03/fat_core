@@ -315,10 +315,10 @@ EOS
           { a: '7', 'Two words' => '8', c: '$9,888', d: 'pear' }
         ]
         tab = Table.new(aoh)
-        expect(tab.column[:a].sum).to eq 12
-        expect(tab.column[:two_words].sum).to eq 15
-        expect(tab.column[:c].sum).to eq 19_423
-        expect(tab.column[:d].sum).to eq 'appleorangepear'
+        expect(tab[:a].sum).to eq 12
+        expect(tab[:two_words].sum).to eq 15
+        expect(tab[:c].sum).to eq 19_423
+        expect(tab[:d].sum).to eq 'appleorangepear'
       end
 
       it 'should be able to sum a column ignoring nils' do
@@ -328,10 +328,10 @@ EOS
           { a: '7', 'Two words' => '8', c: '$9,888', d: 'pear' }
         ]
         tab = Table.new(aoh)
-        expect(tab.column[:a].sum).to eq 11
-        expect(tab.column[:two_words].sum).to eq 15
-        expect(tab.column[:c].sum).to eq 16_300
-        expect(tab.column[:d].sum).to eq 'appleorangepear'
+        expect(tab[:a].sum).to eq 11
+        expect(tab[:two_words].sum).to eq 15
+        expect(tab[:c].sum).to eq 16_300
+        expect(tab[:d].sum).to eq 'appleorangepear'
       end
 
       it 'should be able to report its headings' do
@@ -347,8 +347,8 @@ EOS
           { a: '7', 'Two words' => '8', c: '$9,888', d: 'pear' }
         ]
         tab = Table.new(aoh)
-        expect(tab.column[:a].to_a).to eq [1, 4, 7]
-        expect(tab.column[:c].to_a).to eq [3123, 6412, 9888]
+        expect(tab[:a].to_a).to eq [1, 4, 7]
+        expect(tab[:c].to_a).to eq [3123, 6412, 9888]
       end
 
       it 'should be able to sum a column' do
@@ -358,9 +358,9 @@ EOS
           { a: '7', 'Two words' => '8', c: '$9,888', d: 'pear' }
         ]
         tab = Table.new(aoh)
-        expect(tab.column[:a].sum).to eq 12
-        expect(tab.column[:c].sum).to eq 19_423
-        expect(tab.column[:c].sum.is_a?(Integer)).to be true
+        expect(tab[:a].sum).to eq 12
+        expect(tab[:c].sum).to eq 19_423
+        expect(tab[:c].sum.is_a?(Integer)).to be true
       end
 
       it 'should be able to average a column' do
@@ -370,9 +370,9 @@ EOS
           { a: '7', 'Two words' => '8', c: '$9,888', d: 'pear' }
         ]
         tab = Table.new(aoh)
-        expect(tab.column[:a].avg).to eq 4
-        expect(tab.column[:c].avg.round(4)).to eq 6474.3333
-        expect(tab.column[:c].avg.class).to eq BigDecimal
+        expect(tab[:a].avg).to eq 4
+        expect(tab[:c].avg.round(4)).to eq 6474.3333
+        expect(tab[:c].avg.class).to eq BigDecimal
       end
 
       it 'should be able to get column minimum' do
@@ -382,10 +382,10 @@ EOS
           { a: '7', 'Two words' => '8', c: '$9,888', d: 'pear' }
         ]
         tab = Table.new(aoh)
-        expect(tab.column[:a].min).to eq 1
-        expect(tab.column[:c].min.round(4)).to eq 3123
-        expect(tab.column[:c].min.is_a?(Integer)).to be true
-        expect(tab.column[:d].min).to eq 'apple'
+        expect(tab[:a].min).to eq 1
+        expect(tab[:c].min.round(4)).to eq 3123
+        expect(tab[:c].min.is_a?(Integer)).to be true
+        expect(tab[:d].min).to eq 'apple'
       end
 
       it 'should be able to get column maximum' do
@@ -395,10 +395,10 @@ EOS
           { a: '7', 'Two words' => '8', c: '$9,888', d: 'pear' }
         ]
         tab = Table.new(aoh)
-        expect(tab.column[:a].max).to eq 7
-        expect(tab.column[:c].max.round(4)).to eq 9888
-        expect(tab.column[:c].max.is_a?(Integer)).to be true
-        expect(tab.column[:d].max).to eq 'pear'
+        expect(tab[:a].max).to eq 7
+        expect(tab[:c].max.round(4)).to eq 9888
+        expect(tab[:c].max.is_a?(Integer)).to be true
+        expect(tab[:d].max).to eq 'pear'
       end
     end
 
@@ -557,7 +557,10 @@ EOS
         tab2 = Table.new(aoh2)
         expect {
           tab1.union(tab2)
-        }.to raise_error(/different column types/)
+        }.to raise_error(/different types/)
+      end
+    end
+
       end
     end
 

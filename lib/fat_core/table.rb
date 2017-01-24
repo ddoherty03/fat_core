@@ -31,17 +31,20 @@ module FatCore
   # spaces converted to underscore and everything down-cased. So, the heading,
   # 'Two Words' becomes the hash header :two_words.
   #
-  # A table has footers kept as a hash of hashes.  The outer hash key
-  # indicates what the footer represents, such as :total, or :average.  The
-  # inner hash is a normal row-like hash keyed by the headers.
+  # An entire column can be retrieved by header from a Table, thus,
+  # #+BEGIN_EXAMPLE
+  # tab = Table.new("example.org")
+  # tab[:age].avg
+  # #+END_EXAMPLE
+  # will extract the entire ~:age~ column and compute its average, since Column
+  # objects respond to aggregate methods, such as ~sum~, ~min~, ~max~, and ~avg~.
   class Table
-    attr_reader :column, :type, :footer
+    attr_reader :columns, :footer
 
     TYPES = %w(NilClass TrueClass FalseClass Date DateTime Numeric String)
 
     def initialize(input = nil, ext = '.csv')
-      @column = {}
-      @type = {}
+      @columns = []
       @footer = {}
       return self if input.nil?
       case input
@@ -84,28 +87,37 @@ module FatCore
       end
     end
 
-    # Attr_reader as a plural
-    def columns
-      @column
+    # Return the column with the given header.
+    def column(key)
+      columns.detect { |c| c.header == key.as_sym }
+    end
+
+    # Return the array of items of the column with the given header.
+    def [](key)
+      column(key)
+    end
+
+    def column?(key)
+      headers.include?(key.as_sym)
     end
 
     # Attr_reader as a plural
     def types
-      @type
+      columns.map(&:type)
     end
 
     # Return the headers for the table as an array of symbols.
     def headers
-      column.keys
+      columns.map(&:header)
     end
 
     # Return the rows of the table as an array of hashes, keyed by the headers.
     def rows
       rows = []
-      0.upto(columns.first.last.last_i) do |rnum|
+      0.upto(columns.first.items.last_i) do |rnum|
         row = {}
-        columns.each_pair do |k, v|
-          row[k] = v[rnum]
+        columns.each do |col|
+          row[col.header] = col[rnum]
         end
         rows << row
       end
@@ -156,16 +168,9 @@ module FatCore
       unless columns.size == other.columns.size
         raise 'Cannot apply union to tables with a different number of columns.'
       end
-      headers.each_with_index do |h, k|
-        unless type[h] == other.type[other.headers[k]]
-          raise 'Cannot apply union to tables with different column types'
-        end
-      end
       result = Table.new
-      headers.each_with_index do |h, k|
-        our_items = column[h].items
-        their_items = other.column[other.headers[k]].items
-        result.add_column(h, type[h], our_items + their_items)
+      columns.each_with_index do |col, k|
+        result.add_column(col + other.columns[k])
       end
       result
     end
@@ -210,22 +215,15 @@ module FatCore
     def add_row(row)
       row.each_pair do |k, v|
         key = k.as_sym
-        column[key] ||= Column.new
-        val = convert_to_type(v, key)
-        column[key] << val
+        columns << Column.new(header: k) unless column?(k)
+        column(key) << v
       end
       self
     end
 
-    def add_column(hdr, typ, items)
-      hdr = hdr.as_sym
-      typ = typ.to_s
-      raise "Table already has a column with header '#{hdr}'" if column.key?(hdr)
-      raise "Cannot add a column of unknown type '#{typ}'" unless TYPES.include?(typ)
-      type[hdr] = typ
-      # This may not be necessary since columns are presumably already typed.
-      items = items.map { |i| convert_to_type(i, hdr) }
-      column[hdr] = Column.new(items)
+    def add_column(col)
+      raise "Table already has a column with header '#{col.header}'" if column?(col.header)
+      columns << col
       self
     end
 
@@ -292,128 +290,6 @@ module FatCore
         end
       end
       from_array_of_arrays(rows)
-    end
-
-    # Convert val to the type of key, a ruby class constant, such as Date,
-    # Numeric, etc. If type is NilClass, the type is open, and a non-blank val
-    # will attempt conversion to one of the allowed types, typing it as a String
-    # if no other type is recognized. If the val is blank, and the type is nil,
-    # the column type remains open. If the val is nil or a blank and the type is
-    # already determined, the val is set to nil, and should be filtered from any
-    # column computations. If the val is non-blank and the column type
-    # determined, raise an error if the val cannot be converted to the column
-    # type. Otherwise, returns the converted val as an object of the correct
-    # class.
-    def convert_to_type(val, key)
-      case type[key].to_s
-      when 'NilClass', ''
-        if val.blank?
-          # Leave the type of the column open
-          val = nil
-        else
-          # Only non-blank values are allowed to set the type of the column
-          val_class = val.class
-          val = convert_to_boolean(val) ||
-                convert_to_date_time(val) ||
-                convert_to_numeric(val) ||
-                convert_to_string(val)
-          type[key] =
-            if val.is_a?(Numeric)
-              Numeric
-            else
-              val.class
-            end
-          val
-        end
-      when 'TrueClass', 'FalseClass'
-        val_class = val.class
-        val = convert_to_boolean(val)
-        unless val
-          raise "Inconsistent value in a Boolean column #{key} has class #{val_class}"
-        end
-        val
-      when 'DateTime', 'Date'
-        val_class = val.class
-        val = convert_to_date_time(val)
-        unless val
-          raise "Inconsistent value in a DateTime column #{key} has class #{val_class}"
-        end
-        val
-      when 'Numeric'
-        val_class = val.class
-        val = convert_to_numeric(val)
-        unless val
-          raise "Inconsistent value in a Numeric column #{key} has class #{val_class}"
-        end
-        val
-      when 'String'
-        val_class = val.class
-        val = convert_to_string(val)
-        unless val
-          raise "Inconsistent value in a String column #{key} has class #{val_class}"
-        end
-        val
-      else
-        raise "Unknown object of class #{type[key]} in Table"
-      end
-    end
-
-    # Convert the val to a boolean if it looks like one, otherwise return nil.
-    # Any boolean or a string of t, f, true, false, y, n, yes, or no, regardless
-    # of case is assumed to be a boolean.
-    def convert_to_boolean(val)
-      return val if val.is_a?(TrueClass) || val.is_a?(FalseClass)
-      val = val.to_s.clean
-      return nil if val.blank?
-      if val =~ /\Afalse|f|n|no/i
-        false
-      elsif val =~ /\Atrue|t|y|yes\z/i
-        true
-      end
-    end
-
-    # Convert the val to a DateTime if it is either a DateTime, a Date, or a
-    # String that can be parsed as a DateTime, otherwise return nil. It only
-    # recognizes strings that contain a something like '2016-01-14' or
-    # '2/12/1985' within them, otherwise DateTime.parse would treat many bare
-    # numbers as dates, such as '2841381', which it would recognize as a valid
-    # date, but the user probably does not intend it to be so treated.
-    def convert_to_date_time(val)
-      return val if val.is_a?(DateTime)
-      return val.to_datetime if val.is_a?(Date)
-      begin
-        val = val.to_s.clean
-        return nil if val.blank?
-        return nil unless val =~ %r{\b\d\d\d\d[-/]\d\d?[-/]\d\d?\b}
-        val = DateTime.parse(val.to_s.clean)
-        val = val.to_date if val.seconds_since_midnight.zero?
-        val
-      rescue ArgumentError
-        return nil
-      end
-    end
-
-    # Convert the val to a Numeric if is already a Numberic or is a String that
-    # looks like one. Any Float is promoted to a BigDecimal. Otherwise return
-    # nil.
-    def convert_to_numeric(val)
-      return BigDecimal.new(val, Float::DIG) if val.is_a?(Float)
-      return val if val.is_a?(Numeric)
-      # Eliminate any commas, $'s, or _'s.
-      val = val.to_s.clean.gsub(/[,_$]/, '')
-      return nil if val.blank?
-      case val
-      when /\A(\d+\.\d*)|(\d*\.\d+)\z/
-        BigDecimal.new(val.to_s.clean)
-      when /\A[\d]+\z/
-        val.to_i
-      when %r{\A(\d+)\s*[:/]\s*(\d+)\z}
-        Rational($1, $2)
-      end
-    end
-
-    def convert_to_string(val)
-      val.to_s
     end
   end
 end
