@@ -561,6 +561,39 @@ EOS
       end
     end
 
+    describe 'select' do
+      it 'should be able to select by column names' do
+        aoh = [
+          { a: '5', 'Two words' => '20', s: '5143',  c: '3123' },
+          { a: '4', 'Two words' => '5',  s: 412,     c: 6412 },
+          { a: '7', 'Two words' => '8',  s: '$1821', c: '$1888' }
+        ]
+        tab1 = Table.new(aoh)
+        tab2 = tab1.select(:s, :a, :c)
+        expect(tab2.headers).to eq [:s, :a, :c]
+      end
+
+      it 'should be able to select by column names renaming columns' do
+        aoh = [
+          { a: '5', 'Two words' => '20', s: '5143',  c: '3123' },
+          { a: '4', 'Two words' => '5',  s: 412,     c: 6412 },
+          { a: '7', 'Two words' => '8',  s: '$1821', c: '$1888' }
+        ]
+        tab1 = Table.new(aoh)
+        tab2 = tab1.select(s: :former_s, a: :new_a, c: :renew_c)
+        expect(tab2.headers).to eq [:former_s, :new_a, :renew_c]
+      end
+
+      it 'should be able to select new columns computed from prior' do
+        aoh = [
+          { a: '5', 'Two words' => '20', s: '5143',  c: '3123' },
+          { a: '4', 'Two words' => '5',  s: 412,     c: 6412 },
+          { a: '7', 'Two words' => '8',  s: '$1821', c: '$1888' }
+        ]
+        tab1 = Table.new(aoh)
+        tab2 = tab1.select(row: '@row', s_squared: 's * s',
+                           arb: 's_squared / (a + c).to_d')
+        expect(tab2.headers).to eq [:row, :s_squared, :arb]
       end
     end
 

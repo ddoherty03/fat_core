@@ -149,11 +149,68 @@ module FatCore
       new_tab
     end
 
-    # Return a Table having the selected column expression. For example, ':date,
-    # :ref', would return at Table with only those columns in that order. For
-    # example, ':date > 2016-04-08'.
-    def select(*exprs)
-      tbl = Table.new
+    # Return a Table having the selected column expression. Each expression can
+    # be either a (1) symbol, (2) a hash of symbol => symbol, or (3) a hash of
+    # symbol => 'string', though the bare symbol arguments (1) must precede any
+    # hash arguments. Each expression results in a column in the resulting Table
+    # in the order given. The expressions are evaluated in order as well.
+    def select(*exps)
+      new_cols = {}
+      new_heads = []
+      exps.each do |exp|
+        case exp
+        when Symbol, String
+          h = exp.as_sym
+          raise "Header #{h} does not exist" unless headers.include?(h)
+          new_heads << h
+          new_cols[h] = Column.new(header: h,
+                                   type: column(h).type,
+                                   items: column(h).items)
+        when Hash
+          exp.each_pair do |key, xp|
+            case xp
+            when Symbol
+              h = xp.as_sym
+              raise "Header #{key} does not exist" unless column?(key)
+              new_heads << h
+              new_cols[h] = Column.new(header: h,
+                                       type: column(key).type,
+                                       items: column(key).items)
+            when String
+              # Evaluate xp in the context of a binding including a local
+              # variable for each original column with the name as the head and
+              # the value for the current row as the value and a local variable
+              # for each new column with the new name and the new value.
+              h = key.as_sym
+              new_heads << h
+              new_cols[h] = Column.new(header: h)
+              ev = Evaluator.new(vars: { row: 0 }, before: '@row += 1')
+              rows.each_with_index do |old_row, row_num|
+                new_row ||= {}
+                # Gather the new values computed so far for this row
+                new_vars = new_heads.zip(new_cols.keys
+                                           .map { |k| new_cols[k] }
+                                           .map { |c| c[row_num] })
+                vars = old_row.merge(Hash[new_vars])
+                # Now we have a hash, vars, of all local variables we want to be
+                # defined while evaluating expression xp as the value of column
+                # key in the new column.
+                new_row[h] = ev.evaluate(xp, vars: vars)
+                new_cols[h] << new_row[h]
+              end
+            else
+              raise 'Hash parameters to select must be a symbol or string'
+            end
+          end
+        else
+          raise 'Parameters to select must be a symbol, string, or hash'
+        end
+      end
+      result = Table.new
+      new_heads.each do |h|
+        result.add_column(new_cols[h])
+      end
+      result
     end
 
     # Return a Table containing only rows matching the where expression.
