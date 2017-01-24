@@ -359,6 +359,10 @@ module FatCore
       self
     end
 
+    def <<(row)
+      add_row(row)
+    end
+
     def add_column(col)
       raise "Table already has a column with header '#{col.header}'" if column?(col.header)
       columns << col
