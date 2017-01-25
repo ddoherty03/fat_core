@@ -118,12 +118,14 @@ module FatCore
     # Return the rows of the table as an array of hashes, keyed by the headers.
     def rows
       rows = []
-      0.upto(columns.first.items.last_i) do |rnum|
-        row = {}
-        columns.each do |col|
-          row[col.header] = col[rnum]
+      unless columns.empty?
+        0.upto(columns.first.items.last_i) do |rnum|
+          row = {}
+          columns.each do |col|
+            row[col.header] = col[rnum]
+          end
+          rows << row
         end
-        rows << row
       end
       rows
     end
