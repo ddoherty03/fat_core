@@ -8,6 +8,7 @@ require 'fat_core/version'
 
 require 'fat_core/array'
 require 'fat_core/date'
+require 'fat_core/boolean'
 require 'fat_core/enumerable'
 require 'fat_core/hash'
 require 'fat_core/kernel'
