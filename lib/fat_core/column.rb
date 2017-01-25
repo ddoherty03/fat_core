@@ -142,9 +142,9 @@ module FatCore
       return val if val.is_a?(TrueClass) || val.is_a?(FalseClass)
       val = val.to_s.clean
       return nil if val.blank?
-      if val =~ /\Afalse|f|n|no/i
+      if val =~ /\A(false|f|n|no)\z/i
         false
-      elsif val =~ /\Atrue|t|y|yes\z/i
+      elsif val =~ /\A(true|t|y|yes)\z/i
         true
       end
     end
