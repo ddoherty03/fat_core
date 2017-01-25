@@ -78,8 +78,12 @@ module FatCore
         when Table
           from_table(input)
         else
-          raise ArgumentError,
-                "Cannot initialize Table with an array of #{input[0].class}"
+          if input[0].respond_to?(:to_hash)
+            from_array_of_hashes(input)
+          else
+            raise ArgumentError,
+                  "Cannot initialize Table with an array of #{input[0].class}"
+          end
         end
       else
         raise ArgumentError,
@@ -404,9 +408,11 @@ module FatCore
 
     private
 
+    # Construct table from an array of hashes or an array of any object that can
+    # respond to #to_hash.
     def from_array_of_hashes(rows)
       rows.each do |row|
-        add_row(row)
+        add_row(row.to_hash)
       end
       self
     end
