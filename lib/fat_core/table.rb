@@ -374,7 +374,8 @@ module FatCore
       end
       footers.each_pair do |label, footer|
         foot_row = []
-        columns.each do |hdr|
+        columns.each do |col|
+          hdr = col.header
           foot_row << footer[hdr].format_by(formats[hdr])
         end
         foot_row[0] = label.entitle
@@ -383,45 +384,6 @@ module FatCore
       result
     end
 
-    # This returns the table as an Array of Arrays with formatting applied.
-    # This would normally called after all calculations on the table are done
-    # and you want to return the results.  The Array of Arrays structure is
-    # what org-mode src blocks will render as an org table in the buffer.
-    def to_org(include: headers, exclude: [], formats: {})
-      # Allow include and exclude to be a single symbol or an array of symbols
-      # and compute the displayed columns.
-      columns = [include].flatten
-      exclude = [exclude].flatten
-      columns = include - exclude
-
-      result = []
-
-      header_row = []
-      columns.each do |hdr|
-        header_row << hdr.entitle
-      end
-      result << header_row
-
-      result << nil unless header_row.empty?
-
-      rows.each do |row|
-        out_row = []
-        columns.each do |hdr|
-          out_row << row[hdr].format_by(formats[hdr])
-        end
-        result << out_row
-      end
-
-      footers.each_pair do |label, footer|
-        foot_row = []
-        columns.each do |hdr|
-          foot_row << footer[hdr].format_by(formats[hdr])
-        end
-        foot_row[0] = label.entitle
-        result << foot_row
-      end
-      result
-    end
     ############################################################################
     # Table construction methods.
     ############################################################################

@@ -310,6 +310,7 @@ EOS
         cwd = File.dirname(__FILE__)
         dwtab = Table.new(cwd + '/../example_files/datawatch.org')
         expect(dwtab.column(:g10).type).to eq('Boolean')
+        expect(dwtab.column(:qp10).type).to eq('Boolean')
       end
     end
 
@@ -637,7 +638,6 @@ EOS
         tab2 = tab.where('info =~ /xxxx/')
         expect(tab2.rows.size).to eq(0)
       end
-
     end
 
     describe 'group_by' do
