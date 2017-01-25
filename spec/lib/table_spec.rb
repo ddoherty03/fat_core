@@ -627,6 +627,33 @@ EOS
         expect(aoa[0].class).to eq Array
         expect(aoa[0][0]).to eq 'A'
       end
+
+      it 'should be able to output an org babel aoa' do
+        # This is what the data looks like when called from org babel code
+        # blocks.
+        tab =
+          [['Ref', 'Date', 'Code', 'Raw', 'Shares', 'Price', 'Info'],
+           [1, '2013-05-02', 'P', 795_546.20, 795_546.2, 1.1850, 'ZMPEF1'],
+           [2, '2013-05-02', 'P', 118_186.40, 118_186.4, 11.8500, 'ZMPEF1'],
+           [7, '2013-05-20', 'S', 12_000.00, 5046.00, 28.2804, 'ZMEAC'],
+           [8, '2013-05-20', 'S', 85_000.00, 35_742.50, 28.3224, 'ZMEAC'],
+           [9, '2013-05-20', 'S', 33_302.00, 14_003.49, 28.6383, 'ZMEAC'],
+           [10, '2013-05-23', 'S', 8000.00, 3364.00, 27.1083, 'ZMEAC'],
+           [11, '2013-05-23', 'S', 23_054.00, 9694.21, 26.8015, 'ZMEAC'],
+           [12, '2013-05-23', 'S', 39_906.00, 16_780.47, 25.1749, 'ZMEAC'],
+           [13, '2013-05-29', 'S', 13_459.00, 5659.51, 24.7464, 'ZMEAC'],
+           [14, '2013-05-29', 'S', 15_700.00, 6601.85, 24.7790, 'ZMEAC'],
+           [15, '2013-05-29', 'S', 15_900.00, 6685.95, 24.5802, 'ZMEAC'],
+           [16, '2013-05-30', 'S', 6_679.00, 2808.52, 25.0471, 'ZMEAC']]
+        tg = Table.new(tab).add_sum_footer([:raw, :shares, :price])
+        aoa = tg.to_org(formats: { raw: '%,', shares: '%,', price: '%,4' })
+        expect(aoa[-1][0]).to eq 'Total'
+        expect(aoa[-1][1]).to eq ''
+        expect(aoa[-1][2]).to eq ''
+        expect(aoa[-1][3]).to eq '1,166,733'
+        expect(aoa[-1][4]).to eq '1,020,119'
+        expect(aoa[-1][5]).to eq '276.5135'
+      end
     end
   end
 end
