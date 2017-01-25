@@ -16,9 +16,9 @@ module FatCore
       items.each { |i| self << i }
     end
 
-    def <<(itm)
-      items << convert_to_type(itm)
-    end
+    ##########################################################################
+    # Attributes
+    ##########################################################################
 
     def [](k)
       items[k]
@@ -32,16 +32,17 @@ module FatCore
       items.size
     end
 
+    def empty?
+      items.empty?
+    end
+
     def last_i
       size - 1
     end
 
-    # Return a new Column appending the items of other to our items, checking
-    # for type compatibility.
-    def +(other)
-      raise 'Cannot combine columns with different types' unless type == other.type
-      Column.new(header: header, items: items + other.items)
-    end
+    ##########################################################################
+    # Aggregates
+    ##########################################################################
 
     def first
       items.compact.first
@@ -57,20 +58,77 @@ module FatCore
     end
 
     def sum
+      only_with('sum', 'Numeric', 'String')
       items.compact.sum
     end
 
     def min
+      only_with('min', 'NilClass', 'Numeric', 'String', 'DateTime')
       items.compact.min
     end
 
     def max
+      only_with('max', 'NilClass', 'Numeric', 'String', 'DateTime')
       items.compact.max
     end
 
     def avg
-      sum / items.compact.size.to_d
+      only_with('avg', 'DateTime', 'Numeric')
+      if type == 'DateTime'
+        avg_jd = items.compact.map(&:jd).sum / items.compact.size.to_d
+        DateTime.jd(avg_jd)
+      else
+        sum / items.compact.size.to_d
+      end
     end
+
+    def any?
+      only_with('any?', 'Boolean')
+      items.compact.any?
+    end
+
+    def all?
+      only_with('all?', 'Boolean')
+      items.compact.all?
+    end
+
+    def none?
+      only_with('any?', 'Boolean')
+      items.compact.none?
+    end
+
+    def one?
+      only_with('any?', 'Boolean')
+      items.compact.one?
+    end
+
+    private
+
+    def only_with(agg, *types)
+      unless types.include?(type)
+        raise "Aggregate '#{agg}' cannot be applied to a #{type} column"
+      end
+    end
+
+    public
+
+    ##########################################################################
+    # Construction
+    ##########################################################################
+
+    # Append item to end of the column
+    def <<(itm)
+      items << convert_to_type(itm)
+    end
+
+    # Return a new Column appending the items of other to our items, checking
+    # for type compatibility.
+    def +(other)
+      raise 'Cannot combine columns with different types' unless type == other.type
+      Column.new(header: header, items: items + other.items)
+    end
+
+    private
 
     # Convert val to the type of key, a ruby class constant, such as Date,
     # Numeric, etc. If type is NilClass, the type is open, and a non-blank val
