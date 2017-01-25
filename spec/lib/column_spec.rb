@@ -31,11 +31,11 @@ module FatCore
         expect(c[6]).to eq(nil)
       end
 
-      it 'should recognize Date columns but allow DateTime and nil' do
+      it 'should recognize DateTime columns but allow Date and nil' do
         c = Column.new(header: :when,
                        items: [nil, '2015-01-21', '[2015-01-12]',
                                '<2011-01-06>', nil, '<2017-01-25 Wed 10:00>'])
-        expect(c.type).to eq('Date')
+        expect(c.type).to eq('DateTime')
         expect(c[0]).to eq(nil)
         expect(c[1]).to eq(Date.parse('2015-01-21'))
         expect(c[2]).to eq(Date.parse('2015-01-12'))

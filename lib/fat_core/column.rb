@@ -6,7 +6,7 @@ module FatCore
   class Column
     attr_reader :header, :type, :items
 
-    TYPES = %w(NilClass TrueClass FalseClass Date DateTime Numeric String)
+    TYPES = %w(NilClass Boolean DateTime Numeric String)
 
     def initialize(header:, items: [])
       @header = header.as_sym
@@ -103,14 +103,18 @@ module FatCore
           @type =
             if new_val == true || new_val == false
               'Boolean'
+            elsif new_val.is_a?(Date) || new_val.is_a?(DateTime)
+              'DateTime'
             elsif new_val.is_a?(Numeric)
               'Numeric'
+            elsif new_val.is_a?(String)
+              'String'
             else
-              new_val.class.name
+              raise "Cannot add #{val} of type #{new_val.class.name} to a column"
             end
         end
         new_val
-      when 'Boolean', 'TrueClass', 'FalseClass'
+      when 'Boolean'
         if val.nil?
           nil
         else
@@ -120,7 +124,7 @@ module FatCore
           end
           new_val
         end
-      when 'DateTime', 'Date'
+      when 'DateTime'
         if val.nil?
           nil
         else
