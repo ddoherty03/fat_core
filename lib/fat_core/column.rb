@@ -88,12 +88,11 @@ module FatCore
         if val != false && val.blank?
           # Leave the type of the column open. Unfortunately, false counts as
           # blank and we don't want it to. It should be classified as a boolean.
-          val = nil
+          new_val = nil
         else
           # Only non-blank values are allowed to set the type of the column
-          val_class = val.class
           bool_val = convert_to_boolean(val)
-          val =
+          new_val =
             if bool_val.nil?
               convert_to_date_time(val) ||
                 convert_to_numeric(val) ||
@@ -102,45 +101,57 @@ module FatCore
               bool_val
             end
           @type =
-            if val == true || val == false
+            if new_val == true || new_val == false
               'Boolean'
-            elsif val.is_a?(Numeric)
+            elsif new_val.is_a?(Numeric)
               'Numeric'
             else
-              val.class.name
+              new_val.class.name
             end
         end
-        val
+        new_val
       when 'Boolean', 'TrueClass', 'FalseClass'
-        val_class = val.class
-        val = convert_to_boolean(val)
         if val.nil?
-          raise "Inconsistent value in a Boolean column #{header} has class #{val_class}"
+          nil
+        else
+          new_val = convert_to_boolean(val)
+          if new_val.nil?
+            raise "Attempt to add '#{val}' to a column already typed as #{type}"
+          end
+          new_val
         end
-        val
       when 'DateTime', 'Date'
-        val_class = val.class
-        val = convert_to_date_time(val)
-        unless val
-          raise "Inconsistent value in a DateTime column #{key} has class #{val_class}"
+        if val.nil?
+          nil
+        else
+          new_val = convert_to_date_time(val)
+          if new_val.nil?
+            raise "Attempt to add '#{val}' to a column already typed as #{type}"
+          end
+          new_val
         end
-        val
       when 'Numeric'
-        val_class = val.class
-        val = convert_to_numeric(val)
-        unless val
-          raise "Inconsistent value in a Numeric column #{key} has class #{val_class}"
+        if val.nil?
+          nil
+        else
+          new_val = convert_to_numeric(val)
+          if new_val.nil?
+            raise "Attempt to add '#{val}' to a column already typed as #{type}"
+          end
+          new_val
         end
-        val
       when 'String'
-        val_class = val.class
-        val = convert_to_string(val)
-        unless val
-          raise "Inconsistent value in a String column #{key} has class #{val_class}"
+        if val.nil?
+          nil
+        else
+          new_val = convert_to_string(val)
+          if new_val.nil?
+            raise "Attempt to add '#{val}' to a column already typed as #{type}"
+          end
+          new_val
         end
-        val
       else
-        raise "Unknown object of class #{type} in Table"
+        raise "Mysteriously, column has unknown type '#{type}'"
       end
     end
 
