@@ -8,11 +8,12 @@ module FatCore
 
     TYPES = %w(NilClass TrueClass FalseClass Date DateTime Numeric String)
 
-    def initialize(header:, type: 'NilClass', items: [])
+    def initialize(header:, items: [])
       @header = header.as_sym
-      @type = type
+      @type = 'NilClass'
       raise "Unknown column type '#{type}" unless TYPES.include?(@type.to_s)
-      @items = items
+      @items = []
+      items.each { |i| self << i }
     end
 
     def <<(itm)
@@ -39,7 +40,7 @@ module FatCore
     # for type compatibility.
     def +(other)
       raise 'Cannot combine columns with different types' unless type == other.type
-      Column.new(header: header, type: type, items: items + other.items)
+      Column.new(header: header, items: items + other.items)
     end
 
     def first

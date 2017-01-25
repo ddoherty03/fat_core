@@ -174,7 +174,6 @@ module FatCore
           raise "Header #{h} does not exist" unless headers.include?(h)
           new_heads << h
           new_cols[h] = Column.new(header: h,
-                                   type: column(h).type,
                                    items: column(h).items)
         when Hash
           exp.each_pair do |key, xp|
@@ -184,7 +183,6 @@ module FatCore
               raise "Header #{key} does not exist" unless column?(key)
               new_heads << h
               new_cols[h] = Column.new(header: h,
-                                       type: column(key).type,
                                        items: column(key).items)
             when String
               # Evaluate xp in the context of a binding including a local
@@ -314,8 +312,7 @@ module FatCore
         items = rows.map { |r| r[h] }
         new_h = "#{agg_func}_#{h}"
         new_row[new_h] = Column.new(header: h,
-                                items: items,
-                                type: column(h).type).send(agg_func)
+                                    items: items).send(agg_func)
       end
       new_row
     end
