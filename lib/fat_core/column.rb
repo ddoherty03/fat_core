@@ -90,19 +90,26 @@ module FatCore
         else
           # Only non-blank values are allowed to set the type of the column
           val_class = val.class
-          val = convert_to_boolean(val) ||
-                convert_to_date_time(val) ||
+          bool_val = convert_to_boolean(val)
+          val =
+            if bool_val.nil?
+              convert_to_date_time(val) ||
                 convert_to_numeric(val) ||
                 convert_to_string(val)
+            else
+              bool_val
+            end
           @type =
-            if val.is_a?(Numeric)
+            if val == true || val == false
+              'Boolean'
+            elsif val.is_a?(Numeric)
               'Numeric'
             else
               val.class.name
             end
-          val
         end
-      when 'TrueClass', 'FalseClass'
+        val
+      when 'Boolean', 'TrueClass', 'FalseClass'
         val_class = val.class
         val = convert_to_boolean(val)
         if val.nil?

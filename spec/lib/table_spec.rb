@@ -305,6 +305,12 @@ EOS
           expect(row[:c].is_a?(BigDecimal)).to be true
         end
       end
+
+      it 'should set T F columns to Boolean' do
+        cwd = File.dirname(__FILE__)
+        dwtab = Table.new(cwd + '/../example_files/datawatch.org')
+        expect(dwtab.column(:g10).type).to eq('Boolean')
+      end
     end
 
     describe 'column operations' do
@@ -631,6 +637,7 @@ EOS
         tab2 = tab.where('info =~ /xxxx/')
         expect(tab2.rows.size).to eq(0)
       end
+
     end
 
     describe 'group_by' do
