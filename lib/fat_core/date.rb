@@ -289,6 +289,11 @@ class Date
     strftime('%Y%m%d')
   end
 
+  def format_by(fmt = '%Y-%m-%d')
+    fmt ||= '%Y-%m-%d'
+    strftime(fmt)
+  end
+
   # Format as an inactive Org date (see emacs org-mode)
   def org
     strftime('[%Y-%m-%d %a]')

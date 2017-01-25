@@ -78,6 +78,20 @@ class Numeric
     end
   end
 
+  # Format the number according to the given sprintf format.  Besides the
+  # sprintf formats, a format string of '%,2', for example, will return the
+  # number grouped by commas and rounded to 2 places.  If no number of places
+  # is given, the number will be rounded to an integer.
+  def format_by(fmt = nil)
+    return to_s unless fmt
+    if /%,(?<places>\d*)/ =~ fmt.to_s.clean
+      places ||= 0
+      commas(places.to_i)
+    else
+      format fmt, self
+    end
+  end
+
   # Allow erb documents can directly interpolate numbers
   def tex_quote
     to_s

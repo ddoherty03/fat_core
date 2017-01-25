@@ -10,4 +10,8 @@ class NilClass
   def commas(_places = nil)
     ''
   end
+
+  def format_by(_fmt)
+    ''
+  end
 end
