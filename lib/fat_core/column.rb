@@ -105,8 +105,8 @@ module FatCore
       when 'TrueClass', 'FalseClass'
         val_class = val.class
         val = convert_to_boolean(val)
-        unless val
-          raise "Inconsistent value in a Boolean column #{key} has class #{val_class}"
+        if val.nil?
+          raise "Inconsistent value in a Boolean column #{header} has class #{val_class}"
         end
         val
       when 'DateTime', 'Date'
