@@ -311,6 +311,12 @@ EOS
         dwtab = Table.new(cwd + '/../example_files/datawatch.org')
         expect(dwtab.column(:g10).type).to eq('Boolean')
         expect(dwtab.column(:qp10).type).to eq('Boolean')
+        dwo = dwtab.where('qp10 || g10')
+        dwo = dwo.to_org
+        dwo.each_with_index do |row, k|
+          next unless k > 1
+          expect(row[5]).to match(/\A(T|F)\z/)
+        end
       end
     end
 

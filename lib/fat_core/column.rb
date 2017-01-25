@@ -84,8 +84,9 @@ module FatCore
     def convert_to_type(val)
       case type
       when 'NilClass'
-        if val.blank?
-          # Leave the type of the column open
+        if val != false && val.blank?
+          # Leave the type of the column open. Unfortunately, false counts as
+          # blank and we don't want it to. It should be classified as a boolean.
           val = nil
         else
           # Only non-blank values are allowed to set the type of the column
