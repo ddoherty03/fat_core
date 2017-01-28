@@ -326,6 +326,7 @@ module FatCore
     def add_footer(label: 'Total', aggregate: :sum, heads: [])
       foot = {}
       heads.each do |h|
+        raise "No #{h} column in table to #{aggregate}" unless headers.include?(h)
         foot[h] = column(h).send(aggregate)
       end
       @footers[label.as_sym] = foot
