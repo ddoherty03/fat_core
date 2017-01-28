@@ -171,7 +171,7 @@ module FatCore
         case exp
         when Symbol, String
           h = exp.as_sym
-          raise "Header #{h} does not exist" unless headers.include?(h)
+          raise "Column '#{h}' in select does not exist" unless column?(h)
           new_heads << h
           new_cols[h] = Column.new(header: h,
                                    items: column(h).items)
@@ -180,7 +180,7 @@ module FatCore
             case xp
             when Symbol
               h = xp.as_sym
-              raise "Header #{key} does not exist" unless column?(key)
+              raise "Column '#{key}' in select does not exist" unless column?(key)
               new_heads << h
               new_cols[h] = Column.new(header: h,
                                        items: column(key).items)
