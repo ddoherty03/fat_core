@@ -165,58 +165,47 @@ module FatCore
     # hash arguments. Each expression results in a column in the resulting Table
     # in the order given. The expressions are evaluated in order as well.
     def select(*exps)
+      result = Table.new
       new_cols = {}
-      new_heads = []
-      exps.each do |exp|
-        case exp
-        when Symbol, String
-          h = exp.as_sym
-          raise "Column '#{h}' in select does not exist" unless column?(h)
-          new_heads << h
-          new_cols[h] = Column.new(header: h,
-                                   items: column(h).items)
-        when Hash
-          exp.each_pair do |key, xp|
-            case xp
-            when Symbol
-              h = xp.as_sym
-              raise "Column '#{key}' in select does not exist" unless column?(key)
-              new_heads << h
-              new_cols[h] = Column.new(header: h,
-                                       items: column(key).items)
-            when String
-              # Evaluate xp in the context of a binding including a local
-              # variable for each original column with the name as the head and
-              # the value for the current row as the value and a local variable
-              # for each new column with the new name and the new value.
-              h = key.as_sym
-              new_heads << h
-              new_cols[h] = Column.new(header: h)
-              ev = Evaluator.new(vars: { row: 0 }, before: '@row += 1')
-              rows.each_with_index do |old_row, row_num|
-                new_row ||= {}
-                # Gather the new values computed so far for this row
-                new_vars = new_heads.zip(new_cols.keys
-                                           .map { |k| new_cols[k] }
-                                           .map { |c| c[row_num] })
-                vars = old_row.merge(Hash[new_vars])
+      ev = Evaluator.new(vars: { row: 0 }, before: '@row += 1')
+      rows.each do |old_row|
+        new_heads = []
+        new_row ||= {}
+        exps.each do |exp|
+          case exp
+          when Symbol, String
+            h = exp.as_sym
+            raise "Column '#{h}' in select does not exist" unless column?(h)
+            new_row[h] = old_row[h]
+          when Hash
+            # Note that when one of the exps is a Hash, it will contain an
+            # output expression for each member of the Hash, so we have to loop
+            # through them here.
+            exp.each_pair do |key, val|
+              # Gather the new values computed so far for this row
+              vars = old_row.merge(new_row)
+              case val
+              when Symbol
+                h = val.as_sym
+                raise "Column '#{h}' in select does not exist" unless vars.keys.include?(h)
+                new_row[key] = vars[h]
+              when String
                 # Now we have a hash, vars, of all local variables we want to be
                 # defined while evaluating expression xp as the value of column
                 # key in the new column.
-                new_row[h] = ev.evaluate(xp, vars: vars)
-                new_cols[h] << new_row[h]
+                h = key.as_sym
+                new_row[h] = ev.evaluate(val, vars: vars)
+                # Don't add this column to new_heads until after the eval so it
+                # does not shadow the existing value of row[h].
+              else
+                raise 'Hash parameters to select must be a symbol or string'
               end
-            else
-              raise 'Hash parameters to select must be a symbol or string'
             end
+          else
+            raise 'Parameters to select must be a symbol, string, or hash'
           end
-        else
-          raise 'Parameters to select must be a symbol, string, or hash'
         end
-      end
-      result = Table.new
-      new_heads.each do |h|
-        result.add_column(new_cols[h])
+        result.add_row(new_row)
       end
       result
     end

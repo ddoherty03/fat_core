@@ -593,7 +593,7 @@ EOS
           { a: '7', 'Two words' => '8',  s: '$1821', c: '$1888' }
         ]
         tab1 = Table.new(aoh)
-        tab2 = tab1.select(s: :former_s, a: :new_a, c: :renew_c)
+        tab2 = tab1.select(former_s: :s, new_a: :a, renew_c: :c)
         expect(tab2.headers).to eq [:former_s, :new_a, :renew_c]
       end
 
@@ -607,6 +607,19 @@ EOS
         tab2 = tab1.select(:two_words, row: '@row', s_squared: 's * s',
                            arb: 's_squared / (a + c).to_d')
         expect(tab2.headers).to eq [:two_words, :row, :s_squared, :arb]
+      end
+
+      it 'should be able to use old value of current column to compute new value' do
+        aoh = [
+          { a: '5', 'Two words' => '20', s: '5_143', c: '3123' },
+          { a: '4', 'Two words' => '5',  s: 412,     c: 6412 },
+          { a: '7', 'Two words' => '8',  s: '$1821', c: '$1_888' }
+        ]
+        tab1 = Table.new(aoh)
+        tab2 = tab1.select(:two_words, s: 's * s', nc: 'c + c', c: 'nc+nc')
+        expect(tab2.headers).to eq [:two_words, :s, :nc, :c]
+        expect(tab2[:s].items).to eq([26450449, 169744, 3316041])
+        expect(tab2[:c].items).to eq([12492, 25648, 7552])
       end
     end
 
