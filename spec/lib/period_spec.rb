@@ -455,7 +455,13 @@ describe Period do
     it 'should raise error for invalid chunk name' do
       expect {
         Period.new('2012-12-28', '2012-12-31').chunks(size: :wally)
-      }.to raise_error(ArgumentError)
+      }.to raise_error /unknown chunk sym/
+    end
+
+    it 'should raise error for too large a chunk' do
+      expect {
+        Period.new('2012-12-01', '2012-12-31').chunks(size: :bimonth)
+      }.to raise_error /longer than/
     end
 
     it 'should not include a partial final chunk by default' do

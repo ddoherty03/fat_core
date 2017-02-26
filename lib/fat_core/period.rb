@@ -216,6 +216,28 @@ class Period
     end
   end
 
+  # The smallest number of days possible in each chunk
+  def self.chunk_sym_to_min_days(sym)
+    case sym
+    when :semimonth
+      15
+    when :month
+      28
+    when :bimonth
+      59
+    when :quarter
+      86
+    when :half
+      180
+    when :year
+      365
+    when :irregular
+      raise ArgumentError, 'no minimum period for :irregular chunk'
+    else
+      chunk_sym_to_days(sym)
+    end
+  end
+
   # The largest number of days possible in each chunk
   def self.chunk_sym_to_max_days(sym)
     case sym
@@ -430,15 +452,18 @@ class Period
       .map { |r| Period.new(r.first, r.last) }
   end
 
-  # Return an array of Periods wholly-contained within self in chunks of
-  # size, defaulting to monthly chunks.  Partial chunks at the beginning and
-  # end of self are not included unless partial_first or partial_last,
-  # respectively, are set true.  The last chunk can be made to extend beyond
-  # the end of self to make it a whole chunk if round_up_last is set true,
-  # in which case, partial_last is ignored.
+  # Return an array of Periods wholly-contained within self in chunks of size,
+  # defaulting to monthly chunks. Partial chunks at the beginning and end of
+  # self are not included unless partial_first or partial_last, respectively,
+  # are set true. The last chunk can be made to extend beyond the end of self to
+  # make it a whole chunk if round_up_last is set true, in which case,
+  # partial_last is ignored.
   def chunks(size: :month, partial_first: false, partial_last: false,
              round_up_last: false)
     size = size.to_sym
+    if Period.chunk_sym_to_min_days(size) > length
+      raise ArgumentError, "any #{size} is longer than this period's #{length} days"
+    end
     result = []
     chunk_start = first.dup
     while chunk_start <= last
