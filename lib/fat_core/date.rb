@@ -65,8 +65,8 @@ class Date
     end
 
     today = Date.current
-    case spec
-    when /^(\d\d\d\d)-(\d\d?)-(\d\d?)*$/
+    case spec.clean
+    when /\A(\d\d\d\d)[-\/](\d\d?)[-\/](\d\d?)\z/
       # A specified date
       Date.new($1.to_i, $2.to_i, $3.to_i)
     when /\AW(\d\d?)\z/, /\A(\d\d?)W\z/
@@ -79,7 +79,7 @@ class Date
       else
         Date.commercial(today.year, week_num).end_of_week
       end
-    when /\A(\d\d\d\d)-W(\d\d?)\z/, /\A(\d\d\d\d)-(\d\d?)W\z/
+    when /\A(\d\d\d\d)[-\/]W(\d\d?)\z/, /\A(\d\d\d\d)[-\/](\d\d?)W\z/
       year = $1.to_i
       week_num = $2.to_i
       if week_num < 1 || week_num > 53
@@ -90,7 +90,7 @@ class Date
       else
         Date.commercial(year, week_num).end_of_week
       end
-    when /^(\d\d\d\d)-(\d)[Qq]$/, /^(\d\d\d\d)-[Qq](\d)$/
+    when /^(\d\d\d\d)[-\/](\d)[Qq]$/, /^(\d\d\d\d)[-\/][Qq](\d)$/
       # Year-Quarter
       year = $1.to_i
       quarter = $2.to_i
@@ -113,7 +113,7 @@ class Date
       else
         date.end_of_quarter
       end
-    when /^(\d\d\d\d)-(\d)[Hh]$/, /^(\d\d\d\d)-[Hh](\d)$/
+    when /^(\d\d\d\d)[-\/](\d)[Hh]$/, /^(\d\d\d\d)[-\/][Hh](\d)$/
       # Year-Half
       year = $1.to_i
       half = $2.to_i
@@ -136,12 +136,19 @@ class Date
       else
         date.end_of_half
       end
-    when /^(\d\d\d\d)-(\d\d?)*$/
+    when /^(\d\d\d\d)[-\/](\d\d?)*$/
       # Year-Month only
       if spec_type == :from
         Date.new($1.to_i, $2.to_i, 1)
       else
         Date.new($1.to_i, $2.to_i, 1).end_of_month
+      end
+    when /^(\d\d?)[-\/](\d\d?)*$/
+      # Month-Day only
+      if spec_type == :from
+        Date.new(today.year, $1.to_i, $2.to_i)
+      else
+        Date.new(today.year, $1.to_i, $2.to_i).end_of_month
       end
     when /\A(\d\d?)\z/
       # Month only

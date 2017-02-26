@@ -211,7 +211,7 @@ describe Date do
 
       it 'should parse plain iso dates correctly' do
         expect(Date.parse_spec('2011-07-15')).to eq Date.parse('2011-07-15')
-        expect(Date.parse_spec('2011-08-05')).to eq Date.parse('2011-08-05')
+        expect(Date.parse_spec('2011/08/05')).to eq Date.parse('2011-08-05')
       end
 
       it "should parse week numbers such as 'W23' or '23W' correctly" do
@@ -231,7 +231,7 @@ describe Date do
         expect(Date.parse_spec('2003-W23')).to eq Date.parse('2003-06-02')
         expect(Date.parse_spec('2003-W23', :to)).to eq Date.parse('2003-06-08')
         expect(Date.parse_spec('2003-23W')).to eq Date.parse('2003-06-02')
-        expect(Date.parse_spec('2003-23W', :to)).to eq Date.parse('2003-06-08')
+        expect(Date.parse_spec('2003/23W', :to)).to eq Date.parse('2003-06-08')
         expect {
           Date.parse_spec('2003-W83', :to)
         }.to raise_error(ArgumentError)
@@ -241,7 +241,7 @@ describe Date do
         expect(Date.parse_spec('2011-2H', :from)).to eq Date.parse('2011-07-01')
         expect(Date.parse_spec('2011-2H', :to)).to eq Date.parse('2011-12-31')
         expect(Date.parse_spec('2011-H1', :from)).to eq Date.parse('2011-01-01')
-        expect(Date.parse_spec('2011-H1', :to)).to eq Date.parse('2011-06-30')
+        expect(Date.parse_spec('2011/H1', :to)).to eq Date.parse('2011-06-30')
         expect { Date.parse_spec('2011-3H') }.to raise_error(ArgumentError)
       end
 
@@ -257,7 +257,7 @@ describe Date do
         expect(Date.parse_spec('2011-4Q', :from)).to eq Date.parse('2011-10-01')
         expect(Date.parse_spec('2011-4Q', :to)).to eq Date.parse('2011-12-31')
         expect(Date.parse_spec('2011-Q4', :from)).to eq Date.parse('2011-10-01')
-        expect(Date.parse_spec('2011-Q4', :to)).to eq Date.parse('2011-12-31')
+        expect(Date.parse_spec('2011/Q4', :to)).to eq Date.parse('2011-12-31')
         expect { Date.parse_spec('2011-5Q') }.to raise_error(ArgumentError)
       end
 
@@ -271,7 +271,7 @@ describe Date do
 
       it 'should parse year-month specs such as YYYY-MM' do
         expect(Date.parse_spec('2010-5', :from)).to eq Date.parse('2010-05-01')
-        expect(Date.parse_spec('2010-5', :to)).to eq Date.parse('2010-05-31')
+        expect(Date.parse_spec('2010/5', :to)).to eq Date.parse('2010-05-31')
         expect { Date.parse_spec('2010-13') }.to raise_error(ArgumentError)
       end
 
@@ -280,6 +280,21 @@ describe Date do
         expect(Date.parse_spec('10', :to)).to eq Date.parse('2012-10-31')
         expect { Date.parse_spec('99') }.to raise_error(ArgumentError)
         expect { Date.parse_spec('011') }.to raise_error(ArgumentError)
+      end
+
+      it 'should parse month-day specs such as MM-DD' do
+        expect(Date.parse_spec('10-12', :from)).to eq Date.parse('2012-10-12')
+        expect(Date.parse_spec('10-2', :from)).to eq Date.parse('2012-10-02')
+        expect(Date.parse_spec('5-12', :from)).to eq Date.parse('2012-05-12')
+        expect(Date.parse_spec('5-2', :from)).to eq Date.parse('2012-05-02')
+        expect(Date.parse_spec('10/12', :from)).to eq Date.parse('2012-10-12')
+        expect(Date.parse_spec('10/2', :from)).to eq Date.parse('2012-10-02')
+        expect(Date.parse_spec('5/12', :from)).to eq Date.parse('2012-05-12')
+        expect(Date.parse_spec('5/2', :from)).to eq Date.parse('2012-05-02')
+        expect { Date.parse_spec('99-3') }.to raise_error(ArgumentError)
+        expect { Date.parse_spec('3-33') }.to raise_error(ArgumentError)
+        expect { Date.parse_spec('99/3') }.to raise_error(ArgumentError)
+        expect { Date.parse_spec('3/33') }.to raise_error(ArgumentError)
       end
 
       it 'should parse year-only specs such as YYYY' do
