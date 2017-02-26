@@ -19,3 +19,4 @@ tmp
 /GRTAGS
 /GTAGS
 /.rubocop_todo.yml
+/gtags.files
