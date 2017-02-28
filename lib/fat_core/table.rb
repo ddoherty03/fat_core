@@ -159,7 +159,7 @@ module FatCore
       new_tab
     end
 
-    # Return a Table having the selected column expression. Each expression can
+    # Return a Table having the selected column expressions. Each expression can
     # be either a (1) symbol, (2) a hash of symbol => symbol, or (3) a hash of
     # symbol => 'string', though the bare symbol arguments (1) must precede any
     # hash arguments. Each expression results in a column in the resulting Table
@@ -266,7 +266,7 @@ module FatCore
         when Hash
           agg_cols = xp
         else
-          raise "Cannot group by parameter '#{xp}"
+          raise "Cannot group by parameter '#{xp}'"
         end
       end
       default_agg_func = :first
