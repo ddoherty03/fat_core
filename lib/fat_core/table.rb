@@ -227,84 +227,20 @@ module FatCore
       result
     end
 
-    # Return a Table that combines this table with another table. In other
-    # words, return the union of this table with the other. The headers of this
-    # table are used in the result. There must be the same number of columns of
-    # the same type in the two tables, or an exception will be thrown.
-    # Duplicates are eliminated from the result.
+    # Return a Table that combines this table with another table. The headers of
+    # this table are used in the result. There must be the same number of
+    # columns of the same type in the two tables, or an exception will be
+    # thrown. Unlike in SQL, no duplicates are eliminated from the result.
     def union(other)
-      set_operation(other, :+, true)
-    end
-
-    # Return a Table that combines this table with another table. In other
-    # words, return the union of this table with the other. The headers of this
-    # table are used in the result. There must be the same number of columns of
-    # the same type in the two tables, or an exception will be thrown.
-    # Duplicates are not eliminated from the result.
-    def union_all(other)
-      set_operation(other, :+, false)
-    end
-
-    # Return a Table that includes the rows that appear in this table and in
-    # another table. In other words, return the intersection of this table with
-    # the other. The headers of this table are used in the result. There must be
-    # the same number of columns of the same type in the two tables, or an
-    # exception will be thrown. Duplicates are eliminated from the result.
-    def intersect(other)
-      set_operation(other, :intersect, true)
-    end
-
-    # Return a Table that includes the rows that appear in this table and in
-    # another table. In other words, return the intersection of this table with
-    # the other. The headers of this table are used in the result. There must be
-    # the same number of columns of the same type in the two tables, or an
-    # exception will be thrown. Duplicates are not eliminated from the result.
-    def intersect_all(other)
-      set_operation(other, :intersect, false)
-    end
-
-    # Return a Table that includes the rows of this table except for any rows
-    # that are the same as those in another table. In other words, return the
-    # set difference between this table an the other. The headers of this table
-    # are used in the result. There must be the same number of columns of the
-    # same type in the two tables, or an exception will be thrown. Duplicates
-    # are eliminated from the result.
-    def except(other)
-      set_operation(other, :difference, true)
-    end
-
-    # Return a Table that includes the rows of this table except for any rows
-    # that are the same as those in another table. In other words, return the
-    # set difference between this table an the other. The headers of this table
-    # are used in the result. There must be the same number of columns of the
-    # same type in the two tables, or an exception will be thrown. Duplicates
-    # are not eliminated from the result.
-    def except_all(other)
-      set_operation(other, :difference, false)
-    end
-
-    private
-
-    # Apply the set operation given by op between this table and the other table
-    # given in the first argument.  If distinct is true, eliminate duplicates
-    # from the result.
-    def set_operation(other, op = :+, distinct = true)
       unless columns.size == other.columns.size
-        raise 'Cannot apply a set operation to tables with a different number of columns.'
+        raise 'Cannot apply union to tables with a different number of columns.'
       end
-      unless columns.map(&:type) == other.columns.map(&:type)
-        raise 'Cannot apply a set operation to tables with different column types.'
-      end
-      other_rows = other.rows.map { |r| r.replace_keys(headers) }
       result = Table.new
-      new_rows = rows.send(op, other_rows)
-      new_rows.each do |row|
-        result << row
+      columns.each_with_index do |col, k|
+        result.add_column(col + other.columns[k])
       end
-      distinct ? result.distinct : result
+      result
     end
-
-    public
 
     # Return a table that joins this table to another based on one or more join
     # expressions. There are several possibilities for the join expressions:
