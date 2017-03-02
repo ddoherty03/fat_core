@@ -115,6 +115,12 @@ module FatCore
       columns.map(&:header)
     end
 
+    # Return the number of rows in the table.
+    def size
+      return 0 if columns.empty?
+      columns.first.size
+    end
+
     # Return the rows of the table as an array of hashes, keyed by the headers.
     def rows
       rows = []
