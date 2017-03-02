@@ -304,7 +304,7 @@ module FatCore
     #      have N and M rows respectively, the joined table will have N * M
     #      rows.
     #
-    JOIN_TYPES = [ :inner, :left, :right, :full, :cross ]
+    JOIN_TYPES = [:inner, :left, :right, :full, :cross]
 
     def join(other, *exps, join_type: :inner)
       raise ArgumentError, 'need other table as first argument to join' unless other.is_a?(Table)

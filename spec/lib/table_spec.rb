@@ -669,6 +669,7 @@ EOS
     end
 
     describe 'join' do
+      # These tests are taken from https://www.tutorialspoint.com/postgresql/postgresql_using_joins.htm
       before :all do
         @tab_a = Table.new([
           { id: 1, name: 'Paul', age: 32, address: 'California', salary: 20000, join_date: '2001-07-13' },
