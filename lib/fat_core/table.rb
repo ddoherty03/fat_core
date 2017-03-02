@@ -227,20 +227,6 @@ module FatCore
       result
     end
 
-    # Return this table with all duplicate rows eliminated.
-    def distinct
-      result = Table.new
-      uniq_rows = rows.uniq
-      uniq_rows.each do |row|
-        result << row
-      end
-      result
-    end
-
-    def uniq
-      distinct
-    end
-
     # Return a Table that combines this table with another table. In other
     # words, return the union of this table with the other. The headers of this
     # table are used in the result. There must be the same number of columns of
