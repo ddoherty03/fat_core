@@ -242,6 +242,273 @@ module FatCore
       result
     end
 
+    # Return a table that joins this table to another based on one or more join
+    # expressions. There are several possibilities for the join expressions:
+    #
+    # 1. If no join expressions are given, the tables will be joined when all
+    #    values with the same name in both tables have the same value, a
+    #    "natural" join. However, if the join type is :cross, the join
+    #    expression will be taken to be 'true'. Otherwise, if there are no
+    #    common column names, an exception will be raised.
+    #
+    # 2. If the join expressions are one or more symbols, the join condition
+    #    requires that the values of both tables are equal for all columns named
+    #    by the symbols. A column that appears in both tables can be given
+    #    without modification and will be assumed to require equality on that
+    #    column. If an unmodified symbol is not a name that appears in both
+    #    tables, an exception will be raised. Column names that are unique to
+    #    the first table must have a '_a' appended to the column name and column
+    #    names that are unique to the other table must have a '_b' appended to
+    #    the column name. These disambiguated column names must come in pairs,
+    #    one for the first table and one for the second, and they will imply a
+    #    join condition that the columns must be equal on those columns. Several
+    #    such symbol expressions will require that all such implied pairs are
+    #    equal in order for the join condition to be met.
+    #
+    # 3. Finally, a string expression can be given that contains an arbitrary
+    #    ruby expression that will be evaluated for truthiness. Within the
+    #    string, all column names must be disambiguated with the '_a' or '_b'
+    #    modifiers whether they are common to both tables or not.  The names of
+    #    the columns in both tables (without the leading ':' for symbols) are
+    #    available as variables within the expression.
+    #
+    # The join_type parameter specifies what sort of join is performed, :inner,
+    # :left, :right, :full, or :cross. The default is an :inner join. The types
+    # of joins are defined as follows where T1 means this table, the receiver,
+    # and T2 means other. These descriptions are taken from the Postgresql
+    # documentation.
+    #
+    # - :inner :: For each row R1 of T1, the joined table has a row for each row
+    #      in T2 that satisfies the join condition with R1.
+    #
+    # - :left :: First, an inner join is performed. Then, for each row in T1
+    #      that does not satisfy the join condition with any row in T2, a joined
+    #      row is added with null values in columns of T2. Thus, the joined
+    #      table always has at least one row for each row in T1.
+    #
+    # - :right :: First, an inner join is performed. Then, for each row in T2
+    #      that does not satisfy the join condition with any row in T1, a joined
+    #      row is added with null values in columns of T1. This is the converse
+    #      of a left join: the result table will always have a row for each row
+    #      in T2.
+    #
+    # - :full :: First, an inner join is performed. Then, for each row in T1
+    #      that does not satisfy the join condition with any row in T2, a joined
+    #      row is added with null values in columns of T2. Also, for each row of
+    #      T2 that does not satisfy the join condition with any row in T1, a
+    #      joined row with null values in the columns of T1 is added.
+    #
+    # -  :cross :: For every possible combination of rows from T1 and T2 (i.e.,
+    #      a Cartesian product), the joined table will contain a row consisting
+    #      of all columns in T1 followed by all columns in T2. If the tables
+    #      have N and M rows respectively, the joined table will have N * M
+    #      rows.
+    #
+    JOIN_TYPES = [ :inner, :left, :right, :full, :cross ]
+
+    def join(other, *exps, join_type: :inner)
+      raise ArgumentError, 'need other table as first argument to join' unless other.is_a?(Table)
+      unless JOIN_TYPES.include?(join_type)
+        raise ArgumentError, "join_type may only be: #{JOIN_TYPES.join(', ')}"
+      end
+      # These may be needed for outer joins.
+      self_row_nils = headers.map { |h| [h, nil] }.to_h
+      other_row_nils = other.headers.map { |h| [h, nil] }.to_h
+      join_expression, other_common_heads = build_join_expression(exps, other, join_type)
+      ev = Evaluator.new
+      result = Table.new
+      other_rows = other.rows
+      other_row_matches = Array.new(other_rows.size, false)
+      rows.each do |self_row|
+        self_row_matched = false
+        other_rows.each_with_index do |other_row, k|
+          # Same as other_row, but with keys that are common with self and equal
+          # in value, removed, so the output table need not repeat them.
+          locals = build_locals_hash(row_a: self_row, row_b: other_row)
+          matches = ev.evaluate(join_expression, vars: locals)
+          next unless matches
+          self_row_matched = other_row_matches[k] = true
+          out_row = build_out_row(row_a: self_row, row_b: other_row,
+                                  common_heads: other_common_heads,
+                                  type: join_type)
+          result << out_row
+        end
+        if join_type == :left || join_type == :full
+          unless self_row_matched
+            out_row = build_out_row(row_a: self_row, row_b: other_row_nils, type: join_type)
+            result << out_row
+          end
+        end
+      end
+      if join_type == :right || join_type == :full
+        other_rows.each_with_index do |other_row, k|
+          unless other_row_matches[k]
+            out_row = build_out_row(row_a: self_row_nils, row_b: other_row, type: join_type)
+            result << out_row
+          end
+        end
+      end
+      result
+    end
+
+    def inner_join(other, *exps)
+      join(other, *exps)
+    end
+
+    def left_join(other, *exps)
+      join(other, *exps, join_type: :left)
+    end
+
+    def right_join(other, *exps)
+      join(other, *exps, join_type: :right)
+    end
+
+    def full_join(other, *exps)
+      join(other, *exps, join_type: :full)
+    end
+
+    def cross_join(other)
+      join(other, join_type: :cross)
+    end
+
+    private
+
+    # Return an output row appropriate to the given join type, including all the
+    # keys of row_a, the non-common keys of row_b for an :inner join, or all the
+    # keys of row_b for other joins.  If any of the row_b keys are also row_a
+    # keys, change the key name by appending a '_b' so the keys will not repeat.
+    def build_out_row(row_a:, row_b:, common_heads: [], type: :inner)
+      if type == :inner
+        # Eliminate the keys that are common with row_a and were matched for
+        # equality
+        row_b = row_b.reject { |k, _| common_heads.include?(k) }
+      end
+      # Translate any remaining row_b heads to append '_b' if they have the
+      # same name as a row_a key.
+      a_heads = row_a.keys
+      row_b = row_b.to_a.each.map do |k, v|
+        [a_heads.include?(k) ? "#{k}_b".to_sym : k, v]
+      end.to_h
+      row_a.merge(row_b)
+    end
+
+    # Return a hash for the local variables of a join expression in which all
+    # the keys in row_a have an '_a' appended and all the keys in row_b have a
+    # '_b' appended.
+    def build_locals_hash(row_a:, row_b:)
+      row_a = row_a.to_a.each.map { |k, v| ["#{k}_a".to_sym, v] }.to_h
+      row_b = row_b.to_a.each.map { |k, v| ["#{k}_b".to_sym, v] }.to_h
+      row_a.merge(row_b)
+    end
+
+    # Return an array of two elements: (1) a ruby expression that expresses the
+    # AND of all join conditions as described in the comment to the #join method
+    # and (2) the heads from other table that (a) are known to be tested for
+    # equality with a head in self table and (b) have the same name. Assume that
+    # the expression will be evaluated in the context of a binding in which the
+    # local variables are all the headers in the self table with '_a' appended
+    # and all the headers in the other table with '_b' appended.
+    def build_join_expression(exps, other, type)
+      return ['true', []] if type == :cross
+      a_heads = headers
+      b_heads = other.headers
+      common_heads = a_heads & b_heads
+      b_common_heads = []
+      if exps.empty?
+        if common_heads.empty?
+          raise ArgumentError,
+                'A non-cross join with no common column names requires join expressions'
+        else
+          # A Natural join on all common heads
+          common_heads.each do |h|
+            ensure_common_types!(self_h: h, other_h: h, other: other)
+          end
+          nat_exp = common_heads.map { |h| "(#{h}_a == #{h}_b)" }.join(' && ')
+          [nat_exp, common_heads]
+        end
+      else
+        # We have expressions to evaluate
+        and_conds = []
+        partial_result = nil
+        last_sym = nil
+        exps.each do |exp|
+          case exp
+          when Symbol
+            case exp.to_s.clean
+            when /\A(.*)_a\z/
+              a_head = $1.to_sym
+              unless a_heads.include?(a_head)
+                raise ArgumentError, "no column '#{a_head}' in table"
+              end
+              if partial_result
+                # Second of a pair
+                ensure_common_types!(self_h: a_head, other_h: last_sym, other: other)
+                partial_result << "#{a_head}_a)"
+                and_conds << partial_result
+                partial_result = nil
+              else
+                # First of a pair of _a or _b
+                partial_result = "(#{a_head}_a == "
+              end
+              last_sym = a_head
+            when /\A(.*)_b\z/
+              b_head = $1.to_sym
+              unless b_heads.include?(b_head)
+                raise ArgumentError, "no column '#{b_head}' in second table"
+              end
+              if partial_result
+                # Second of a pair
+                ensure_common_types!(self_h: last_sym, other_h: b_head, other: other)
+                partial_result << "#{b_head}_b)"
+                and_conds << partial_result
+                partial_result = nil
+              else
+                # First of a pair of _a or _b
+                partial_result = "(#{b_head}_b == "
+              end
+              b_common_heads << b_head
+              last_sym = b_head
+            else
+              # No modifier, so must be one of the common columns
+              unless partial_result.nil?
+                # We were expecting the second of a modified pair, but got an
+                # unmodified symbol instead.
+                msg =
+                  "must follow '#{last_sym}' by qualified exp from the other table"
+                raise ArgumentError, msg
+              end
+              # We have an unqualified symbol that must appear in both tables
+              unless common_heads.include?(exp)
+                raise ArgumentError, "unqualified column '#{exp}' must occur in both tables"
+              end
+              ensure_common_types!(self_h: exp, other_h: exp, other: other)
+              and_conds << "(#{exp}_a == #{exp}_b)"
+              b_common_heads << exp
+            end
+          when String
+            # We have a string expression in which all column references must be
+            # qualified.
+            and_conds << "(#{exp})"
+          else
+            raise ArgumentError, "invalid join expression '#{exp}' of class #{exp.class}"
+          end
+        end
+        [and_conds.join(' && '), b_common_heads]
+      end
+    end
+
+    # Raise an exception unless self_h in this table and other_h in other table
+    # have the same types.
+    def ensure_common_types!(self_h:, other_h:, other:)
+      unless column(self_h).type == other.column(other_h).type
+        raise ArgumentError,
+              "type of column '#{self_h}' does not match type of column '#{other_h}"
+      end
+      self
+    end
+
+    public
+
     # Return a Table in which all rows of the table are divided into groups
     # where the value of all columns named as simple symbols are equal. All
     # other columns are set to the result of aggregating the values of that
