@@ -20,6 +20,7 @@ class Hash
     self
   end
 
+  # Change each key of this Hash to its value in key_map
   def remap_keys(key_map = {})
     new_hash = {}
     each_pair do |key, val|
@@ -30,5 +31,13 @@ class Hash
       end
     end
     new_hash
+  end
+
+  # Change the keys of this Hash to new_keys, an array of keys
+  def replace_keys(new_keys)
+    unless keys.size == new_keys.size
+      raise ArgumentError, 'replace_keys: new keys size differs from key size'
+    end
+    to_a.each_with_index.map { |(_k, v), i| [new_keys[i], v] }.to_h
   end
 end
