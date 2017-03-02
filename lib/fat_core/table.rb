@@ -160,7 +160,7 @@ module FatCore
       end
       new_tab = Table.new
       new_rows.each do |nrow|
-        new_tab.add_row(nrow)
+        new_tab << nrow
       end
       new_tab
     end
@@ -211,7 +211,7 @@ module FatCore
             raise 'Parameters to select must be a symbol, string, or hash'
           end
         end
-        result.add_row(new_row)
+        result << new_row
       end
       result
     end
@@ -222,7 +222,7 @@ module FatCore
       result = Table.new
       ev = Evaluator.new(vars: { row: 0 }, before: '@row += 1')
       rows.each do |row|
-        result.add_row(row) if ev.evaluate(expr, vars: row)
+        result << row if ev.evaluate(expr, vars: row)
       end
       result
     end
@@ -291,7 +291,7 @@ module FatCore
       end
       result = Table.new
       result_rows.each do |row|
-        result.add_row(row)
+        result << row
       end
       result
     end
