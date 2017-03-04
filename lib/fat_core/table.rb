@@ -758,19 +758,32 @@ module FatCore
       self
     end
 
+    # Construct a new table from an array of arrays. If the second element of
+    # the array is a nil, a string that looks like an hrule, or an array whose
+    # first element is a string that looks like an hrule, interpret the first
+    # element of the array as a row of headers. Otherwise, synthesize headers of
+    # the form "col1", "col2", ... and so forth. The remaining elements are
+    # taken as the body of the table, except that if an element of the outer
+    # array is a nil or a string that looks like an hrule, mark the preceding
+    # row as a boundary.
     def from_array_of_arrays(rows)
+      hrule_re = /\A\s*\|[-+]+/
       headers = []
-      if rows[0].any? { |itm| itm.to_s.number? }
-        headers = (1..rows[0].size).to_a.map { |k| "col#{k}".as_sym }
-        first_data_row = 0
-      else
+      if rows[1].nil? || rows[1] =~ hrule_re || rows[1].first =~ hrule_re
+        # Take the first row as headers
         # Use first row 0 as headers
         headers = rows[0].map(&:as_sym)
-        first_data_row = 1
+        first_data_row = 2
+      else
+        # Synthesize headers
+        headers = (1..rows[0].size).to_a.map { |k| "col#{k}".as_sym }
+        first_data_row = 0
       end
-      hrule_re = /\A\s*\|[-+]+/
       rows[first_data_row..-1].each do |row|
-        next if row[0] =~ hrule_re
+        if row.nil? || row[0] =~ hrule_re
+          mark_boundary
+          next
+        end
         row = row.map { |s| s.to_s.strip }
         hash_row = Hash[headers.zip(row)]
         add_row(hash_row)
@@ -797,13 +810,20 @@ module FatCore
         unless table_found
           # Skip through the file until a table is found
           next unless line =~ table_re
+          line = line.sub(/\A\s*\|/, '').sub(/\|\s*\z/, '')
+          rows << line.split('|').map(&:clean)
           table_found = true
+          next
         end
         break unless line =~ table_re
         if !header_found && line =~ hrule_re
+          rows << nil
           header_found = true
           next
         elsif header_found && line =~ hrule_re
+          # Mark the boundary with a nil
+          rows << nil
+        elsif line !~ table_re
           # Stop reading at the second hline
           break
         else
