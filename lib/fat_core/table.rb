@@ -121,6 +121,11 @@ module FatCore
       columns.first.size
     end
 
+    # Return whether this table is empty.
+    def empty?
+      size.zero?
+    end
+
     # Return the rows of the table as an array of hashes, keyed by the headers.
     def rows
       rows = []
@@ -136,8 +141,6 @@ module FatCore
       rows
     end
 
-    def empty?
-      rows.empty?
     end
 
     ############################################################################
