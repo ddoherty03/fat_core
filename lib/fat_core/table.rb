@@ -46,6 +46,7 @@ module FatCore
     def initialize(input = nil, ext = '.csv')
       @columns = []
       @footers = {}
+      @boundaries = []
       return self if input.nil?
       case input
       when IO, StringIO
@@ -141,6 +142,69 @@ module FatCore
       rows
     end
 
+    ############################################################################
+    # Group Boundaries
+    #
+    # Boundaries mark the last row in each "group" within the table. The last
+    # row of the table is always an implicit boundary, and having the last row
+    # as the sole boundary is the default for new tables unless mentioned
+    # otherwise. Resetting the boundaries means to put it back in that default
+    # state.
+    #
+    # Note that tables are for the most part, immutable. That is, the data rows
+    # of the table, once set, are never changed by methods on the table. Any
+    # transformation of a table results in a new table. Boundaries and footers
+    # are exceptions to immutability, but even they only affect the boundary and
+    # footer attributes of the table, not the data rows.
+    #
+    # Boundaries can be added when a table is read in, for example, from the
+    # text of an org table in which each hline (other than the one separating
+    # the headers from the body) marks a boundary for the row immediately
+    # preceding the hline.
+    #
+    # The #group_by method resets the boundaries then adds boundaries at the
+    # last row of each group as a boundary.
+    #
+    # The #union and #union_all methods add a boundary between the constituent
+    # tables. #union_all (but not #union since it deletes duplicates) and also
+    # preserves any boundary markers within the constituent tables. In doing so,
+    # the boundaries of the second table in the #union_all are increased by the
+    # size of the first table so that they refer to rows in the new table.
+    #
+    # The #select method preserves any boundaries from the parent table without
+    # change, since it only selects columns for the output and deletes no rows.
+    #
+    # All the other table-transforming methods reset the boundaries in the new
+    # table. For example, #order_by and #where re-arrange and delete rows, so
+    # the old boundaries would make no sense anyway. Likewise, #intersection,
+    # #except, and #join reset the boundaries to their default.
+    # ###########################################################################
+    #
+    #
+    # Reset the boundaries to their default of having no boundaries except the
+    # the last row, which is always implicit.
+    def reset_boundaries
+      @boundaries = []
+    end
+
+    # Add a boundary mark for the row at index n in this table.
+    def add_boundary_at(n)
+      unless n < size
+        raise ArgumentError, "cannot add boundary #{n} to table of size #{size}"
+      end
+      @boundaries.push(n)
+      self
+    end
+
+    # Mark the last row in the table as a group boundary.
+    def mark_boundary
+      add_boundary_at(size - 1)
+    end
+
+    # Concatenate the array of argument bounds to this tables boundaries, but
+    # increase each of the indexes in bounds by the size of the this table.
+    # This is used in the #union and #union_all methods.
+    def append_boundaries(bounds)
     end
 
     ############################################################################
@@ -150,7 +214,7 @@ module FatCore
 
     # Return a new Table sorted on the rows of this Table on the possibly
     # multiple keys given in the array of syms in headers. Append a ! to the
-    # symbol name to indicate reverse sorting on that column.
+    # symbol name to indicate reverse sorting on that column.  Resets groups.
     def order_by(*sort_heads)
       sort_heads = [sort_heads].flatten
       rev_heads = sort_heads.select { |h| h.to_s.ends_with?('!') }
@@ -173,6 +237,7 @@ module FatCore
     # symbol => 'string', though the bare symbol arguments (1) must precede any
     # hash arguments. Each expression results in a column in the resulting Table
     # in the order given. The expressions are evaluated in order as well.
+    # Preserves groups.
     def select(*exps)
       result = Table.new
       new_cols = {}
@@ -219,7 +284,8 @@ module FatCore
       result
     end
 
-    # Return a Table containing only rows matching the where expression.
+    # Return a Table containing only rows matching the where expression.  Resets
+    # groups.
     def where(expr)
       expr = expr.to_s
       result = Table.new
@@ -230,7 +296,7 @@ module FatCore
       result
     end
 
-    # Return this table with all duplicate rows eliminated.
+    # Return this table with all duplicate rows eliminated. Resets groups.
     def distinct
       result = Table.new
       uniq_rows = rows.uniq
@@ -240,6 +306,7 @@ module FatCore
       result
     end
 
+    # Return this table with all duplicate rows eliminated. Resets groups.
     def uniq
       distinct
     end
@@ -248,7 +315,9 @@ module FatCore
     # words, return the union of this table with the other. The headers of this
     # table are used in the result. There must be the same number of columns of
     # the same type in the two tables, or an exception will be thrown.
-    # Duplicates are eliminated from the result.
+    # Duplicates are eliminated from the result.  Adds group boundaries at
+    # boundaries of the constituent tables, but does not preserve group
+    # boundaries from those tables since duplicates are being eliminated.
     def union(other)
       set_operation(other, :+, true)
     end
@@ -257,7 +326,9 @@ module FatCore
     # words, return the union of this table with the other. The headers of this
     # table are used in the result. There must be the same number of columns of
     # the same type in the two tables, or an exception will be thrown.
-    # Duplicates are not eliminated from the result.
+    # Duplicates are not eliminated from the result.  Adds group boundaries at
+    # boundaries of the constituent tables. Preserves and adjusts the group
+    # boundaries of the constituent table.
     def union_all(other)
       set_operation(other, :+, false)
     end
@@ -266,7 +337,8 @@ module FatCore
     # another table. In other words, return the intersection of this table with
     # the other. The headers of this table are used in the result. There must be
     # the same number of columns of the same type in the two tables, or an
-    # exception will be thrown. Duplicates are eliminated from the result.
+    # exception will be thrown. Duplicates are eliminated from the
+    # result. Resets groups.
     def intersect(other)
       set_operation(other, :intersect, true)
     end
@@ -275,7 +347,8 @@ module FatCore
     # another table. In other words, return the intersection of this table with
     # the other. The headers of this table are used in the result. There must be
     # the same number of columns of the same type in the two tables, or an
-    # exception will be thrown. Duplicates are not eliminated from the result.
+    # exception will be thrown. Duplicates are not eliminated from the
+    # result. Resets groups.
     def intersect_all(other)
       set_operation(other, :intersect, false)
     end
@@ -285,7 +358,7 @@ module FatCore
     # set difference between this table an the other. The headers of this table
     # are used in the result. There must be the same number of columns of the
     # same type in the two tables, or an exception will be thrown. Duplicates
-    # are eliminated from the result.
+    # are eliminated from the result. Resets groups.
     def except(other)
       set_operation(other, :difference, true)
     end
@@ -295,7 +368,7 @@ module FatCore
     # set difference between this table an the other. The headers of this table
     # are used in the result. There must be the same number of columns of the
     # same type in the two tables, or an exception will be thrown. Duplicates
-    # are not eliminated from the result.
+    # are not eliminated from the result. Resets groups.
     def except_all(other)
       set_operation(other, :difference, false)
     end
@@ -384,7 +457,7 @@ module FatCore
     #      of all columns in T1 followed by all columns in T2. If the tables
     #      have N and M rows respectively, the joined table will have N * M
     #      rows.
-    #
+    # Resets groups.
     JOIN_TYPES = [:inner, :left, :right, :full, :cross]
 
     def join(other, *exps, join_type: :inner)
@@ -729,17 +802,20 @@ module FatCore
     # Table construction methods.
     ############################################################################
 
-    # Add a row represented by a Hash having the headers as keys. All tables
-    # should be built ultimately using this method as a primitive.
-    def add_row(row)
+    # Add a row represented by a Hash having the headers as keys. If mark is
+    # true, mark this row as a boundary. All tables should be built ultimately
+    # using this method as a primitive.
+    def add_row(row, mark: false)
       row.each_pair do |k, v|
         key = k.as_sym
         columns << Column.new(header: k) unless column?(k)
         column(key) << v
       end
+      @boundaries << (size - 1) if mark
       self
     end
 
+    # Add a row without marking.
     def <<(row)
       add_row(row)
     end
