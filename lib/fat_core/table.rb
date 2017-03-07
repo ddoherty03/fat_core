@@ -142,75 +142,129 @@ module FatCore
       rows
     end
 
-    ############################################################################
-    # Group Boundaries
-    #
-    # Boundaries mark the last row in each "group" within the table. The last
-    # row of the table is always an implicit boundary, and having the last row
-    # as the sole boundary is the default for new tables unless mentioned
-    # otherwise. Resetting the boundaries means to put it back in that default
-    # state.
-    #
-    # Note that tables are for the most part, immutable. That is, the data rows
-    # of the table, once set, are never changed by methods on the table. Any
-    # transformation of a table results in a new table. Boundaries and footers
-    # are exceptions to immutability, but even they only affect the boundary and
-    # footer attributes of the table, not the data rows.
-    #
-    # Boundaries can be added when a table is read in, for example, from the
-    # text of an org table in which each hline (other than the one separating
-    # the headers from the body) marks a boundary for the row immediately
-    # preceding the hline.
-    #
-    # The #group_by method resets the boundaries then adds boundaries at the
-    # last row of each group as a boundary.
-    #
-    # The #union and #union_all methods add a boundary between the constituent
-    # tables. #union_all (but not #union since it deletes duplicates) and also
-    # preserves any boundary markers within the constituent tables. In doing so,
-    # the boundaries of the second table in the #union_all are increased by the
-    # size of the first table so that they refer to rows in the new table.
-    #
-    # The #select method preserves any boundaries from the parent table without
-    # change, since it only selects columns for the output and deletes no rows.
-    #
-    # All the other table-transforming methods reset the boundaries in the new
-    # table. For example, #order_by and #where re-arrange and delete rows, so
-    # the old boundaries would make no sense anyway. Likewise, #intersection,
-    # #except, and #join reset the boundaries to their default.
-    # ###########################################################################
-    #
-    #
-    # Reset the boundaries to their default of having no boundaries except the
-    # the last row, which is always implicit.
-    def reset_boundaries
-      @boundaries = []
-    end
+    protected
 
-    # Add a boundary mark for the row at index n in this table.
-    def add_boundary_at(n)
-      unless n < size
-        raise ArgumentError, "cannot add boundary #{n} to table of size #{size}"
+    # Return the rows from first to last.  We could just index #rows, but in a
+    # large table, that would require that we construct all the rows for a range
+    # of any size.
+    def rows_range(first = 0, last = size - 1)
+      raise ArgumentError, 'first must be <= last' unless first <= last
+      rows = []
+      unless columns.empty?
+        first.upto(last) do |rnum|
+          row = {}
+          columns.each do |col|
+            row[col.header] = col[rnum]
+          end
+          rows << row
+        end
       end
-      @boundaries.push(n)
-      self
+      rows
     end
 
-    # Mark the last row in the table as a group boundary.
-    def mark_boundary
-      add_boundary_at(size - 1)
+    ## ###########################################################################
+    ##  Group Boundaries
+    ##
+    ##  Boundaries mark the last row in each "group" within the table. The last
+    ##  row of the table is always an implicit boundary, and having the last row
+    ##  as the sole boundary is the default for new tables unless mentioned
+    ##  otherwise. Resetting the boundaries means to put it back in that default
+    ##  state.
+    ##
+    ##  Note that tables are for the most part, immutable. That is, the data
+    ##  rows of the table, once set, are never changed by methods on the
+    ##  table. Any transformation of a table results in a new table. Boundaries
+    ##  and footers are exceptions to immutability, but even they only affect
+    ##  the boundary and footer attributes of the table, not the data rows.
+    ##
+    ##  Boundaries can be added when a table is read in, for example, from the
+    ##  text of an org table in which each hline (other than the one separating
+    ##  the headers from the body) marks a boundary for the row immediately
+    ##  preceding the hline.
+    ##
+    ##  The #order_by method resets the boundaries then adds boundaries at the
+    ##  last row of each group as a boundary.
+    ##
+    ##  The #union_all (but not #union since it deletes duplicates) method adds
+    ##  a boundary between the constituent tables. #union_all also preserves any
+    ##  boundary markers within the constituent tables. In doing so, the
+    ##  boundaries of the second table in the #union_all are increased by the
+    ##  size of the first table so that they refer to rows in the new table.
+    ##
+    ##  The #select method preserves any boundaries from the parent table
+    ##  without change, since it only selects columns for the output and deletes
+    ##  no rows.
+    ##
+    ##  All the other table-transforming methods reset the boundaries in the new
+    ##  table. For example, #order_by and #where re-arrange and delete rows, so
+    ##  the old boundaries would make no sense anyway. Likewise, #union,
+    ##  #intersection, #except, and #join reset the boundaries to their default.
+    ##  ###########################################################################
+
+    public
+
+    # Return an array of an array of row hashes for the groups in this Table.
+    def groups
+      normalize_boundaries
+      groups = []
+      (0..boundaries.size - 1).each do |k|
+        groups << group_rows(k)
+      end
+      groups
     end
 
-    # Concatenate the array of argument bounds to this tables boundaries, but
-    # increase each of the indexes in bounds by the size of the this table.
-    # This is used in the #union and #union_all methods.
-    def append_boundaries(bounds)
+    protected
+
+    # Reader for boundaries, but not public.
+    def boundaries
+      @boundaries
+    end
+
+    # Writer for boundaries, but not public.
+    def boundaries=(bounds)
+      @boundaries = bounds
+    end
+
+    # Make sure size - 1 is last boundary and that they are unique and sorted.
+    def normalize_boundaries
+      unless empty?
+        boundaries.push(size - 1) unless boundaries.include?(size - 1)
+        self.boundaries = boundaries.uniq.sort
+      end
+      boundaries
+    end
+
+    # Mark a boundary at k, and if k is nil, the last row in the table
+    # as a group boundary.
+    def mark_boundary(k = nil)
+      if k
+        boundaries.push(k)
+      else
+        boundaries.push(size - 1)
+      end
+    end
+
+    # Concatenate the array of argument bounds to this table's boundaries, but
+    # increase each of the indexes in bounds by shift. This is used in the
+    # #union_all method.
+    def append_boundaries(bounds, shift: 0)
+      @boundaries += bounds.map { |k| k + shift }
+    end
+
+    def group_rows(k)
+      normalize_boundaries
+      return [] unless k < boundaries.size
+      first = k.zero? ? 0 : boundaries[k - 1] + 1
+      last = boundaries[k]
+      rows_range(first, last)
     end
 
     ############################################################################
     # SQL look-alikes. The following methods are based on SQL equivalents and
     # all return a new Table object rather than modifying the table in place.
     ############################################################################
+
+    public
 
     # Return a new Table sorted on the rows of this Table on the possibly
     # multiple keys given in the array of syms in headers. Append a ! to the
@@ -225,9 +279,15 @@ module FatCore
         key2 = sort_heads.map { |h| rev_heads.include?(h) ? r1[h] : r2[h] }
         key1 <=> key2
       end
+      # Add the new rows to the table, but mark a group boundary at the points
+      # where the sort key changes value.
       new_tab = Table.new
-      new_rows.each do |nrow|
+      last_key = nil
+      new_rows.each_with_index do |nrow, k|
         new_tab << nrow
+        key = nrow.fetch_values(*sort_heads)
+        new_tab.mark_boundary(k - 1) if last_key && key != last_key
+        last_key = key
       end
       new_tab
     end
@@ -281,6 +341,7 @@ module FatCore
         end
         result << new_row
       end
+      result.boundaries = boundaries
       result
     end
 
@@ -315,11 +376,11 @@ module FatCore
     # words, return the union of this table with the other. The headers of this
     # table are used in the result. There must be the same number of columns of
     # the same type in the two tables, or an exception will be thrown.
-    # Duplicates are eliminated from the result.  Adds group boundaries at
-    # boundaries of the constituent tables, but does not preserve group
-    # boundaries from those tables since duplicates are being eliminated.
+    # Duplicates are eliminated from the result.
     def union(other)
-      set_operation(other, :+, true)
+      set_operation(other, :+,
+                    distinct: true,
+                    add_boundaries: true)
     end
 
     # Return a Table that combines this table with another table. In other
@@ -330,7 +391,10 @@ module FatCore
     # boundaries of the constituent tables. Preserves and adjusts the group
     # boundaries of the constituent table.
     def union_all(other)
-      set_operation(other, :+, false)
+      set_operation(other, :+,
+                    distinct: false,
+                    add_boundaries: true,
+                    inherit_boundaries: true)
     end
 
     # Return a Table that includes the rows that appear in this table and in
@@ -378,7 +442,10 @@ module FatCore
     # Apply the set operation given by op between this table and the other table
     # given in the first argument.  If distinct is true, eliminate duplicates
     # from the result.
-    def set_operation(other, op = :+, distinct = true)
+    def set_operation(other, op = :+,
+                      distinct: true,
+                      add_boundaries: false,
+                      inherit_boundaries: false)
       unless columns.size == other.columns.size
         raise 'Cannot apply a set operation to tables with a different number of columns.'
       end
@@ -388,8 +455,14 @@ module FatCore
       other_rows = other.rows.map { |r| r.replace_keys(headers) }
       result = Table.new
       new_rows = rows.send(op, other_rows)
-      new_rows.each do |row|
+      new_rows.each_with_index do |row, k|
         result << row
+        result.mark_boundary if k == size - 1 && add_boundaries
+      end
+      if inherit_boundaries
+        result.boundaries = normalize_boundaries
+        other.normalize_boundaries
+        result.append_boundaries(other.boundaries, shift: size)
       end
       distinct ? result.distinct : result
     end
@@ -544,7 +617,7 @@ module FatCore
     # group. Any non-aggregate columns that have no aggregate function set
     # default to using the aggregate function :first. Note that because of the
     # way Ruby parses parameters to a method call, all the grouping symbols must
-    # appear first in the parameter list.  Adds group boundaries to the table.
+    # appear first in the parameter list.
     def group_by(*exprs)
       group_cols = []
       agg_cols = {}
@@ -571,7 +644,6 @@ module FatCore
       result = Table.new
       groups.each_pair do |_vals, grp_rows|
         result << row_from_group(grp_rows, group_cols, agg_cols)
-        result.mark_boundary
       end
       result
     end
@@ -833,6 +905,10 @@ module FatCore
     # respond to #to_hash.
     def from_array_of_hashes(rows)
       rows.each do |row|
+        if row.nil?
+          mark_boundary
+          next
+        end
         add_row(row.to_hash)
       end
       self
@@ -890,8 +966,10 @@ module FatCore
         unless table_found
           # Skip through the file until a table is found
           next unless line =~ table_re
-          line = line.sub(/\A\s*\|/, '').sub(/\|\s*\z/, '')
-          rows << line.split('|').map(&:clean)
+          unless line =~ hrule_re
+            line = line.sub(/\A\s*\|/, '').sub(/\|\s*\z/, '')
+            rows << line.split('|').map(&:clean)
+          end
           table_found = true
           next
         end
@@ -908,7 +986,7 @@ module FatCore
           break
         else
           line = line.sub(/\A\s*\|/, '').sub(/\|\s*\z/, '')
-          rows << line.split('|')
+          rows << line.split('|').map(&:clean)
         end
       end
       from_array_of_arrays(rows)

@@ -125,6 +125,33 @@ EOS
 
 * Another Heading
 EOS
+
+      @org_file_body_with_groups = <<EOS
+
+#+TBLNAME: morgan_tab
+|-----+------------+------+---------+--------+----------+--------|
+| Ref |       Date | Code |     Raw | Shares |    Price | Info   |
+|-----+------------+------+---------+--------+----------+--------|
+|  29 | 2013-05-02 | P    | 795,546 |  2,609 |  1.18500 | ZMPEF1 |
+|-----+------------+------+---------+--------+----------+--------|
+|  30 | 2013-05-02 | P    | 118,186 |    388 | 11.85000 | ZMPEF1 |
+|  31 | 2013-05-02 | P    | 340,948 |  1,926 |  1.18500 | ZMPEF2 |
+|  32 | 2013-05-02 | P    |  50,651 |    286 | 11.85000 | ZMPEF2 |
+|-----+------------+------+---------+--------+----------+--------|
+|  33 | 2013-05-20 | S    |  12,000 |     32 | 28.28040 | ZMEAC  |
+|  34 | 2013-05-20 | S    |  85,000 |    226 | 28.32240 | ZMEAC  |
+|  35 | 2013-05-20 | S    |  33,302 |     88 | 28.63830 | ZMEAC  |
+|  36 | 2013-05-23 | S    |   8,000 |     21 | 27.10830 | ZMEAC  |
+|  37 | 2013-05-23 | S    |  23,054 |     61 | 26.80150 | ZMEAC  |
+|  38 | 2013-05-23 | S    |  39,906 |    106 | 25.17490 | ZMEAC  |
+|  39 | 2013-05-29 | S    |  13,459 |     36 | 24.74640 | ZMEAC  |
+|-----+------------+------+---------+--------+----------+--------|
+|  40 | 2013-05-29 | S    |  15,700 |     42 | 24.77900 | ZMEAC  |
+|  41 | 2013-05-29 | S    |  15,900 |     42 | 24.58020 | ZMEAC  |
+|  42 | 2013-05-30 | S    |   6,679 |     18 | 25.04710 | ZMEAC  |
+|-----+------------+------+---------+--------+----------+--------|
+
+EOS
     end
 
     describe 'construction' do
@@ -150,6 +177,28 @@ EOS
       end
 
       it 'should be create-able from an Org IO object' do
+        tab = Table.new(StringIO.new(@org_file_body), '.org')
+        expect(tab.class).to eq(Table)
+        expect(tab.rows.size).to be > 10
+        expect(tab.headers.sort)
+          .to eq [:code, :date, :info, :price, :raw, :ref, :shares]
+        tab.rows.each do |row|
+          row.each_pair do |k, _v|
+            expect(k.class).to eq Symbol
+          end
+          expect(row[:code].class).to eq String
+          expect(row[:date].class).to eq Date
+          expect(row[:shares].is_a?(Numeric)).to be true
+          unless row[:rawshares].nil?
+            expect(row[:rawshares].is_a?(Numeric)).to be true
+          end
+          expect(row[:price].is_a?(BigDecimal)).to be true
+          expect([Numeric, String].any? { |t| row[:ref].is_a?(t) }).to be true
+          expect(row[:info].class).to eq String
+        end
+      end
+
+      it 'should be create-able from an Org IO object with groups' do
         tab = Table.new(StringIO.new(@org_file_body), '.org')
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to be > 10
@@ -769,6 +818,168 @@ EOS
         expect(join_tab[:dept].items).to include('Finance')
         expect(join_tab.headers).to eq([:id, :name, :age, :address, :salary,
                                         :join_date, :id_b, :dept, :emp_id])
+      end
+    end
+
+    describe 'group boundaries' do
+      before :all do
+        @tab_a = Table.new([
+          { id: 1, name: 'Paul', age: 32, address: 'California', salary: 20000, join_date: '2001-07-13' },
+          { id: 3, name: 'Teddy', age: 23, address: 'Norway', salary: 20000},
+          { id: 4, name: 'Mark', age: 25, address: 'Rich-Mond', salary: 65000, join_date: '2007-12-13' },
+          { id: 5, name: 'David', age: 27, address: 'Texas', salary: 85000, join_date: '2007-12-13' },
+          { id: 2, name: 'Allen', age: 25, address: 'Texas', salary: nil, join_date: '2007-12-13' },
+          { id: 8, name: 'Paul', age: 24, address: 'Houston', salary: 20000, join_date: '2005-07-13' },
+          { id: 9, name: 'James', age: 44, address: 'Norway', salary: 5000, join_date: '2005-07-13' },
+          { id: 10, name: 'James', age: 45, address: 'Texas', salary: 5000, join_date: '2005-07-13' }
+        ])
+        # Union compatible with tab_a
+        @tab_a1 = Table.new([
+          { id: 21, name: 'Paula', age: 23, address: 'Kansas', salary: 20000, join_date: '2001-07-13' },
+          { id: 23, name: 'Jenny', age: 32, address: 'Missouri', salary: 20000},
+          { id: 24, name: 'Forrest', age: 52, address: 'Richmond', salary: 65000, join_date: '2007-12-13' },
+          { id: 25, name: 'Syrano', age: 72, address: 'Nebraska', salary: 85000, join_date: '2007-12-13' },
+          # Next four are the same as row as in @tab_a
+          { id: 2, name: 'Allen', age: 25, address: 'Texas', salary: nil, join_date: '2007-12-13' },
+          { id: 8, name: 'Paul', age: 24, address: 'Houston', salary: 20000, join_date: '2005-07-13' },
+          { id: 9, name: 'James', age: 44, address: 'Norway', salary: 5000, join_date: '2005-07-13' },
+          { id: 10, name: 'James', age: 45, address: 'Texas', salary: 5000, join_date: '2005-07-13' },
+          { id: 22, name: 'Paula', age: 52, address: 'Iowa', salary: nil, join_date: '2007-12-13' },
+          { id: 28, name: 'Paula', age: 42, address: 'Oklahoma', salary: 20000, join_date: '2005-07-13' },
+          { id: 29, name: 'Patrick', age: 44, address: 'Lindsbourg', salary: 5000, join_date: '2005-07-13' },
+          { id: 30, name: 'James', age: 54, address: 'Ottawa', salary: 5000, join_date: '2005-07-13' }
+        ])
+        @tab_b = Table.new([
+          { id: 1, dept: 'IT Billing', emp_id: 1 },
+          { id: 2, dept: 'Engineering', emp_id: 2 },
+          { id: 3, dept: 'Finance', emp_id: 7 }
+        ])
+        @aoa =
+          [['Ref', 'Date', 'Code', 'Raw', 'Shares', 'Price', 'Info', 'Bool'],
+           nil,
+           [1, '2013-05-02', 'P', 795_546.20, 795_546.2, 1.1850, 'ZMPEF1', 'T'],
+           nil,
+           [2, '2013-05-02', 'P', 118_186.40, 118_186.4, 11.8500, 'ZMPEF1', 'T'],
+           [7, '2013-05-20', 'S', 12_000.00, 5046.00, 28.2804, 'ZMEAC', 'F'],
+           [8, '2013-05-20', 'S', 85_000.00, 35_742.50, 28.3224, 'ZMEAC', 'T'],
+           nil,
+           [9, '2013-05-20', 'S', 33_302.00, 14_003.49, 28.6383, 'ZMEAC', 'T'],
+           [10, '2013-05-23', 'S', 8000.00, 3364.00, 27.1083, 'ZMEAC', 'T'],
+           [11, '2013-05-23', 'S', 23_054.00, 9694.21, 26.8015, 'ZMEAC', 'F'],
+           [12, '2013-05-23', 'S', 39_906.00, 16_780.47, 25.1749, 'ZMEAC', 'T'],
+           [13, '2013-05-29', 'S', 13_459.00, 5659.51, 24.7464, 'ZMEAC', 'T'],
+           [14, '2013-05-29', 'S', 15_700.00, 6601.85, 24.7790, 'ZMEAC', 'F'],
+           [15, '2013-05-29', 'S', 15_900.00, 6685.95, 24.5802, 'ZMEAC', 'T'],
+           nil,
+           [16, '2013-05-30', 'S', 6_679.00, 2808.52, 25.0471, 'ZMEAC', 'T']]
+        @aoh = [
+          { id: 1, name: 'Paul', age: 32, address: 'California', salary: 20000, join_date: '2001-07-13' },
+          nil,
+          { id: 3, name: 'Teddy', age: 23, address: 'Norway', salary: 20000},
+          { id: 4, name: 'Mark', age: 25, address: 'Rich-Mond', salary: 65000, join_date: '2007-12-13' },
+          { id: 5, name: 'David', age: 27, address: 'Texas', salary: 85000, join_date: '2007-12-13' },
+          nil,
+          { id: 2, name: 'Allen', age: 25, address: 'Texas', salary: nil, join_date: '2007-12-13' },
+          { id: 8, name: 'Paul', age: 24, address: 'Houston', salary: 20000, join_date: '2005-07-13' },
+          { id: 9, name: 'James', age: 44, address: 'Norway', salary: 5000, join_date: '2005-07-13' },
+          nil,
+          { id: 10, name: 'James', age: 45, address: 'Texas', salary: 5000, join_date: '2005-07-13' }
+        ]
+      end
+
+      it 'an empty table should have no groups' do
+        expect(Table.new.groups.size).to eq(0)
+      end
+
+      it 'default group boundaries of whole table' do
+        expect(@tab_a.groups.size).to eq(1)
+      end
+
+      it 'add group boundaries on reading from org text' do
+        tab = Table.new(StringIO.new(@org_file_body_with_groups), '.org')
+        expect(tab.groups.size).to eq(4)
+        expect(tab.groups[0].size).to eq(1)
+        expect(tab.groups[1].size).to eq(3)
+        expect(tab.groups[2].size).to eq(7)
+        expect(tab.groups[3].size).to eq(3)
+      end
+
+      it 'add group boundaries on reading from aoa' do
+        tab = Table.new(@aoa)
+        expect(tab.groups.size).to eq(4)
+        expect(tab.groups[0].size).to eq(1)
+        expect(tab.groups[1].size).to eq(3)
+        expect(tab.groups[2].size).to eq(7)
+        expect(tab.groups[3].size).to eq(1)
+      end
+
+      it 'add group boundaries on reading from aoh' do
+        tab = Table.new(@aoh)
+        expect(tab.groups.size).to eq(4)
+        expect(tab.groups[0].size).to eq(1)
+        expect(tab.groups[1].size).to eq(3)
+        expect(tab.groups[2].size).to eq(3)
+        expect(tab.groups[3].size).to eq(1)
+      end
+
+      it 'add group boundaries on order_by' do
+        tab = @tab_a.order_by(:name)
+        # Now the table is ordered by name, and the names are: Allen, David,
+        # James, James, Mark, Paul, Paul, Teddy. So there are groups of size 1,
+        # 1, 2, 1, 2, and 1.  Six groups in all.
+        expect(tab.groups.size).to eq(6)
+        expect(tab.groups[0].size).to eq(1)
+        expect(tab.groups[1].size).to eq(1)
+        expect(tab.groups[2].size).to eq(2)
+        tab.groups[2].each do |row|
+          expect(row[:name]).to eq('James')
+        end
+        expect(tab.groups[3].size).to eq(1)
+        expect(tab.groups[4].size).to eq(2)
+        tab.groups[4].each do |row|
+          expect(row[:name]).to eq('Paul')
+        end
+        expect(tab.groups[5].size).to eq(1)
+      end
+
+      it 'add group boundaries on union_all' do
+        tab = @tab_a.union_all(@tab_a1)
+        expect(tab.size).to eq(20)
+        expect(tab.groups.size).to eq(2)
+        expect(tab.groups[0].size).to eq(8)
+        expect(tab.groups[1].size).to eq(12)
+      end
+
+      it 'inherit group boundaries on union_all' do
+        tab1 = @tab_a.order_by(:name)
+        tab2 = @tab_a1.order_by(:name)
+        tab = tab1.union_all(tab2)
+        expect(tab.size).to eq(20)
+        expect(tab.groups.size).to eq(tab1.groups.size + tab2.groups.size)
+        tab.groups.each do |grp|
+          names = grp.map {|r| r[:name]}
+          expect(names.uniq.size).to eq(1)
+        end
+      end
+
+      it 'inherit group boundaries on select' do
+        tab = @tab_a.order_by(:name).select(:name, :age, :join_date)
+        # Now the table is ordered by name, and the names are: Allen, David,
+        # James, James, Mark, Paul, Paul, Teddy. So there are groups of size 1,
+        # 1, 2, 1, 2, and 1.  Six groups in all.
+        expect(tab.groups.size).to eq(6)
+        expect(tab.groups[0].size).to eq(1)
+        expect(tab.groups[1].size).to eq(1)
+        expect(tab.groups[2].size).to eq(2)
+        tab.groups[2].each do |row|
+          expect(row[:name]).to eq('James')
+        end
+        expect(tab.groups[3].size).to eq(1)
+        expect(tab.groups[4].size).to eq(2)
+        tab.groups[4].each do |row|
+          expect(row[:name]).to eq('Paul')
+        end
+        expect(tab.groups[5].size).to eq(1)
       end
     end
 
