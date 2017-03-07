@@ -62,6 +62,10 @@ module FatCore
       items.compact.sum
     end
 
+    def count
+      items.compact.count
+    end
+
     def min
       only_with('min', 'NilClass', 'Numeric', 'String', 'DateTime')
       items.compact.min
