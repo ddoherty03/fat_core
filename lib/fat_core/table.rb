@@ -257,6 +257,15 @@ module FatCore
       @boundaries += bounds.map { |k| k + shift }
     end
 
+    # Return the group number to which row k belongs. Groups, from the user's
+    # point of view are indexed starting at 1.
+    def row_index_to_group_index(k)
+      boundaries.each_with_index do |b_last, g_num|
+        return (g_num + 1) if k <= b_last
+      end
+      1
+    end
+
     def group_rows(k)
       normalize_boundaries
       return [] unless k < boundaries.size
@@ -295,6 +304,7 @@ module FatCore
         new_tab.mark_boundary(k - 1) if last_key && key != last_key
         last_key = key
       end
+      new_tab.normalize_boundaries
       new_tab
     end
 
@@ -312,8 +322,10 @@ module FatCore
     # well.  The output table preserves any groups present in the input table.
     def select(*cols, **new_cols)
       result = Table.new
-      ev = Evaluator.new(vars: { row: 0 }, before: '@row += 1')
-      rows.each do |old_row|
+      normalize_boundaries
+      ev = Evaluator.new(vars: { row: 0, group: 1 },
+                         before: '@row = __row; @group = __group')
+      rows.each_with_index do |old_row, old_k|
         new_row = {}
         cols.each do |k|
           h = k.as_sym
@@ -323,6 +335,8 @@ module FatCore
         new_cols.each_pair do |key, val|
           key = key.as_sym
           vars = old_row.merge(new_row)
+          vars[:__row] = old_k + 1
+          vars[:__group] = row_index_to_group_index(old_k)
           case val
           when Symbol
             raise "Column '#{val}' in select does not exist" unless vars.keys.include?(val)
@@ -336,6 +350,7 @@ module FatCore
         result << new_row
       end
       result.boundaries = boundaries
+      result.normalize_boundaries
       result
     end
 
@@ -344,10 +359,15 @@ module FatCore
     def where(expr)
       expr = expr.to_s
       result = Table.new
-      ev = Evaluator.new(vars: { row: 0 }, before: '@row += 1')
-      rows.each do |row|
+      ev = Evaluator.new(vars: { row: 0 },
+                         before: '@row = __row; @group = __group')
+      rows.each_with_index do |row, k|
+        vars = row
+        vars[:__row] = k + 1
+        vars[:__group] = row_index_to_group_index(k)
         result << row if ev.evaluate(expr, vars: row)
       end
+      result.normalize_boundaries
       result
     end
 
@@ -458,6 +478,7 @@ module FatCore
         other.normalize_boundaries
         result.append_boundaries(other.boundaries, shift: size)
       end
+      result.normalize_boundaries
       distinct ? result.distinct : result
     end
 
@@ -569,6 +590,7 @@ module FatCore
           end
         end
       end
+      result.normalize_boundaries
       result
     end
 
@@ -627,6 +649,7 @@ module FatCore
       groups.each_pair do |_vals, grp_rows|
         result << row_from_group(grp_rows, group_cols, agg_cols)
       end
+      result.normalize_boundaries
       result
     end
 
