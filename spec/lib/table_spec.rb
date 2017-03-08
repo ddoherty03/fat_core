@@ -370,6 +370,28 @@ EOS
       end
     end
 
+    describe 'indexing' do
+      before :all do
+        @tab = Table.from_aoh([
+                               { a: '1', 'Two words' => '2', c: '3,123', d: 'apple' },
+                               { a: '4', 'Two words' => '5', c: '6,412', d: 'orange' },
+                               { a: '7', 'Two words' => '8', c: '$9,888', d: 'pear' }])
+      end
+
+      it 'should be able to index by column head' do
+        expect(@tab[:a]).to eq([1, 4, 7])
+        expect(@tab[:d]).to eq(%w(apple orange pear))
+        expect { @tab[:r] }.to raise_error /not in table/
+      end
+
+      it 'should be able to index by row number' do
+        expect(@tab[1]).to eq({a: 1, two_words: 2, c: 3123, d: 'apple'})
+        expect(@tab[3]).to eq({a: 7, two_words: 8, c: 9888, d: 'pear'})
+        expect { @tab[0] }.to raise_error(/out of range/)
+        expect { @tab[4] }.to raise_error(/out of range/)
+      end
+    end
+
     describe 'column operations' do
       it 'should be able to sum a column' do
         aoh = [
@@ -378,10 +400,10 @@ EOS
           { a: '7', 'Two words' => '8', c: '$9,888', d: 'pear' }
         ]
         tab = Table.from_aoh(aoh)
-        expect(tab[:a].sum).to eq 12
+        expect(tab.column(:a).sum).to eq 12
         expect(tab[:two_words].sum).to eq 15
-        expect(tab[:c].sum).to eq 19_423
-        expect(tab[:d].sum).to eq 'appleorangepear'
+        expect(tab.column(:c).sum).to eq 19_423
+        expect(tab.column(:d).sum).to eq 'appleorangepear'
       end
 
       it 'should be able to sum a column ignoring nils' do
@@ -391,10 +413,10 @@ EOS
           { a: '7', 'Two words' => '8', c: '$9,888', d: 'pear' }
         ]
         tab = Table.from_aoh(aoh)
-        expect(tab[:a].sum).to eq 11
-        expect(tab[:two_words].sum).to eq 15
-        expect(tab[:c].sum).to eq 16_300
-        expect(tab[:d].sum).to eq 'appleorangepear'
+        expect(tab.column(:a).sum).to eq 11
+        expect(tab.column(:two_words).sum).to eq 15
+        expect(tab.column(:c).sum).to eq 16_300
+        expect(tab.column(:d).sum).to eq 'appleorangepear'
       end
 
       it 'should be able to report its headings' do
@@ -410,8 +432,8 @@ EOS
           { a: '7', 'Two words' => '8', c: '$9,888', d: 'pear' }
         ]
         tab = Table.from_aoh(aoh)
-        expect(tab[:a].to_a).to eq [1, 4, 7]
-        expect(tab[:c].to_a).to eq [3123, 6412, 9888]
+        expect(tab[:a]).to eq [1, 4, 7]
+        expect(tab[:c]).to eq [3123, 6412, 9888]
       end
 
       it 'should be able to sum a column' do
@@ -421,9 +443,9 @@ EOS
           { a: '7', 'Two words' => '8', c: '$9,888', d: 'pear' }
         ]
         tab = Table.from_aoh(aoh)
-        expect(tab[:a].sum).to eq 12
-        expect(tab[:c].sum).to eq 19_423
-        expect(tab[:c].sum.is_a?(Integer)).to be true
+        expect(tab.column(:a).sum).to eq 12
+        expect(tab.column(:c).sum).to eq 19_423
+        expect(tab.column(:c).sum.is_a?(Integer)).to be true
       end
 
       it 'should be able to average a column' do
@@ -433,9 +455,9 @@ EOS
           { a: '7', 'Two words' => '8', c: '$9,888', d: 'pear' }
         ]
         tab = Table.from_aoh(aoh)
-        expect(tab[:a].avg).to eq 4
-        expect(tab[:c].avg.round(4)).to eq 6474.3333
-        expect(tab[:c].avg.class).to eq BigDecimal
+        expect(tab.column(:a).avg).to eq 4
+        expect(tab.column(:c).avg.round(4)).to eq 6474.3333
+        expect(tab.column(:c).avg.class).to eq BigDecimal
       end
 
       it 'should be able to get column minimum' do
@@ -445,10 +467,10 @@ EOS
           { a: '7', 'Two words' => '8', c: '$9,888', d: 'pear' }
         ]
         tab = Table.from_aoh(aoh)
-        expect(tab[:a].min).to eq 1
-        expect(tab[:c].min.round(4)).to eq 3123
-        expect(tab[:c].min.is_a?(Integer)).to be true
-        expect(tab[:d].min).to eq 'apple'
+        expect(tab.column(:a).min).to eq 1
+        expect(tab.column(:c).min.round(4)).to eq 3123
+        expect(tab.column(:c).min.is_a?(Integer)).to be true
+        expect(tab.column(:d).min).to eq 'apple'
       end
 
       it 'should be able to get column maximum' do
@@ -458,10 +480,10 @@ EOS
           { a: '7', 'Two words' => '8', c: '$9,888', d: 'pear' }
         ]
         tab = Table.from_aoh(aoh)
-        expect(tab[:a].max).to eq 7
-        expect(tab[:c].max.round(4)).to eq 9888
-        expect(tab[:c].max.is_a?(Integer)).to be true
-        expect(tab[:d].max).to eq 'pear'
+        expect(tab.column(:a).max).to eq 7
+        expect(tab.column(:c).max.round(4)).to eq 9888
+        expect(tab.column(:c).max.is_a?(Integer)).to be true
+        expect(tab.column(:d).max).to eq 'pear'
       end
     end
 
@@ -668,8 +690,8 @@ EOS
         tab1 = Table.from_aoh(aoh)
         tab2 = tab1.select(:two_words, s: 's * s', nc: 'c + c', c: 'nc+nc')
         expect(tab2.headers).to eq [:two_words, :s, :nc, :c]
-        expect(tab2[:s].items).to eq([26450449, 169744, 3316041])
-        expect(tab2[:c].items).to eq([12492, 25648, 7552])
+        expect(tab2[:s]).to eq([26450449, 169744, 3316041])
+        expect(tab2[:c]).to eq([12492, 25648, 7552])
       end
 
       it 'should have access to @row and @group vars in evaluating' do
@@ -687,8 +709,8 @@ EOS
         tab = Table.from_aoh(aoh).order_by(:a, :two_words)
         tab2 = tab.select(:a, :two_words, number: '@row', group: '@group')
         expect(tab2.headers).to eq [:a, :two_words, :number, :group]
-        expect(tab2[:number].items).to eq([1, 2, 3, 4, 5, 6, 7, 8, 9])
-        expect(tab2[:group].items).to eq([1, 1, 1, 2, 2, 2, 3, 3, 3])
+        expect(tab2[:number]).to eq([1, 2, 3, 4, 5, 6, 7, 8, 9])
+        expect(tab2[:group]).to eq([1, 1, 1, 2, 2, 2, 3, 3, 3])
       end
     end
 
@@ -785,8 +807,8 @@ EOS
         join_tab = @tab_a.join(@tab_b, :id_a, :emp_id_b)
         expect(join_tab.class).to eq Table
         expect(join_tab.size).to eq(2)
-        expect(join_tab[:name].items).to include('Paul')
-        expect(join_tab[:name].items).to include('Allen')
+        expect(join_tab[:name]).to include('Paul')
+        expect(join_tab[:name]).to include('Allen')
         expect(join_tab.headers).to eq([:id, :name, :age, :address, :salary,
                                         :join_date, :id_b, :dept])
       end
@@ -795,8 +817,8 @@ EOS
         join_tab = @tab_a.join(@tab_b, 'id_a == emp_id_b')
         expect(join_tab.class).to eq Table
         expect(join_tab.size).to eq(2)
-        expect(join_tab[:name].items).to include('Paul')
-        expect(join_tab[:name].items).to include('Allen')
+        expect(join_tab[:name]).to include('Paul')
+        expect(join_tab[:name]).to include('Allen')
         expect(join_tab.headers).to eq([:id, :name, :age, :address, :salary,
                                         :join_date, :id_b, :dept, :emp_id])
       end
@@ -805,12 +827,12 @@ EOS
         join_tab = @tab_a.left_join(@tab_b, :id_a, :emp_id_b)
         expect(join_tab.class).to eq Table
         expect(join_tab.size).to eq(8)
-        expect(join_tab[:name].items).to include('Paul')
-        expect(join_tab[:name].items).to include('Allen')
-        expect(join_tab[:name].items).to include('Teddy')
-        expect(join_tab[:name].items).to include('Mark')
-        expect(join_tab[:name].items).to include('David')
-        expect(join_tab[:name].items).to include('James')
+        expect(join_tab[:name]).to include('Paul')
+        expect(join_tab[:name]).to include('Allen')
+        expect(join_tab[:name]).to include('Teddy')
+        expect(join_tab[:name]).to include('Mark')
+        expect(join_tab[:name]).to include('David')
+        expect(join_tab[:name]).to include('James')
         expect(join_tab.headers).to eq([:id, :name, :age, :address, :salary,
                                         :join_date, :id_b, :dept, :emp_id])
       end
@@ -819,11 +841,11 @@ EOS
         join_tab = @tab_a.right_join(@tab_b, :id_a, :emp_id_b)
         expect(join_tab.class).to eq Table
         expect(join_tab.size).to eq(3)
-        expect(join_tab[:name].items).to include('Paul')
-        expect(join_tab[:name].items).to include('Allen')
-        expect(join_tab[:dept].items).to include('IT Billing')
-        expect(join_tab[:dept].items).to include('Engineering')
-        expect(join_tab[:dept].items).to include('Finance')
+        expect(join_tab[:name]).to include('Paul')
+        expect(join_tab[:name]).to include('Allen')
+        expect(join_tab[:dept]).to include('IT Billing')
+        expect(join_tab[:dept]).to include('Engineering')
+        expect(join_tab[:dept]).to include('Finance')
         expect(join_tab.headers).to eq([:id, :name, :age, :address, :salary,
                                         :join_date, :id_b, :dept, :emp_id])
       end
@@ -832,15 +854,15 @@ EOS
         join_tab = @tab_a.full_join(@tab_b, :id_a, :emp_id_b)
         expect(join_tab.class).to eq Table
         expect(join_tab.size).to eq(9)
-        expect(join_tab[:name].items).to include('Paul')
-        expect(join_tab[:name].items).to include('Allen')
-        expect(join_tab[:name].items).to include('Teddy')
-        expect(join_tab[:name].items).to include('Mark')
-        expect(join_tab[:name].items).to include('David')
-        expect(join_tab[:name].items).to include('James')
-        expect(join_tab[:dept].items).to include('IT Billing')
-        expect(join_tab[:dept].items).to include('Engineering')
-        expect(join_tab[:dept].items).to include('Finance')
+        expect(join_tab[:name]).to include('Paul')
+        expect(join_tab[:name]).to include('Allen')
+        expect(join_tab[:name]).to include('Teddy')
+        expect(join_tab[:name]).to include('Mark')
+        expect(join_tab[:name]).to include('David')
+        expect(join_tab[:name]).to include('James')
+        expect(join_tab[:dept]).to include('IT Billing')
+        expect(join_tab[:dept]).to include('Engineering')
+        expect(join_tab[:dept]).to include('Finance')
         expect(join_tab.headers).to eq([:id, :name, :age, :address, :salary,
                                         :join_date, :id_b, :dept, :emp_id])
       end
@@ -849,15 +871,15 @@ EOS
         join_tab = @tab_a.cross_join(@tab_b)
         expect(join_tab.class).to eq Table
         expect(join_tab.size).to eq(24)
-        expect(join_tab[:name].items).to include('Paul')
-        expect(join_tab[:name].items).to include('Allen')
-        expect(join_tab[:name].items).to include('Teddy')
-        expect(join_tab[:name].items).to include('Mark')
-        expect(join_tab[:name].items).to include('David')
-        expect(join_tab[:name].items).to include('James')
-        expect(join_tab[:dept].items).to include('IT Billing')
-        expect(join_tab[:dept].items).to include('Engineering')
-        expect(join_tab[:dept].items).to include('Finance')
+        expect(join_tab[:name]).to include('Paul')
+        expect(join_tab[:name]).to include('Allen')
+        expect(join_tab[:name]).to include('Teddy')
+        expect(join_tab[:name]).to include('Mark')
+        expect(join_tab[:name]).to include('David')
+        expect(join_tab[:name]).to include('James')
+        expect(join_tab[:dept]).to include('IT Billing')
+        expect(join_tab[:dept]).to include('Engineering')
+        expect(join_tab[:dept]).to include('Finance')
         expect(join_tab.headers).to eq([:id, :name, :age, :address, :salary,
                                         :join_date, :id_b, :dept, :emp_id])
       end

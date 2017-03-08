@@ -88,14 +88,35 @@ module FatCore
       from_aoh(table.rows)
     end
 
+    ###########################################################################
+    # Attributes
+    ###########################################################################
+
     # Return the column with the given header.
     def column(key)
       columns.detect { |c| c.header == key.as_sym }
     end
 
-    # Return the array of items of the column with the given header.
+    # Return the array of items of the column with the given header, or if the
+    # index is an integer, return that row number.  So a table's rows can be
+    # accessed by number, and its columns can be accessed by column header.
+    # Also, double indexing works it either row-major or column-majoir order:
+    # tab[:id][8] returns the 8th item in the column headed :id and so does
+    # tab[8][:id].
     def [](key)
-      column(key)
+      case key
+      when Integer
+        raise "index '#{key}' out of range" unless (1..size).cover?(key)
+        rows[key - 1]
+      when String
+        raise "header '#{key}' not in table" unless headers.include?(key)
+        column(key).items
+      when Symbol
+        raise "header ':#{key}' not in table" unless headers.include?(key)
+        column(key).items
+      else
+        raise "cannot index table with a #{key.class}"
+      end
     end
 
     def column?(key)
