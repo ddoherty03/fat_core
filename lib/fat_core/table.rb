@@ -183,7 +183,8 @@ module FatCore
     ##  preceding the hline.
     ##
     ##  The #order_by method resets the boundaries then adds boundaries at the
-    ##  last row of each group as a boundary.
+    ##  last row of each group of rows on which the sort keys were equal as a
+    ##  boundary.
     ##
     ##  The #union_all (but not #union since it deletes duplicates) method adds
     ##  a boundary between the constituent tables. #union_all also preserves any
@@ -195,10 +196,15 @@ module FatCore
     ##  without change, since it only selects columns for the output and deletes
     ##  no rows.
     ##
+    ##  Perhaps surprisingly, the #group_by method does /not/ result in any
+    ##  groups in the output table since the result of #group_by is to reduce
+    ##  all groups it finds into a single row, and having a group for each row
+    ##  of the output table would have no use.
+    ##
     ##  All the other table-transforming methods reset the boundaries in the new
-    ##  table. For example, #order_by and #where re-arrange and delete rows, so
-    ##  the old boundaries would make no sense anyway. Likewise, #union,
-    ##  #intersection, #except, and #join reset the boundaries to their default.
+    ##  table. For example, #where re-arranges and deletes rows, so the old
+    ##  boundaries would make no sense anyway. Likewise, #union, #intersection,
+    ##  #except, and #join reset the boundaries to their default.
     ##  ###########################################################################
 
     public
