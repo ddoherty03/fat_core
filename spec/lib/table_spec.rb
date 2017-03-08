@@ -671,6 +671,25 @@ EOS
         expect(tab2[:s].items).to eq([26450449, 169744, 3316041])
         expect(tab2[:c].items).to eq([12492, 25648, 7552])
       end
+
+      it 'should have access to @row and @group vars in evaluating' do
+        aoh = [
+          { a: '5', 'Two words' => '20', s: '5_143', c: '3123' },
+          { a: '4', 'Two words' => '5',  s: 412,     c: 6412 },
+          { a: '7', 'Two words' => '8',  s: '$1721', c: '$1_888' },
+          { a: '5', 'Two words' => '20', s: '4_143', c: '4123' },
+          { a: '4', 'Two words' => '5',  s: 512,     c: 5412 },
+          { a: '7', 'Two words' => '8',  s: '$1621', c: '$2_888' },
+          { a: '5', 'Two words' => '20', s: '3_143', c: '5123' },
+          { a: '4', 'Two words' => '5',  s: 412,     c: 4412 },
+          { a: '7', 'Two words' => '8',  s: '$1521', c: '$3_888' }
+        ]
+        tab = Table.new(aoh).order_by(:a, :two_words)
+        tab2 = tab.select(:a, :two_words, number: '@row', group: '@group')
+        expect(tab2.headers).to eq [:a, :two_words, :number, :group]
+        expect(tab2[:number].items).to eq([1, 2, 3, 4, 5, 6, 7, 8, 9])
+        expect(tab2[:group].items).to eq([1, 1, 1, 2, 2, 2, 3, 3, 3])
+      end
     end
 
     describe 'where' do
@@ -680,7 +699,7 @@ EOS
         expect(tab2[:date].max).to be < Date.parse('2006-06-01')
       end
 
-      it 'should select by boolean columns' do
+      it 'should where by boolean columns' do
         tab =
           [['Ref', 'Date', 'Code', 'Raw', 'Shares', 'Price', 'Info', 'Bool'],
            nil,
@@ -707,6 +726,29 @@ EOS
         expect(tab2.rows.size).to eq(10)
         tab2 = tab.where('info =~ /xxxx/')
         expect(tab2.rows.size).to eq(0)
+      end
+
+      it 'where select by row and group' do
+        tab =
+          [['Ref', 'Date', 'Code', 'Raw', 'Shares', 'Price', 'Info', 'Bool'],
+           nil,
+           [1, '2013-05-02', 'P', 795_546.20, 795_546.2, 1.1850, 'ZMPEF1', 'T'],
+           [2, '2013-05-02', 'P', 118_186.40, 118_186.4, 11.8500, 'ZMPEF1', 'T'],
+           [7, '2013-05-20', 'S', 12_000.00, 5046.00, 28.2804, 'ZMEAC', 'F'],
+           [8, '2013-05-20', 'S', 85_000.00, 35_742.50, 28.3224, 'ZMEAC', 'T'],
+           [9, '2013-05-20', 'S', 33_302.00, 14_003.49, 28.6383, 'ZMEAC', 'T'],
+           [10, '2013-05-23', 'S', 8000.00, 3364.00, 27.1083, 'ZMEAC', 'T'],
+           [11, '2013-05-23', 'S', 23_054.00, 9694.21, 26.8015, 'ZMEAC', 'F'],
+           [12, '2013-05-23', 'S', 39_906.00, 16_780.47, 25.1749, 'ZMEAC', 'T'],
+           [13, '2013-05-29', 'S', 13_459.00, 5659.51, 24.7464, 'ZMEAC', 'T'],
+           [14, '2013-05-29', 'S', 15_700.00, 6601.85, 24.7790, 'ZMEAC', 'F'],
+           [15, '2013-05-29', 'S', 15_900.00, 6685.95, 24.5802, 'ZMEAC', 'T'],
+           [16, '2013-05-30', 'S', 6_679.00, 2808.52, 25.0471, 'ZMEAC', 'T']]
+        tab = Table.new(tab).order_by(:date, :code)
+        tab2 = tab.where('@row > 10')
+        expect(tab2.rows.size).to eq(2)
+        tab2 = tab.where('@group == 3')
+        expect(tab2.rows.size).to eq(3)
       end
     end
 
