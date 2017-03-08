@@ -155,8 +155,8 @@ EOS
     end
 
     describe 'construction' do
-      it 'should be create-able from a CSV IO object' do
-        tab = Table.new(StringIO.new(@csv_file_body), '.csv')
+      it 'should be create-able from a CSV string' do
+        tab = Table.from_csv_string(@csv_file_body)
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to be > 20
         expect(tab.headers.sort)
@@ -176,8 +176,8 @@ EOS
         end
       end
 
-      it 'should be create-able from an Org IO object' do
-        tab = Table.new(StringIO.new(@org_file_body), '.org')
+      it 'should be create-able from an Org string' do
+        tab = Table.from_org_string(@org_file_body)
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to be > 10
         expect(tab.headers.sort)
@@ -198,8 +198,8 @@ EOS
         end
       end
 
-      it 'should be create-able from an Org IO object with groups' do
-        tab = Table.new(StringIO.new(@org_file_body), '.org')
+      it 'should be create-able from an Org string with groups' do
+        tab = Table.from_org_string(@org_file_body)
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to be > 10
         expect(tab.headers.sort)
@@ -222,7 +222,7 @@ EOS
 
       it 'should be create-able from a CSV file' do
         File.open('/tmp/junk.csv', 'w') { |f| f.write(@csv_file_body) }
-        tab = Table.new('/tmp/junk.csv')
+        tab = Table.from_csv_file('/tmp/junk.csv')
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to be > 20
         expect(tab.headers.sort)
@@ -243,9 +243,9 @@ EOS
         end
       end
 
-      it 'should be create-able from an Org IO object' do
+      it 'should be create-able from an Org file' do
         File.open('/tmp/junk.org', 'w') { |f| f.write(@org_file_body) }
-        tab = Table.new('/tmp/junk.org')
+        tab = Table.from_org_file('/tmp/junk.org')
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to be > 10
         expect(tab.rows[0].keys.sort)
@@ -276,7 +276,7 @@ EOS
           ['7', '8', '9.0'],
           [10, 11, 12.1]
         ]
-        tab = Table.new(aoa)
+        tab = Table.from_aoa(aoa)
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to eq(4)
         expect(tab.rows[0].keys.sort).to eq [:first, :second, :third]
@@ -299,7 +299,7 @@ EOS
           ['7', '8', '9.0'],
           [10, 11, 12.1]
         ]
-        tab = Table.new(aoa)
+        tab = Table.from_aoa(aoa)
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to eq(4)
         expect(tab.headers.sort).to eq [:first, :second, :third]
@@ -321,7 +321,7 @@ EOS
           [7, 8, 9.3]
         ]
         # rubocop:enable Style/WordArray
-        tab = Table.new(aoa)
+        tab = Table.from_aoa(aoa)
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to eq(4)
         expect(tab.headers.sort).to eq [:col1, :col2, :col3]
@@ -342,7 +342,7 @@ EOS
           { a: '7', 'Two words' => '8', c: '9.0' },
           { a: 10, 'Two words' => 11, c: 12.4 }
         ]
-        tab = Table.new(aoh)
+        tab = Table.from_aoh(aoh)
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to eq(4)
         expect(tab.rows[0].keys.sort).to eq [:a, :c, :two_words]
@@ -358,7 +358,7 @@ EOS
 
       it 'should set T F columns to Boolean' do
         cwd = File.dirname(__FILE__)
-        dwtab = Table.new(cwd + '/../example_files/datawatch.org')
+        dwtab = Table.from_org_file(cwd + '/../example_files/datawatch.org')
         expect(dwtab.column(:g10).type).to eq('Boolean')
         expect(dwtab.column(:qp10).type).to eq('Boolean')
         dwo = dwtab.where('qp10 || g10')
@@ -377,7 +377,7 @@ EOS
           { a: '4', 'Two words' => '5', c: '6,412', d: 'orange' },
           { a: '7', 'Two words' => '8', c: '$9,888', d: 'pear' }
         ]
-        tab = Table.new(aoh)
+        tab = Table.from_aoh(aoh)
         expect(tab[:a].sum).to eq 12
         expect(tab[:two_words].sum).to eq 15
         expect(tab[:c].sum).to eq 19_423
@@ -390,7 +390,7 @@ EOS
           { a: '4', 'Two words' => '5', c: '6,412', d: 'orange' },
           { a: '7', 'Two words' => '8', c: '$9,888', d: 'pear' }
         ]
-        tab = Table.new(aoh)
+        tab = Table.from_aoh(aoh)
         expect(tab[:a].sum).to eq 11
         expect(tab[:two_words].sum).to eq 15
         expect(tab[:c].sum).to eq 16_300
@@ -398,7 +398,7 @@ EOS
       end
 
       it 'should be able to report its headings' do
-        tab = Table.new(StringIO.new(@csv_file_body), '.csv')
+        tab = Table.from_csv_string(@csv_file_body)
         expect(tab.headers.sort)
           .to eq [:code, :date, :info, :price, :rawshares, :ref, :shares]
       end
@@ -409,7 +409,7 @@ EOS
           { a: '4', 'Two words' => '5', c: '6,412', d: 'orange' },
           { a: '7', 'Two words' => '8', c: '$9,888', d: 'pear' }
         ]
-        tab = Table.new(aoh)
+        tab = Table.from_aoh(aoh)
         expect(tab[:a].to_a).to eq [1, 4, 7]
         expect(tab[:c].to_a).to eq [3123, 6412, 9888]
       end
@@ -420,7 +420,7 @@ EOS
           { a: '4', 'Two words' => '5', c: '6,412', d: 'orange' },
           { a: '7', 'Two words' => '8', c: '$9,888', d: 'pear' }
         ]
-        tab = Table.new(aoh)
+        tab = Table.from_aoh(aoh)
         expect(tab[:a].sum).to eq 12
         expect(tab[:c].sum).to eq 19_423
         expect(tab[:c].sum.is_a?(Integer)).to be true
@@ -432,7 +432,7 @@ EOS
           { a: '4', 'Two words' => '5', c: '6,412', d: 'orange' },
           { a: '7', 'Two words' => '8', c: '$9,888', d: 'pear' }
         ]
-        tab = Table.new(aoh)
+        tab = Table.from_aoh(aoh)
         expect(tab[:a].avg).to eq 4
         expect(tab[:c].avg.round(4)).to eq 6474.3333
         expect(tab[:c].avg.class).to eq BigDecimal
@@ -444,7 +444,7 @@ EOS
           { a: '4', 'Two words' => '5', c: '6,412', d: 'orange' },
           { a: '7', 'Two words' => '8', c: '$9,888', d: 'pear' }
         ]
-        tab = Table.new(aoh)
+        tab = Table.from_aoh(aoh)
         expect(tab[:a].min).to eq 1
         expect(tab[:c].min.round(4)).to eq 3123
         expect(tab[:c].min.is_a?(Integer)).to be true
@@ -457,7 +457,7 @@ EOS
           { a: '4', 'Two words' => '5', c: '6,412', d: 'orange' },
           { a: '7', 'Two words' => '8', c: '$9,888', d: 'pear' }
         ]
-        tab = Table.new(aoh)
+        tab = Table.from_aoh(aoh)
         expect(tab[:a].max).to eq 7
         expect(tab[:c].max.round(4)).to eq 9888
         expect(tab[:c].max.is_a?(Integer)).to be true
@@ -472,7 +472,7 @@ EOS
           { a: '4', 'Two words' => '5', c: '6,412', d: 'orange' },
           { a: '7', 'Two words' => '8', c: '$9,888', d: 'pear' }
         ]
-        tab = Table.new(aoh)
+        tab = Table.from_aoh(aoh)
         tab.add_sum_footer([:a, :c, :two_words])
         expect(tab.footers[:total][:a]).to eq 12
         expect(tab.footers[:total][:c]).to eq 19_423
@@ -486,7 +486,7 @@ EOS
           { a: '4', 'Two words' => '5', c: '6,412', d: 'orange' },
           { a: '7', 'Two words' => '8', c: '$9,888', d: 'pear' }
         ]
-        tab = Table.new(aoh)
+        tab = Table.from_aoh(aoh)
         tab.add_avg_footer([:a, :c, :two_words])
         expect(tab.footers[:average][:a]).to eq 4
         expect(tab.footers[:average][:c].round(4)).to eq 6474.3333
@@ -500,7 +500,7 @@ EOS
           { a: '4', 'Two words' => '5', c: '6,412', d: 'orange' },
           { a: '7', 'Two words' => '8', c: '$9,888', d: 'pear' }
         ]
-        tab = Table.new(aoh)
+        tab = Table.from_aoh(aoh)
         tab.add_min_footer([:a, :c, :two_words])
         expect(tab.footers[:minimum][:a]).to eq 1
         expect(tab.footers[:minimum][:c]).to eq 3123
@@ -514,7 +514,7 @@ EOS
           { a: '4', 'Two words' => '5', c: '6,412', d: 'orange' },
           { a: '7', 'Two words' => '8', c: '$9,888', d: 'pear' }
         ]
-        tab = Table.new(aoh)
+        tab = Table.from_aoh(aoh)
         tab.add_max_footer([:a, :c, :two_words])
         expect(tab.footers[:maximum][:a]).to eq 7
         expect(tab.footers[:maximum][:c]).to eq 9888
@@ -530,7 +530,7 @@ EOS
           { a: '4', 'Two words' => '5', c: '6,412', d: 'orange' },
           { a: '7', 'Two words' => '8', c: '$1,888', d: 'apple' }
         ]
-        tab = Table.new(aoh).order_by(:a)
+        tab = Table.from_aoh(aoh).order_by(:a)
         expect(tab.rows[0][:a]).to eq 4
       end
 
@@ -540,7 +540,7 @@ EOS
           { a: '4', 'Two words' => '5', c: '6,412', d: 'orange' },
           { a: '7', 'Two words' => '8', c: '$1,888', d: 'apple' }
         ]
-        tab = Table.new(aoh).order_by(:d, :c)
+        tab = Table.from_aoh(aoh).order_by(:d, :c)
         expect(tab.rows[0][:a]).to eq 7
       end
 
@@ -550,7 +550,7 @@ EOS
           { a: '4', 'Two words' => '5', c: '6,412', d: 'orange' },
           { a: '7', 'Two words' => '8', c: '$1,888', d: 'apple' }
         ]
-        tab = Table.new(aoh).order_by(:d!)
+        tab = Table.from_aoh(aoh).order_by(:d!)
         expect(tab.rows[0][:d]).to eq 'orange'
         expect(tab.rows[2][:d]).to eq 'apple'
       end
@@ -561,7 +561,7 @@ EOS
           { a: '4', 'Two words' => '5', c: 6412, d: 'orange' },
           { a: '7', 'Two words' => '8', c: '$1,888', d: 'apple' }
         ]
-        tab = Table.new(aoh).order_by(:d!, :c)
+        tab = Table.from_aoh(aoh).order_by(:d!, :c)
         expect(tab.rows[0][:d]).to eq 'orange'
         expect(tab.rows[1][:d]).to eq 'apple'
         expect(tab.rows[1][:c]).to eq 1888
@@ -576,13 +576,13 @@ EOS
           { a: '4', 'Two words' => '5', c: 6412, d: 'orange' },
           { a: '7', 'Two words' => '8', c: '$1,888', d: 'apple' }
         ]
-        tab1 = Table.new(aoh)
+        tab1 = Table.from_aoh(aoh)
         aoh2 = [
           { t: '8', 'Two worlds' => '65', s: '5,143', u: 'kiwi' },
           { t: '87', 'Two worlds' => '12', s: 412, u: 'banana' },
           { t: '13', 'Two worlds' => '11', s: '$1,821', u: 'grape' }
         ]
-        tab2 = Table.new(aoh2)
+        tab2 = Table.from_aoh(aoh2)
         utab = tab1.union(tab2)
         expect(utab.rows.size).to eq(6)
       end
@@ -593,13 +593,13 @@ EOS
           { a: '4', 'Two words' => '5', c: 6412 },
           { a: '7', 'Two words' => '8', c: '$1,888' }
         ]
-        tab1 = Table.new(aoh)
+        tab1 = Table.from_aoh(aoh)
         aoh2 = [
           { t: '8', 'Two worlds' => '65', s: '5,143', u: 'kiwi' },
           { t: '87', 'Two worlds' => '12', s: 412, u: 'banana' },
           { t: '13', 'Two worlds' => '11', s: '$1,821', u: 'grape' }
         ]
-        tab2 = Table.new(aoh2)
+        tab2 = Table.from_aoh(aoh2)
         expect {
           tab1.union(tab2)
         }.to raise_error(/different number of columns/)
@@ -611,13 +611,13 @@ EOS
           { a: '4', 'Two words' => '5',  s: 412,     c: 6412 },
           { a: '7', 'Two words' => '8',  s: '$1821', c: '$1888' }
         ]
-        tab1 = Table.new(aoh)
+        tab1 = Table.from_aoh(aoh)
         aoh2 = [
           { t: '8',  'Two worlds' => '65', s: '2016-01-17',   u: 'kiwi' },
           { t: '87', 'Two worlds' => '12', s: Date.today,     u: 'banana' },
           { t: '13', 'Two worlds' => '11', s: '[2015-05-21]', u: 'grape' }
         ]
-        tab2 = Table.new(aoh2)
+        tab2 = Table.from_aoh(aoh2)
         expect {
           tab1.union(tab2)
         }.to raise_error(/different column types/)
@@ -631,7 +631,7 @@ EOS
           { a: '4', 'Two words' => '5',  s: 412,     c: 6412 },
           { a: '7', 'Two words' => '8',  s: '$1821', c: '$1888' }
         ]
-        tab1 = Table.new(aoh)
+        tab1 = Table.from_aoh(aoh)
         tab2 = tab1.select(:s, :a, :c)
         expect(tab2.headers).to eq [:s, :a, :c]
       end
@@ -642,7 +642,7 @@ EOS
           { a: '4', 'Two words' => '5',  s: 412,     c: 6412 },
           { a: '7', 'Two words' => '8',  s: '$1821', c: '$1888' }
         ]
-        tab1 = Table.new(aoh)
+        tab1 = Table.from_aoh(aoh)
         tab2 = tab1.select(former_s: :s, new_a: :a, renew_c: :c)
         expect(tab2.headers).to eq [:former_s, :new_a, :renew_c]
       end
@@ -653,7 +653,7 @@ EOS
           { a: '4', 'Two words' => '5',  s: 412,     c: 6412 },
           { a: '7', 'Two words' => '8',  s: '$1821', c: '$1888' }
         ]
-        tab1 = Table.new(aoh)
+        tab1 = Table.from_aoh(aoh)
         tab2 = tab1.select(:two_words, row: '@row', s_squared: 's * s',
                            arb: 's_squared / (a + c).to_d')
         expect(tab2.headers).to eq [:two_words, :row, :s_squared, :arb]
@@ -665,7 +665,7 @@ EOS
           { a: '4', 'Two words' => '5',  s: 412,     c: 6412 },
           { a: '7', 'Two words' => '8',  s: '$1821', c: '$1_888' }
         ]
-        tab1 = Table.new(aoh)
+        tab1 = Table.from_aoh(aoh)
         tab2 = tab1.select(:two_words, s: 's * s', nc: 'c + c', c: 'nc+nc')
         expect(tab2.headers).to eq [:two_words, :s, :nc, :c]
         expect(tab2[:s].items).to eq([26450449, 169744, 3316041])
@@ -684,7 +684,7 @@ EOS
           { a: '4', 'Two words' => '5',  s: 412,     c: 4412 },
           { a: '7', 'Two words' => '8',  s: '$1521', c: '$3_888' }
         ]
-        tab = Table.new(aoh).order_by(:a, :two_words)
+        tab = Table.from_aoh(aoh).order_by(:a, :two_words)
         tab2 = tab.select(:a, :two_words, number: '@row', group: '@group')
         expect(tab2.headers).to eq [:a, :two_words, :number, :group]
         expect(tab2[:number].items).to eq([1, 2, 3, 4, 5, 6, 7, 8, 9])
@@ -694,13 +694,13 @@ EOS
 
     describe 'where' do
       it 'should be able to filter rows by expression' do
-        tab1 = Table.new(StringIO.new(@csv_file_body), '.csv')
+        tab1 = Table.from_csv_string(@csv_file_body)
         tab2 = tab1.where("date < Date.parse('2006-06-01')")
         expect(tab2[:date].max).to be < Date.parse('2006-06-01')
       end
 
       it 'should where by boolean columns' do
-        tab =
+        aoa =
           [['Ref', 'Date', 'Code', 'Raw', 'Shares', 'Price', 'Info', 'Bool'],
            nil,
            [1, '2013-05-02', 'P', 795_546.20, 795_546.2, 1.1850, 'ZMPEF1', 'T'],
@@ -715,7 +715,7 @@ EOS
            [14, '2013-05-29', 'S', 15_700.00, 6601.85, 24.7790, 'ZMEAC', 'F'],
            [15, '2013-05-29', 'S', 15_900.00, 6685.95, 24.5802, 'ZMEAC', 'T'],
            [16, '2013-05-30', 'S', 6_679.00, 2808.52, 25.0471, 'ZMEAC', 'T']]
-        tab = Table.new(tab).add_sum_footer([:raw, :shares, :price])
+        tab = Table.from_aoa(aoa).add_sum_footer([:raw, :shares, :price])
         tab2 = tab.where('!bool || code == "P"')
         expect(tab2.rows.size).to eq(5)
         tab2 = tab.where('code == "S" && raw < 10_000')
@@ -729,7 +729,7 @@ EOS
       end
 
       it 'where select by row and group' do
-        tab =
+        aoa =
           [['Ref', 'Date', 'Code', 'Raw', 'Shares', 'Price', 'Info', 'Bool'],
            nil,
            [1, '2013-05-02', 'P', 795_546.20, 795_546.2, 1.1850, 'ZMPEF1', 'T'],
@@ -744,7 +744,7 @@ EOS
            [14, '2013-05-29', 'S', 15_700.00, 6601.85, 24.7790, 'ZMEAC', 'F'],
            [15, '2013-05-29', 'S', 15_900.00, 6685.95, 24.5802, 'ZMEAC', 'T'],
            [16, '2013-05-30', 'S', 6_679.00, 2808.52, 25.0471, 'ZMEAC', 'T']]
-        tab = Table.new(tab).order_by(:date, :code)
+        tab = Table.from_aoa(aoa).order_by(:date, :code)
         tab2 = tab.where('@row > 10')
         expect(tab2.rows.size).to eq(2)
         tab2 = tab.where('@group == 3')
@@ -754,7 +754,7 @@ EOS
 
     describe 'group_by' do
       it 'should be able to group by equal columns' do
-        tab1 = Table.new(StringIO.new(@csv_file_body), '.csv')
+        tab1 = Table.from_csv_string(@csv_file_body)
         tab2 = tab1.group_by(:date, :code, shares: :sum, ref: :first)
         expect(tab2.headers).to eq([:date, :code, :sum_shares, :first_ref,
                                     :first_rawshares, :first_price, :first_info])
@@ -764,7 +764,7 @@ EOS
     describe 'join' do
       # These tests are taken from https://www.tutorialspoint.com/postgresql/postgresql_using_joins.htm
       before :all do
-        @tab_a = Table.new([
+        @tab_a = Table.from_aoh([
           { id: 1, name: 'Paul', age: 32, address: 'California', salary: 20000, join_date: '2001-07-13' },
           { id: 3, name: 'Teddy', age: 23, address: 'Norway', salary: 20000},
           { id: 4, name: 'Mark', age: 25, address: 'Rich-Mond', salary: 65000, join_date: '2007-12-13' },
@@ -774,7 +774,7 @@ EOS
           { id: 9, name: 'James', age: 44, address: 'Norway', salary: 5000, join_date: '2005-07-13' },
           { id: 10, name: 'James', age: 45, address: 'Texas', salary: 5000, join_date: '2005-07-13' }
         ])
-        @tab_b = Table.new([
+        @tab_b = Table.from_aoh([
           { id: 1, dept: 'IT Billing', emp_id: 1 },
           { id: 2, dept: 'Engineering', emp_id: 2 },
           { id: 3, dept: 'Finance', emp_id: 7 }
@@ -865,7 +865,7 @@ EOS
 
     describe 'group boundaries' do
       before :all do
-        @tab_a = Table.new([
+        @tab_a = Table.from_aoh([
           { id: 1, name: 'Paul', age: 32, address: 'California', salary: 20000, join_date: '2001-07-13' },
           { id: 3, name: 'Teddy', age: 23, address: 'Norway', salary: 20000},
           { id: 4, name: 'Mark', age: 25, address: 'Rich-Mond', salary: 65000, join_date: '2007-12-13' },
@@ -876,7 +876,7 @@ EOS
           { id: 10, name: 'James', age: 45, address: 'Texas', salary: 5000, join_date: '2005-07-13' }
         ])
         # Union compatible with tab_a
-        @tab_a1 = Table.new([
+        @tab_a1 = Table.from_aoh([
           { id: 21, name: 'Paula', age: 23, address: 'Kansas', salary: 20000, join_date: '2001-07-13' },
           { id: 23, name: 'Jenny', age: 32, address: 'Missouri', salary: 20000},
           { id: 24, name: 'Forrest', age: 52, address: 'Richmond', salary: 65000, join_date: '2007-12-13' },
@@ -891,7 +891,7 @@ EOS
           { id: 29, name: 'Patrick', age: 44, address: 'Lindsbourg', salary: 5000, join_date: '2005-07-13' },
           { id: 30, name: 'James', age: 54, address: 'Ottawa', salary: 5000, join_date: '2005-07-13' }
         ])
-        @tab_b = Table.new([
+        @tab_b = Table.from_aoh([
           { id: 1, dept: 'IT Billing', emp_id: 1 },
           { id: 2, dept: 'Engineering', emp_id: 2 },
           { id: 3, dept: 'Finance', emp_id: 7 }
@@ -938,7 +938,7 @@ EOS
       end
 
       it 'add group boundaries on reading from org text' do
-        tab = Table.new(StringIO.new(@org_file_body_with_groups), '.org')
+        tab = Table.from_org_string(@org_file_body_with_groups)
         expect(tab.groups.size).to eq(4)
         expect(tab.groups[0].size).to eq(1)
         expect(tab.groups[1].size).to eq(3)
@@ -947,7 +947,7 @@ EOS
       end
 
       it 'add group boundaries on reading from aoa' do
-        tab = Table.new(@aoa)
+        tab = Table.from_aoa(@aoa)
         expect(tab.groups.size).to eq(4)
         expect(tab.groups[0].size).to eq(1)
         expect(tab.groups[1].size).to eq(3)
@@ -956,7 +956,7 @@ EOS
       end
 
       it 'add group boundaries on reading from aoh' do
-        tab = Table.new(@aoh)
+        tab = Table.from_aoh(@aoh)
         expect(tab.groups.size).to eq(4)
         expect(tab.groups[0].size).to eq(1)
         expect(tab.groups[1].size).to eq(3)
@@ -1032,7 +1032,7 @@ EOS
           { a: '4', 'Two words' => '5', c: '6,412', d: 'orange' },
           { a: '7', 'Two words' => '8', c: '$9,888', d: 'pear' }
         ]
-        tab = Table.new(aoh)
+        tab = Table.from_aoh(aoh)
         aoa = tab.to_org
         expect(aoa.class).to eq Array
         expect(aoa[0].class).to eq Array
@@ -1042,7 +1042,7 @@ EOS
       it 'should be able to output an org babel aoa' do
         # This is what the data looks like when called from org babel code
         # blocks.
-        tab =
+        aoa =
           [['Ref', 'Date', 'Code', 'Raw', 'Shares', 'Price', 'Info', 'Bool'],
            nil,
            [1, '2013-05-02', 'P', 795_546.20, 795_546.2, 1.1850, 'ZMPEF1', 'T'],
@@ -1057,7 +1057,7 @@ EOS
            [14, '2013-05-29', 'S', 15_700.00, 6601.85, 24.7790, 'ZMEAC', 'F'],
            [15, '2013-05-29', 'S', 15_900.00, 6685.95, 24.5802, 'ZMEAC', 'T'],
            [16, '2013-05-30', 'S', 6_679.00, 2808.52, 25.0471, 'ZMEAC', 'T']]
-        tg = Table.new(tab).add_sum_footer([:raw, :shares, :price])
+        tg = Table.from_aoa(aoa).add_sum_footer([:raw, :shares, :price])
         aoa = tg.to_org(formats: { raw: '%,', shares: '%,', price: '%,4' })
         expect(aoa[-1][0]).to eq 'Total'
         expect(aoa[-1][1]).to eq ''
