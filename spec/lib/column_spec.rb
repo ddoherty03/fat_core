@@ -195,6 +195,21 @@ module FatCore
         expect(@date_col.avg).to eq(DateTime.parse('2014-07-17 12pm'))
         expect(@num_col.avg).to eq(16295.214967957)
         expect{ @str_col.avg }.to raise_error(/cannot be applied/)
+
+      it 'should be able to apply var to appropriate columns' do
+        expect { @nil_col.var }.to raise_error(/cannot be applied/)
+        expect { @bool_col.var }.to raise_error(/cannot be applied/)
+        expect(@date_col.var).to eq(644_564.25)
+        expect(@num_col.var.round(5)).to eq(342_771_817.71273)
+        expect { @str_col.var }.to raise_error(/cannot be applied/)
+      end
+
+      it 'should be able to apply dev to appropriate columns' do
+        expect { @nil_col.dev }.to raise_error(/cannot be applied/)
+        expect { @bool_col.dev }.to raise_error(/cannot be applied/)
+        expect(@date_col.dev).to eq(802.8475882756328)
+        expect(@num_col.dev).to eq(18_514.097809851042)
+        expect { @str_col.dev }.to raise_error(/cannot be applied/)
       end
 
       it 'should be able to apply boolean aggregates to boolean columns' do

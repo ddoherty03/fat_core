@@ -86,6 +86,35 @@ module FatCore
       end
     end
 
+    # Return the variance, the average squared deviation from the mean, of the
+    # non-nil items in the column.  Works with numeric and datetime columns.
+    # For datetime columns, it converts each date to its Julian day number and
+    # computes the variance of those numbers.
+    def var
+      only_with('var', 'DateTime', 'Numeric')
+      all_items =
+        if type == 'DateTime'
+          items.compact.map(&:jd)
+        else
+          items.compact
+        end
+      mu = Column.new(header: :mu, items: all_items).avg
+      sq_dev = 0.0
+      all_items.compact.each do |itm|
+        sq_dev += (itm - mu) * (itm - mu)
+      end
+      sq_dev / items.compact.size.to_d
+    end
+
+    # Return the standard deviation, the square root of the variance, of the
+    # non-nil items in the column.  Works with numeric and datetime columns.
+    # For datetime columns, it converts each date to its Julian day number and
+    # computes the standard deviation of those numbers.
+    def dev
+      only_with('dev', 'DateTime', 'Numeric')
+      Math.sqrt(var)
+    end
+
     def any?
       only_with('any?', 'Boolean')
       items.compact.any?
