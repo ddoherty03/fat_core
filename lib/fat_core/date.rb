@@ -609,7 +609,7 @@ class Date
     month = month.to_i
     raise ArgumentError, 'illegal month number' if month < 1 || month > 12
     n = n.to_i
-    if n > 0
+    if n.positive?
       # Set d to the 1st wday in month
       d = Date.new(year, month, 1)
       d += 1 while d.wday != wday
@@ -620,7 +620,7 @@ class Date
         nd += 1
       end
       d
-    elsif n < 0
+    elsif n.negative?
       n = -n
       # Set d to the last wday in month
       d = Date.new(year, month, 1).end_of_month
@@ -975,9 +975,9 @@ class Date
   def add_fed_business_days(n)
     d = dup
     return d if n.zero?
-    incr = n < 0 ? -1 : 1
+    incr = n.negative? ? -1 : 1
     n = n.abs
-    while n > 0
+    while n.positive?
       d += incr
       n -= 1 if d.fed_workday?
     end
@@ -995,9 +995,9 @@ class Date
   def add_nyse_business_days(n)
     d = dup
     return d if n.zero?
-    incr = n < 0 ? -1 : 1
+    incr = n.negative? ? -1 : 1
     n = n.abs
-    while n > 0
+    while n.positive?
       d += incr
       n -= 1 if d.nyse_workday?
     end

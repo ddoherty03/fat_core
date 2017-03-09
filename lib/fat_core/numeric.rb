@@ -1,8 +1,8 @@
 class Numeric
   def signum
-    if self > 0
+    if positive?
       1
-    elsif self < 0
+    elsif negative?
       -1
     else
       0
@@ -42,7 +42,7 @@ class Numeric
 
     # Pad out the fractional part with zeroes to the right
     n_zeroes = [places - frac.length, 0].max
-    frac += '0' * n_zeroes if n_zeroes > 0
+    frac += '0' * n_zeroes if n_zeroes.positive?
 
     # Place the commas in the whole part only
     whole = whole.reverse

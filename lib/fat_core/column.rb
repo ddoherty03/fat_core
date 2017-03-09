@@ -6,7 +6,7 @@ module FatCore
   class Column
     attr_reader :header, :type, :items
 
-    TYPES = %w(NilClass Boolean DateTime Numeric String)
+    TYPES = %w(NilClass Boolean DateTime Numeric String).freeze
 
     def initialize(header:, items: [])
       @header = header.as_sym
@@ -108,10 +108,9 @@ module FatCore
 
     private
 
-    def only_with(agg, *types)
-      unless types.include?(type)
-        raise "Aggregate '#{agg}' cannot be applied to a #{type} column"
-      end
+    def only_with(agg, *valid_types)
+      return self if valid_types.include?(type)
+      raise "Aggregate '#{agg}' cannot be applied to a #{type} column"
     end
 
     public

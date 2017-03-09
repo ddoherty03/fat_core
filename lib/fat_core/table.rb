@@ -563,10 +563,12 @@ module FatCore
     #      have N and M rows respectively, the joined table will have N * M
     #      rows.
     # Resets groups.
-    JOIN_TYPES = [:inner, :left, :right, :full, :cross]
+    JOIN_TYPES = [:inner, :left, :right, :full, :cross].freeze
 
     def join(other, *exps, join_type: :inner)
-      raise ArgumentError, 'need other table as first argument to join' unless other.is_a?(Table)
+      unless other.is_a?(Table)
+        raise ArgumentError, 'need other table as first argument to join'
+      end
       unless JOIN_TYPES.include?(join_type)
         raise ArgumentError, "join_type may only be: #{JOIN_TYPES.join(', ')}"
       end
@@ -714,9 +716,9 @@ module FatCore
       # Translate any remaining row_b heads to append '_b' if they have the
       # same name as a row_a key.
       a_heads = row_a.keys
-      row_b = row_b.to_a.each.map do |k, v|
+      row_b = row_b.to_a.each.map { |k, v|
         [a_heads.include?(k) ? "#{k}_b".to_sym : k, v]
-      end.to_h
+      }.to_h
       row_a.merge(row_b)
     end
 
@@ -902,7 +904,6 @@ module FatCore
     # using this method as a primitive.
     def add_row(row, mark: false)
       row.each_pair do |k, v|
-        binding.pry if k.nil?
         key = k.as_sym
         columns << Column.new(header: k) unless column?(k)
         column(key) << v
@@ -923,7 +924,6 @@ module FatCore
     end
 
     class << self
-
       private
 
       # Construct table from an array of hashes or an array of any object that can

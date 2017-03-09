@@ -750,7 +750,7 @@ EOS
         expect(tab2.rows.size).to eq(0)
       end
 
-      it 'where select by row and group' do
+      it 'where clause with row and group' do
         aoa =
           [['Ref', 'Date', 'Code', 'Raw', 'Shares', 'Price', 'Info', 'Bool'],
            nil,
