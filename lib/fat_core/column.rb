@@ -44,10 +44,16 @@ module FatCore
     # Aggregates
     ##########################################################################
 
+    VALID_AGGREGATES = %s(first last rng
+                          sum count min max avg var dev
+                          any? all? none? one?)
+
+    # Return the first non-nil item in the column.  Works with any column type.
     def first
       items.compact.first
     end
 
+    # Return the last non-nil item in the column.  Works with any column type.
     def last
       items.compact.last
     end
@@ -58,25 +64,38 @@ module FatCore
       "#{first}..#{last}"
     end
 
+    # Return the sum of the non-nil items in the column.  Works with numeric and
+    # string columns. For a string column, it will return the concatenation of
+    # the non-nil items.
     def sum
       only_with('sum', 'Numeric', 'String')
       items.compact.sum
     end
 
+    # Return a count of the non-nil items in the column.  Works with any column
+    # type.
     def count
       items.compact.count
     end
 
+    # Return the smallest non-nil item in the column.  Works with numeric,
+    # string, and datetime columns.
     def min
       only_with('min', 'NilClass', 'Numeric', 'String', 'DateTime')
       items.compact.min
     end
 
+    # Return the largest non-nil item in the column.  Works with numeric,
+    # string, and datetime columns.
     def max
       only_with('max', 'NilClass', 'Numeric', 'String', 'DateTime')
       items.compact.max
     end
 
+    # Return the average value of the non-nil items in the column.  Works with
+    # numeric and datetime columns.  For datetime columns, it converts each date
+    # to its Julian day number, computes the average, and then converts the
+    # average back to a DateTime.
     def avg
       only_with('avg', 'DateTime', 'Numeric')
       if type == 'DateTime'
@@ -116,21 +135,29 @@ module FatCore
       Math.sqrt(var)
     end
 
+    # Return true if any of the items in the column are true; otherwise return
+    # false.  Works only with boolean columns.
     def any?
       only_with('any?', 'Boolean')
       items.compact.any?
     end
 
+    # Return true if all of the items in the column are true; otherwise return
+    # false.  Works only with boolean columns.
     def all?
       only_with('all?', 'Boolean')
       items.compact.all?
     end
 
+    # Return true if none of the items in the column are true; otherwise return
+    # false.  Works only with boolean columns.
     def none?
       only_with('any?', 'Boolean')
       items.compact.none?
     end
 
+    # Return true if precisely one of the items in the column is true;
+    # otherwise return false.  Works only with boolean columns.
     def one?
       only_with('any?', 'Boolean')
       items.compact.one?

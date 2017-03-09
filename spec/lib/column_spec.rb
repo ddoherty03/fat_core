@@ -141,7 +141,7 @@ module FatCore
                      items: [nil, 'Four', 'score', 'and', nil, '7 years'])
       end
 
-      it 'should be able apply to first to appropriate columns' do
+      it 'should be able to apply first to appropriate columns' do
         expect(@nil_col.first).to eq(nil)
         expect(@bool_col.first).to eq(false)
         expect(@date_col.first).to eq(Date.parse('2015-01-21'))
@@ -194,7 +194,8 @@ module FatCore
         expect { @bool_col.avg }.to raise_error(/cannot be applied/)
         expect(@date_col.avg).to eq(DateTime.parse('2014-07-17 12pm'))
         expect(@num_col.avg).to eq(16295.214967957)
-        expect{ @str_col.avg }.to raise_error(/cannot be applied/)
+        expect { @str_col.avg }.to raise_error(/cannot be applied/)
+      end
 
       it 'should be able to apply var to appropriate columns' do
         expect { @nil_col.var }.to raise_error(/cannot be applied/)
