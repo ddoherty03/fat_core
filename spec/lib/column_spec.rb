@@ -157,12 +157,12 @@ module FatCore
         expect(@str_col.last).to eq('7 years')
       end
 
-      it 'should be able to apply rng_s to appropriate columns' do
-        expect(@nil_col.rng_s).to eq('..')
-        expect(@bool_col.rng_s).to eq('false..true')
-        expect(@date_col.rng_s).to eq('2015-01-21..2017-01-25T10:00:00+00:00')
-        expect(@num_col.rng_s).to eq('20151..45024')
-        expect(@str_col.rng_s).to eq('Four..7 years')
+      it 'should be able to apply rng to appropriate columns' do
+        expect(@nil_col.rng).to eq('..')
+        expect(@bool_col.rng).to eq('false..true')
+        expect(@date_col.rng).to eq('2015-01-21..2017-01-25T10:00:00+00:00')
+        expect(@num_col.rng).to eq('20151..45024')
+        expect(@str_col.rng).to eq('Four..7 years')
       end
 
       it 'should be able to sum to appropriate columns' do

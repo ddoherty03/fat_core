@@ -52,8 +52,9 @@ module FatCore
       items.compact.last
     end
 
-    # Return a string that of the first and last values.
-    def rng_s
+    # Return a string of the first and last non-nil values.  Works with any
+    # column type.
+    def rng
       "#{first}..#{last}"
     end
 
