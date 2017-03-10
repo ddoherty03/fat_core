@@ -39,11 +39,12 @@ module FatCore
   # will extract the entire ~:age~ column and compute its average, since Column
   # objects respond to aggregate methods, such as ~sum~, ~min~, ~max~, and ~avg~.
   class Table
-    attr_reader :columns, :footers
+    attr_reader :columns, :footers, :gfooters
 
     def initialize(input = nil, ext = '.csv')
       @columns = []
       @footers = {}
+      @gfooters = {}
       @boundaries = []
     end
 
@@ -674,31 +675,117 @@ module FatCore
 
     ############################################################################
     # Footer methods
+    #
+    #
+    # A Table may have any number of footers and any number of group footers.
+    # Footers are not part of the table's data and never participate in any of
+    # the transformation methods on tables.  They are never inherited by output
+    # tables from input tables in any of the transformation methods.
+    #
+    # When output, a table footer will appear at the bottom of the table, and a
+    # group footer will appear at the bottom of each group.
+    #
+    # Each footer must have a label, usually a string such as 'Total', to
+    # identify the purpose of the footer, and the label must be distinct among
+    # all footers of the same type. That is you may have a table footer labeled
+    # 'Total' and a group footer labeled 'Total', but you may not have two table
+    # footers with that label.  If the first column of the table is not included
+    # in the footer, the footer's label will be placed there, otherwise, there
+    # will be no label output.  The footers are accessible with the #footers
+    # method, which returns a hash indexed by the label converted to a symbol.
+    # The symbol is reconverted to a title-cased string on output.
+    #
+    # Note that by adding footers or gfooters to the table, you are only stating
+    # what footers you want on output of the table.  No actual calculation is
+    # performed until the table is output.
+    #
     ############################################################################
-    def add_footer(label: 'Total', aggregate: :sum, heads: [])
+
+    public
+
+    # Add a table footer to the table with a label given in the first parameter,
+    # defaulting to 'Total'.  After the label, you can given any number of
+    # headers (as symbols) for columns to be summed, and then any number of hash
+    # parameters for columns for with to apply an aggregate other than :sum.
+    # For example, these are valid footer definitions.
+    #
+    # # Just sum the shares column with a label of 'Total'
+    # tab.footer(:shares)
+    #
+    # # Change the label and sum the :price column as well
+    # tab.footer('Grand Total', :shares, :price)
+    #
+    # # Average then show standard deviation of several columns
+    # tab.footer.('Average', date: avg, shares: :avg, price: avg)
+    # tab.footer.('Sigma', date: dev, shares: :dev, price: :dev)
+    #
+    # # Do some sums and some other aggregates: sum shares, average date and
+    # # price.
+    # tab.footer.('Summary', :shares, date: avg, price: avg)
+    def footer(label, *sum_cols, **agg_cols)
+      label = label.as_sym
       foot = {}
-      heads.each do |h|
-        raise "No #{h} column in table to #{aggregate}" unless headers.include?(h)
-        foot[h] = column(h).send(aggregate)
+      sum_cols.each do |h|
+        unless headers.include?(h)
+          raise "No '#{h}' column in table to sum in the footer"
+        end
+        foot[h] = :sum
       end
-      @footers[label.as_sym] = foot
+      agg_cols.each do |h, agg|
+        unless headers.include?(h)
+          raise "No '#{h}' column in table to #{aggregate} in the footer"
+        end
+        foot[h] = agg
+      end
+      @footers[label] = foot
       self
     end
 
-    def add_sum_footer(cols, label = 'Total')
-      add_footer(heads: cols)
+    def gfooter(label, *sum_cols, **agg_cols)
+      label = label.as_sym
+      foot = {}
+      sum_cols.each do |h|
+        unless headers.include?(h)
+          raise "No '#{h}' column in table to sum in the group footer"
+        end
+        foot[h] = :sum
+      end
+      agg_cols.each do |h, agg|
+        unless headers.include?(h)
+          raise "No '#{h}' column in table to #{aggregate} in the group footer"
+        end
+        foot[h] = agg
+      end
+      @gfooters[label] = foot
+      self
     end
 
-    def add_avg_footer(cols, label = 'Average')
-      add_footer(label: label, aggregate: :avg, heads: cols)
+    def sum_footer(*cols)
+      footer('Total', *cols)
     end
 
-    def add_min_footer(cols, label = 'Minimum')
-      add_footer(label: label, aggregate: :min, heads: cols)
+    def avg_footer(*cols)
+      hsh = {}
+      cols.each do |c|
+        hsh[c] = :avg
+      end
+      footer('Average', hsh)
     end
 
-    def add_max_footer(cols, label = 'Maximum')
-      add_footer(label: label, aggregate: :max, heads: cols)
+    def min_footer(*cols)
+      hsh = {}
+      cols.each do |c|
+        hsh[c] = :min
+      end
+      footer('Minimum', hsh)
+    end
+
+    def max_footer(*cols)
+      hsh = {}
+      cols.each do |c|
+        hsh[c] = :max
+      end
+      footer('Maximum', hsh)
     end
 
     private
@@ -873,21 +960,48 @@ module FatCore
       # This causes org to place an hline under the header row
       result << nil unless header_row.empty?
 
-      # Body
-      rows.each do |row|
-        out_row = []
-        headers.each do |hdr|
-          out_row << row[hdr].format_by(formats[hdr])
+      # Body by groups with group footers
+      groups.each_with_index do |grp, _k|
+        grp_col = {}
+        grp.each do |row|
+          out_row = []
+          headers.each do |hdr|
+            grp_col[hdr] ||= Column.new(header: hdr)
+            grp_col[hdr] << row[hdr]
+            out_row << row[hdr].format_by(formats[hdr])
+          end
+          result << out_row
         end
-        result << out_row
+        # Output group footers
+        result << nil
+        gfooters.each_pair do |label, gfooter|
+          gfoot_row = []
+          grp_col.each_pair do |hdr, col|
+            gfoot_row <<
+              if gfooter[hdr]
+                col.send(gfooter[hdr]).format_by(formats[hdr])
+              else
+                ''
+              end
+          end
+          gfoot_row[0] = label.entitle
+          result << gfoot_row
+        end
+        result << nil
       end
 
       # Footers
+      result << nil unless result.last.nil?
       footers.each_pair do |label, footer|
         foot_row = []
         columns.each do |col|
           hdr = col.header
-          foot_row << footer[hdr].format_by(formats[hdr])
+          foot_row <<
+            if footer[hdr]
+              col.send(footer[hdr]).format_by(formats[hdr])
+            else
+              ''
+            end
         end
         foot_row[0] = label.entitle
         result << foot_row

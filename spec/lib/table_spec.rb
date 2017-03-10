@@ -365,6 +365,7 @@ EOS
         dwo = dwo.to_org
         dwo.each_with_index do |row, k|
           next unless k > 1
+          next unless row
           expect(row[5]).to match(/\A(T|F)\z/)
         end
       end
@@ -495,10 +496,10 @@ EOS
           { a: '7', 'Two words' => '8', c: '$9,888', d: 'pear' }
         ]
         tab = Table.from_aoh(aoh)
-        tab.add_sum_footer([:a, :c, :two_words])
-        expect(tab.footers[:total][:a]).to eq 12
-        expect(tab.footers[:total][:c]).to eq 19_423
-        expect(tab.footers[:total][:two_words]).to eq 15
+        tab.sum_footer(:a, :c, :two_words)
+        expect(tab.footers[:total][:a]).to eq(:sum)
+        expect(tab.footers[:total][:c]).to eq(:sum)
+        expect(tab.footers[:total][:two_words]).to eq(:sum)
         expect(tab.footers[:total][:d]).to be_nil
       end
 
@@ -509,10 +510,10 @@ EOS
           { a: '7', 'Two words' => '8', c: '$9,888', d: 'pear' }
         ]
         tab = Table.from_aoh(aoh)
-        tab.add_avg_footer([:a, :c, :two_words])
-        expect(tab.footers[:average][:a]).to eq 4
-        expect(tab.footers[:average][:c].round(4)).to eq 6474.3333
-        expect(tab.footers[:average][:two_words]).to eq 5
+        tab.avg_footer(:a, :c, :two_words)
+        expect(tab.footers[:average][:a]).to eq(:avg)
+        expect(tab.footers[:average][:c]).to eq(:avg)
+        expect(tab.footers[:average][:two_words]).to eq(:avg)
         expect(tab.footers[:average][:d]).to be_nil
       end
 
@@ -523,10 +524,10 @@ EOS
           { a: '7', 'Two words' => '8', c: '$9,888', d: 'pear' }
         ]
         tab = Table.from_aoh(aoh)
-        tab.add_min_footer([:a, :c, :two_words])
-        expect(tab.footers[:minimum][:a]).to eq 1
-        expect(tab.footers[:minimum][:c]).to eq 3123
-        expect(tab.footers[:minimum][:two_words]).to eq 2
+        tab.min_footer(:a, :c, :two_words)
+        expect(tab.footers[:minimum][:a]).to eq(:min)
+        expect(tab.footers[:minimum][:c]).to eq(:min)
+        expect(tab.footers[:minimum][:two_words]).to eq(:min)
         expect(tab.footers[:minimum][:d]).to be_nil
       end
 
@@ -537,10 +538,10 @@ EOS
           { a: '7', 'Two words' => '8', c: '$9,888', d: 'pear' }
         ]
         tab = Table.from_aoh(aoh)
-        tab.add_max_footer([:a, :c, :two_words])
-        expect(tab.footers[:maximum][:a]).to eq 7
-        expect(tab.footers[:maximum][:c]).to eq 9888
-        expect(tab.footers[:maximum][:two_words]).to eq 8
+        tab.max_footer(:a, :c, :two_words)
+        expect(tab.footers[:maximum][:a]).to eq(:max)
+        expect(tab.footers[:maximum][:c]).to eq(:max)
+        expect(tab.footers[:maximum][:two_words]).to eq(:max)
         expect(tab.footers[:maximum][:d]).to be_nil
       end
     end
@@ -737,7 +738,7 @@ EOS
            [14, '2013-05-29', 'S', 15_700.00, 6601.85, 24.7790, 'ZMEAC', 'F'],
            [15, '2013-05-29', 'S', 15_900.00, 6685.95, 24.5802, 'ZMEAC', 'T'],
            [16, '2013-05-30', 'S', 6_679.00, 2808.52, 25.0471, 'ZMEAC', 'T']]
-        tab = Table.from_aoa(aoa).add_sum_footer([:raw, :shares, :price])
+        tab = Table.from_aoa(aoa)
         tab2 = tab.where('!bool || code == "P"')
         expect(tab2.rows.size).to eq(5)
         tab2 = tab.where('code == "S" && raw < 10_000')
@@ -1079,7 +1080,10 @@ EOS
            [14, '2013-05-29', 'S', 15_700.00, 6601.85, 24.7790, 'ZMEAC', 'F'],
            [15, '2013-05-29', 'S', 15_900.00, 6685.95, 24.5802, 'ZMEAC', 'T'],
            [16, '2013-05-30', 'S', 6_679.00, 2808.52, 25.0471, 'ZMEAC', 'T']]
-        tg = Table.from_aoa(aoa).add_sum_footer([:raw, :shares, :price])
+        tg = Table.from_aoa(aoa)
+               .order_by(:date)
+               .gfooter('Sub Total', :raw, :shares, price: :dev, bool: :all?)
+               .sum_footer(:raw, :shares, :price)
         aoa = tg.to_org(formats: { raw: '%,', shares: '%,', price: '%,4' })
         expect(aoa[-1][0]).to eq 'Total'
         expect(aoa[-1][1]).to eq ''
