@@ -1,31 +1,23 @@
 module FatCore
   # A container for a two-dimensional table. All cells in the table must be a
-  # String, a Date, a DateTime, a Bignum (or Integer), a BigDecimal, or a
-  # boolean. All columns must be of one of those types or be a string
-  # convertible into one of the supported types. It is considered an error if a
-  # single column contains cells of different types. Any cell that cannot be
-  # parsed as one of the numeric, date, or boolean types will have to_s applied
+  # String, a DateTime (or Date), a Numeric (Bignum, Integer, or BigDecimal), or
+  # a Boolean (TrueClass or FalseClass). All columns must be of one of those
+  # types or be a string convertible into one of them. It is considered an error
+  # if a single column contains cells of different types. Any cell that cannot
+  # be parsed as one of the Numeric, DateTime, or Boolean types will be treated
+  # as a String and have to_s applied.  Until the column type is determined, it
+  # will have the type NilClass.
   #
   # You can initialize a Table in several ways:
   #
   # 1. with a Nil, which will return an empty table to which rows or columns can
-  #    be added later,
-  # 2. with the name of a .csv file,
-  # 3. with the name of an .org file,
-  # 4. with an IO or StringIO object for either type of file, but in that case,
-  #    you need to specify 'csv' or 'org' as the second argument to tell it what
-  #    kind of file format to expect,
-  # 5. with an Array of Arrays,
-  # 6. with an Array of Hashes, all having the same keys, which become the names
-  #    of the column heads,
-  # 7. with an Array of any objects that respond to .keys and .values methods,
-  # 8. with another Table object.
-  #
-  # In the case of an array of arrays, if the second array's first element is a
-  # string that looks like a rule separator, '-----------', '+----------', etc.,
-  # the headers will be taken from the first array. In the case of an array of
-  # Hashes or Hash-lime objects, the keys of the hashes will be used as the
-  # headers. It is assumed that all the hashes have the same keys.
+  #    be added later, 2. with the name of a .csv file, 3. with the name of an
+  #    .org file, 4. with an IO or StringIO object for either type of file, but
+  #    in that case, you need to specify 'csv' or 'org' as the second argument
+  #    to tell it what kind of file format to expect, 5. with an Array of
+  #    Arrays, 6. with an Array of Hashes, all having the same keys, which
+  #    become the names of the column heads, 7. with an Array of any objects
+  #    that respond to .keys and .values methods, 8. with another Table object.
   #
   # In the resulting Table, the headers are converted into symbols, with all
   # spaces converted to underscore and everything down-cased. So, the heading,
@@ -33,15 +25,15 @@ module FatCore
   #
   # An entire column can be retrieved by header from a Table, thus,
   #
-  # tab = Table.from_org_file("example.org")
-  # tab[:age].avg
+  # tab = Table.from_org_file("example.org") tab[:age].avg
   #
   # will extract the entire ~:age~ column and compute its average, since Column
-  # objects respond to aggregate methods, such as ~sum~, ~min~, ~max~, and ~avg~.
+  # objects respond to aggregate methods, such as ~sum~, ~min~, ~max~, and
+  # ~avg~.
   class Table
     attr_reader :columns, :footers, :gfooters
 
-    def initialize(input = nil, ext = '.csv')
+    def initialize
       @columns = []
       @footers = {}
       @gfooters = {}
@@ -52,32 +44,49 @@ module FatCore
     # Constructors
     ###########################################################################
 
-    def self.from_csv_string(str)
-      from_csv_io(StringIO.new(str))
-    end
-
+    # Construct a Table from the contents of a CSV file.  Headers will be taken
+    # from the first row and converted to symbols.
     def self.from_csv_file(fname)
       File.open(fname, 'r') do |io|
         from_csv_io(io)
       end
     end
 
-    def self.from_org_string(str)
-      from_org_io(StringIO.new(str))
+    # Construct a Table from a string, treated as the input from a CSV file.
+    def self.from_csv_string(str)
+      from_csv_io(StringIO.new(str))
     end
 
+    # Construct a Table from the first table found in the given org-mode file.
+    # Headers are taken from the first row if the second row is an hrule.``
     def self.from_org_file(fname)
       File.open(fname, 'r') do |io|
         from_org_io(io)
       end
     end
 
+    # Construct a Table from a string, treated as the contents of an org-mode
+    # file.
+    def self.from_org_string(str)
+      from_org_io(StringIO.new(str))
+    end
+
+    # Construct a Table from an array of arrays.  If the second element is a nil
+    # or is an array whose first element is a string that looks like a rule
+    # separator, '|-----------', '+----------', etc., the headers will be taken
+    # from the first array converted to strings and then to symbols.  Any
+    # following such rows mark a group boundary.  Note that this is the form of
+    # a table used by org-mode src blocks, so it is useful for building Tables
+    # from the result of a src block.
     def self.from_aoa(aoa)
       from_array_of_arrays(aoa)
     end
 
+    # Construct a Table from an array of hashes, or any objects that respond to
+    # the #to_h method.  All hashes must have the same keys, which, when
+    # converted to symbols will become the headers for the Table.
     def self.from_aoh(aoh)
-      if aoh[0].respond_to?(:to_h)
+      if aoh.first.respond_to?(:to_h)
         from_array_of_hashes(aoh)
       else
         raise ArgumentError,
@@ -85,8 +94,127 @@ module FatCore
       end
     end
 
+    # Construct a Table from another Table.  Inherit any group boundaries from
+    # the input table.
     def self.from_table(table)
       from_aoh(table.rows)
+      @boundaries = table.boundaries
+    end
+
+    ############################################################################
+    # Class-level constructor helpers
+    ############################################################################
+
+    class << self
+      private
+
+      # Construct table from an array of hashes or an array of any object that can
+      # respond to #to_h.  If an array element is a nil, mark it as a group
+      # boundary in the Table.
+      def from_array_of_hashes(hashes)
+        result = new
+        hashes.each do |hsh|
+          if hsh.nil?
+            result.mark_boundary
+            next
+          end
+          result << hsh.to_h
+        end
+        result
+      end
+
+      # Construct a new table from an array of arrays. If the second element of
+      # the array is a nil, a string that looks like an hrule, or an array whose
+      # first element is a string that looks like an hrule, interpret the first
+      # element of the array as a row of headers. Otherwise, synthesize headers of
+      # the form "col1", "col2", ... and so forth. The remaining elements are
+      # taken as the body of the table, except that if an element of the outer
+      # array is a nil or a string that looks like an hrule, mark the preceding
+      # row as a boundary.
+      def from_array_of_arrays(rows)
+        result = new
+        headers = []
+        if looks_like_boundary?(rows[1])
+          # Take the first row as headers
+          # Use first row 0 as headers
+          headers = rows[0].map(&:as_sym)
+          first_data_row = 2
+        else
+          # Synthesize headers
+          headers = (1..rows[0].size).to_a.map { |k| "col#{k}".as_sym }
+          first_data_row = 0
+        end
+        rows[first_data_row..-1].each do |row|
+          if looks_like_boundary?(row)
+            result.mark_boundary
+            next
+          end
+          row = row.map { |s| s.to_s.strip }
+          hash_row = Hash[headers.zip(row)]
+          result << hash_row
+        end
+        result
+      end
+
+      # Return true if row is nil, a string that matches hrule_re, or is an
+      # array whose first element matches hrule_re.
+      def looks_like_boundary?(row)
+        hrule_re = /\A\s*[\|+][-]+/
+        return true if row.nil?
+        if row.respond_to?(:first) && row.first.respond_to?(:to_s)
+          return row.first.to_s =~ hrule_re
+        end
+        if row.respond_to?(:to_s)
+          return row.to_s =~ hrule_re
+        end
+        false
+      end
+
+      def from_csv_io(io)
+        result = new
+        ::CSV.new(io, headers: true, header_converters: :symbol,
+                  skip_blanks: true).each do |row|
+          result << row.to_h
+        end
+        result
+      end
+
+      # Form rows of table by reading the first table found in the org file.
+      def from_org_io(io)
+        table_re = /\A\s*\|/
+        hrule_re = /\A\s*\|[-+]+/
+        rows = []
+        table_found = false
+        header_found = false
+        io.each do |line|
+          unless table_found
+            # Skip through the file until a table is found
+            next unless line =~ table_re
+            unless line =~ hrule_re
+              line = line.sub(/\A\s*\|/, '').sub(/\|\s*\z/, '')
+              rows << line.split('|').map(&:clean)
+            end
+            table_found = true
+            next
+          end
+          break unless line =~ table_re
+          if !header_found && line =~ hrule_re
+            rows << nil
+            header_found = true
+            next
+          elsif header_found && line =~ hrule_re
+            # Mark the boundary with a nil
+            rows << nil
+          elsif line !~ table_re
+            # Stop reading at the second hline
+            break
+          else
+            line = line.sub(/\A\s*\|/, '').sub(/\|\s*\z/, '')
+            rows << line.split('|').map(&:clean)
+          end
+        end
+        from_array_of_arrays(rows)
+      end
     end
 
     ###########################################################################
@@ -1045,106 +1173,5 @@ module FatCore
       self
     end
 
-    ############################################################################
-    # Class-level constructor helpers
-    ############################################################################
-
-    class << self
-      private
-
-      # Construct table from an array of hashes or an array of any object that can
-      # respond to #to_hash.
-      def from_array_of_hashes(hashes)
-        result = Table.new
-        hashes.each do |hsh|
-          if hsh.nil?
-            result.mark_boundary
-            next
-          end
-          result << hsh.to_h
-        end
-        result
-      end
-
-      # Construct a new table from an array of arrays. If the second element of
-      # the array is a nil, a string that looks like an hrule, or an array whose
-      # first element is a string that looks like an hrule, interpret the first
-      # element of the array as a row of headers. Otherwise, synthesize headers of
-      # the form "col1", "col2", ... and so forth. The remaining elements are
-      # taken as the body of the table, except that if an element of the outer
-      # array is a nil or a string that looks like an hrule, mark the preceding
-      # row as a boundary.
-      def from_array_of_arrays(rows)
-        result = Table.new
-        hrule_re = /\A\s*\|[-+]+/
-        headers = []
-        if rows[1].nil? || rows[1] =~ hrule_re || rows[1].first =~ hrule_re
-          # Take the first row as headers
-          # Use first row 0 as headers
-          headers = rows[0].map(&:as_sym)
-          first_data_row = 2
-        else
-          # Synthesize headers
-          headers = (1..rows[0].size).to_a.map { |k| "col#{k}".as_sym }
-          first_data_row = 0
-        end
-        rows[first_data_row..-1].each do |row|
-          if row.nil? || row[0] =~ hrule_re
-            result.mark_boundary
-            next
-          end
-          row = row.map { |s| s.to_s.strip }
-          hash_row = Hash[headers.zip(row)]
-          result << hash_row
-        end
-        result
-      end
-
-      def from_csv_io(io)
-        result = new
-        ::CSV.new(io, headers: true, header_converters: :symbol,
-                  skip_blanks: true).each do |row|
-          result << row.to_h
-        end
-        result
-      end
-
-      # Form rows of table by reading the first table found in the org file.
-      def from_org_io(io)
-        table_re = /\A\s*\|/
-        hrule_re = /\A\s*\|[-+]+/
-        rows = []
-        table_found = false
-        header_found = false
-        io.each do |line|
-          unless table_found
-            # Skip through the file until a table is found
-            next unless line =~ table_re
-            unless line =~ hrule_re
-              line = line.sub(/\A\s*\|/, '').sub(/\|\s*\z/, '')
-              rows << line.split('|').map(&:clean)
-            end
-            table_found = true
-            next
-          end
-          break unless line =~ table_re
-          if !header_found && line =~ hrule_re
-            rows << nil
-            header_found = true
-            next
-          elsif header_found && line =~ hrule_re
-            # Mark the boundary with a nil
-            rows << nil
-          elsif line !~ table_re
-            # Stop reading at the second hline
-            break
-          else
-            line = line.sub(/\A\s*\|/, '').sub(/\|\s*\z/, '')
-            rows << line.split('|').map(&:clean)
-          end
-        end
-        from_array_of_arrays(rows)
-      end
-    end
   end
 end
