@@ -22,14 +22,6 @@ module FatCore
   # In the resulting Table, the headers are converted into symbols, with all
   # spaces converted to underscore and everything down-cased. So, the heading,
   # 'Two Words' becomes the hash header :two_words.
-  #
-  # An entire column can be retrieved by header from a Table, thus,
-  #
-  # tab = Table.from_org_file("example.org") tab[:age].avg
-  #
-  # will extract the entire ~:age~ column and compute its average, since Column
-  # objects respond to aggregate methods, such as ~sum~, ~min~, ~max~, and
-  # ~avg~.
   class Table
     attr_reader :columns, :footers, :gfooters
 
@@ -229,7 +221,7 @@ module FatCore
     # Return the array of items of the column with the given header, or if the
     # index is an integer, return that row number.  So a table's rows can be
     # accessed by number, and its columns can be accessed by column header.
-    # Also, double indexing works it either row-major or column-majoir order:
+    # Also, double indexing works in either row-major or column-majoir order:
     # tab[:id][8] returns the 8th item in the column headed :id and so does
     # tab[8][:id].
     def [](key)
@@ -248,32 +240,33 @@ module FatCore
       end
     end
 
+    # Return true if the table has a column with the given header.
     def column?(key)
       headers.include?(key.as_sym)
     end
 
-    # Attr_reader as a plural
+    # Return an array of the Table's column types.
     def types
       columns.map(&:type)
     end
 
-    # Return the headers for the table as an array of symbols.
+    # Return the headers for the Table as an array of symbols.
     def headers
       columns.map(&:header)
     end
 
-    # Return the number of rows in the table.
+    # Return the number of rows in the Table.
     def size
       return 0 if columns.empty?
       columns.first.size
     end
 
-    # Return whether this table is empty.
+    # Return whether this Table is empty.
     def empty?
       size.zero?
     end
 
-    # Return the rows of the table as an array of hashes, keyed by the headers.
+    # Return the rows of the Table as an array of hashes, keyed by the headers.
     def rows
       rows = []
       unless columns.empty?
