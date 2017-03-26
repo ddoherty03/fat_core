@@ -218,6 +218,11 @@ module FatCore
       columns.detect { |c| c.header == key.as_sym }
     end
 
+    # Return the type of the column with the given header
+    def type(key)
+      column(key).type
+    end
+
     # Return the array of items of the column with the given header, or if the
     # index is an integer, return that row number.  So a table's rows can be
     # accessed by number, and its columns can be accessed by column header.
