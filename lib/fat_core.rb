@@ -2,6 +2,7 @@
 require 'date'
 require 'active_support'
 require 'active_support/core_ext'
+require 'active_support/number_helper'
 require 'csv'
 
 require 'fat_core/version'
@@ -22,3 +23,4 @@ require 'fat_core/symbol'
 require 'fat_core/evaluator'
 require 'fat_core/column'
 require 'fat_core/table'
+require 'fat_core/formatter'
