@@ -88,6 +88,26 @@ class String
     return false
   end
 
+  # If the string is a number, add grouping commas to the whole number part.
+  def commify
+    # Break the number into parts
+    return self unless clean =~ /\A(-)?(\d*)((\.)?(\d*))?\z/
+    neg = $1 || ''
+    whole = $2
+    frac = $5
+    # Place the commas in the whole part only
+    whole = whole.reverse
+    whole.gsub!(/([0-9]{3})/, '\\1,')
+    whole.gsub!(/,$/, '')
+    whole.reverse!
+    # Reassemble
+    if frac.blank?
+      neg + whole
+    else
+      neg + whole + '.' + frac
+    end
+  end
+
   def wrap(width = 70, hang = 0)
     offset = 0
     trip = 1
