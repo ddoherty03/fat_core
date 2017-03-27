@@ -14,21 +14,33 @@ module FatCore
     LOCATIONS = [:header, :body, :bfirst, :gfirst, :gfooter, :footer].freeze
 
     DEFAULT_FORMAT = {
-      true_color: 'black',
-      false_color: 'black',
-      color: 'black',
-      true_text: 'T',
-      false_text: 'F',
-      strftime_fmt: '%F',
       nil_text: '',
-      pre_digits: -1,
-      post_digits: -1,
+      case: :none,
+      alignment: :left,
       bold: false,
       italic: false,
-      alignment: :left,
+      color: 'black',
+      hms: false,
+      pre_digits: -1,
+      post_digits: -1,
       commas: false,
-      currency: false
+      currency: false,
+      strftime_fmt: '%F',
+      true_text: 'T',
+      false_text: 'F',
+      true_color: 'black',
+      false_color: 'black'
     }.freeze
+
+    @@currency_symbol = '$'
+
+    def self.currency_symbol=(char)
+      @@currency_symbol = char.to_s
+    end
+
+    def self.currency_symbol
+      @@currency_symbol
+    end
 
     # A Formatter can specify a hash to hold the formatting instructions for
     # columns by using the column head as a key and the value as the format
@@ -97,7 +109,7 @@ module FatCore
     # - gfooter :: instructions for the cells of a group footer, and
     # - footer :: instructions for the cells of a footer.
     #
-    def initialize(table)
+    def initialize(table = Table.new)
       unless table && table.is_a?(Table)
         raise ArgumentError, 'must initialize Formatter with a Table'
       end
@@ -287,6 +299,11 @@ module FatCore
         format[:currency] = true
         fmt = fmt.sub($&, '')
       end
+      format[:hms] = false
+      if fmt =~ /H/
+        format[:hms] = true
+        fmt = fmt.sub($&, '')
+      end
       unless fmt.blank?
         raise ArgumentError, "unrecognized numeric formatting instructions '#{fmt}'"
       end
@@ -364,6 +381,107 @@ module FatCore
     ###############################################################################
     # Output routines
     ###############################################################################
+
+    public
+
+    def format_cell(val, istruct)
+      return istruct.nil_text if val.nil?
+      case val
+      when Numeric
+        format_numeric(val, istruct)
+      when DateTime, Date
+        format_datetime(val, istruct)
+      when TrueClass, FalseClass
+        format_boolean(val, istruct)
+      when String
+        format_string(val, istruct)
+      else
+        raise ArgumentError,
+              "cannot format value '#{val}' of class #{val.class}"
+      end
+    end
+
+    private
+
+    # Convert a boolean to a string according to instructions in istruct, which
+    # is assumed to be the result of parsing a formatting instruction string as
+    # above. Only device-independent formatting is done here. Device dependent
+    # formatting (e.g., color) can be done in a subclass of Formatter by
+    # specializing this method.
+    def format_boolean(val, istruct)
+      return istruct.nil_text if val.nil?
+      val ? istruct.true_text : istruct.false_text
+    end
+
+    # Convert a datetime to a string according to instructions in istruct, which
+    # is assumed to be the result of parsing a formatting instruction string as
+    # above. Only device-independent formatting is done here. Device dependent
+    # formatting (e.g., color) can be done in a subclass of Formatter by
+    # specializing this method.
+    def format_datetime(val, istruct)
+      return istruct.nil_text if val.nil?
+      val.strftime(istruct.strftime_fmt)
+    end
+
+    # Convert a numeric to a string according to instructions in istruct, which
+    # is assumed to be the result of parsing a formatting instruction string as
+    # above. Only device-independent formatting is done here. Device dependent
+    # formatting (e.g., color) can be done in a subclass of Formatter by
+    # specializing this method.
+    def format_numeric(val, istruct)
+      return istruct.nil_text if val.nil?
+      val = val.round(istruct.post_digits) if istruct.post_digits >= 0
+      if istruct.hms
+        result = val.secs_to_hms
+        istruct.commas = false
+      elsif istruct.currency
+        prec = istruct.post_digits == -1 ? 2 : istruct.post_digits
+        delim = istruct.commas ? ',' : ''
+        result = val.to_s(:currency, precision: prec, delimiter: delim,
+                                    unit: Formatter.currency_symbol)
+        istruct.commas = false
+      elsif istruct.pre_digits.positive?
+        if val.whole?
+          # No fractional part, ignore post_digits
+          result = sprintf("%0#{istruct.pre_digits}d", val)
+        elsif istruct.post_digits >= 0
+          # There's a fractional part and pre_digits.  sprintf width includes
+          # space for fractional part and decimal point, so add pre, post, and 1
+          # to get the proper sprintf width.
+          wid = istruct.pre_digits + 1 + istruct.post_digits
+          result = sprintf("%0#{wid}.#{istruct.post_digits}f", val)
+        else
+          val = val.round(0)
+          result = sprintf("%0#{istruct.pre_digits}d", val)
+        end
+      elsif istruct.post_digits >= 0
+        # Round to post_digits but no padding of whole number, pad fraction with
+        # trailing zeroes.
+        result = sprintf("%.#{istruct.post_digits}f", val)
+      else
+        result = val.to_s
+      end
+      if istruct.commas
+        # Commify the whole number part if not done already.
+        result = result.commify
+      end
+      result
+    end
+
+    # Apply non-device-dependent string formatting instructions.
+    def format_string(val, istruct)
+      return istruct.nil_text if val.nil?
+      case istruct.case
+      when :lower
+        val.downcase
+      when :upper
+        val.upcase
+      when :title
+        val.entitle
+      when :none
+        val
+      end
+    end
 
     def pre_table
     end
