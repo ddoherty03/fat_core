@@ -13,6 +13,23 @@ module FatCore
 
     LOCATIONS = [:header, :body, :bfirst, :gfirst, :gfooter, :footer].freeze
 
+    DEFAULT_FORMAT = {
+      true_color: 'black',
+      false_color: 'black',
+      color: 'black',
+      true_text: 'T',
+      false_text: 'F',
+      strftime_fmt: '%F',
+      nil_text: '',
+      pre_digits: -1,
+      post_digits: -1,
+      bold: false,
+      italic: false,
+      alignment: :left,
+      commas: false,
+      currency: false
+    }.freeze
+
     # A Formatter can specify a hash to hold the formatting instructions for
     # columns by using the column head as a key and the value as the format
     # instructions.  In addition, the keys, :numeric, :string, :datetime,
@@ -91,6 +108,10 @@ module FatCore
       # :datetime, :boolean, or :nil.  The value of the inner hashes are
       # OpenStruct structs.
       @format = {}
+      # Initialize all location format to default.
+      # LOCATIONS.each do |loc|
+      #   format_for(loc, {})
+      # end
     end
 
     # Define a format for the given location, :header, :body, :footer, :gfooter
@@ -98,8 +119,8 @@ module FatCore
     # (the first rows in group bodies). Formats are specified with hash
     # arguments where the keys are either (1) the name of a table column in
     # symbol form, or (2) the name of a column type, i.e., :string, :numeric, or
-    # :datetime, :boolean, or :nilclass (for empty cells or untyped columns).
-    # The value given for the hash arguments should be strings that contain
+    # :datetime, :boolean, or :nil (for empty cells or untyped columns). The
+    # value given for the hash arguments should be strings that contain
     # "instructions" on how elements of that column, or that type are to be
     # formatted on output. Formatting instructions for a column name take
     # precedence over those specified by type. And more specific locations take
@@ -111,64 +132,6 @@ module FatCore
     # the :string type. All empty cells are considered to be of the :nilclass
     # type. All other cells have the type of the column to which they belong,
     # including all cells in group or table footers.
-    # def format_for(location, **fmts)
-    #   unless LOCATIONS.include?(location)
-    #     raise ArgumentError, "unknown format location '#{location}'"
-    #   end
-    #   valid_keys = table.headers + [:string, :numeric, :datetime, :boolean, :nil]
-    #   invalid_keys = (fmts.keys - valid_keys).uniq
-    #   unless invalid_keys.empty?
-    #     msg = "invalid #{location} column or type: #{invalid_keys.join(',')}"
-    #     raise ArgumentError, msg
-    #   end
-    #   @format[location] ||= {}
-    #   table.headers.each do |h|
-    #     @format[location][h] ||= parse_format('')
-    #     if fmts[h]
-    #       @format[location][h] = parse_format(fmts[h])
-    #     elsif fmts.keys.include?(table.type(h).as_sym)
-    #       @format[location][h] = parse_format(fmts[table.type(h).as_sym])
-    #     end
-    #     if fmts[:string]
-    #       if fmts[h].blank?
-    #         @format[location][h] = parse_format(fmts[:string])
-    #       else
-    #         # Header h has is own formatting, so merge string formatting onto it
-    #         header_format = @format[location][h].to_h
-    #         string_format = parse_format(fmts[:string]).to_h
-    #         @format[location][h] = OpenStruct.new(string_format.merge(header_format))
-    #       end
-    #     end
-    #     if fmts[:nil]
-    #       binding.pry if h == :raw
-    #       if fmts[h].blank? && fmts[table.type(h).as_sym].blank?
-    #         @format[location][h] = parse_format(fmts[:nil])
-    #       else
-    #         nil_format = parse_format(fmts[:nil])
-    #         @format[location][h].nil_text = nil_format.nil_text
-    #       end
-    #     end
-    #   end
-    #   self
-    # end
-
-    DEFAULT_FORMAT = {
-      true_color: 'black',
-      false_color: 'black',
-      color: 'black',
-      true_text: 'T',
-      false_text: 'F',
-      strftime_fmt: '%F',
-      nil_text: '',
-      pre_digits: -1,
-      post_digits: -1,
-      bold: false,
-      italic: false,
-      alignment: :left,
-      commas: false,
-      currency: false
-    }.freeze
-
     def format_for(location, **fmts)
       unless LOCATIONS.include?(location)
         raise ArgumentError, "unknown format location '#{location}'"
@@ -209,14 +172,18 @@ module FatCore
       self
     end
 
+    private
+
+    ###############################################################################
+    # Parsing and validation routines
+    ###############################################################################
+
     # Return a hash that reflects the formatting instructions given in the
     # string fmt. Raise an error if it contains invalid formatting instructions.
     # If fmt contains conflicting instructions, say C and L, there is no
     # guarantee which will win, but it will not be considered an error to do so.
     def parse_string_fmt(fmt)
-      #nil_format, fmt = parse_nil_fmt(fmt)
       format, fmt = parse_str_fmt(fmt)
-      #format = format.merge(nil_format)
       unless fmt.blank?
         raise ArgumentError, "unrecognized string formatting instructions '#{fmt}'"
       end
@@ -392,6 +359,37 @@ module FatCore
         raise ArgumentError, "unrecognized boolean formatting instructions '#{fmt}'"
       end
       format
+    end
+
+    ###############################################################################
+    # Output routines
+    ###############################################################################
+
+    def pre_table
+    end
+
+    def post_table
+    end
+
+    def post_header
+    end
+
+    def pre_group
+    end
+
+    def post_group
+    end
+
+    def pre_gfoot
+    end
+
+    def post_gfoot
+    end
+
+    def pre_foot
+    end
+
+    def post_foot
     end
   end
 end
