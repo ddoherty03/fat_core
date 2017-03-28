@@ -4,12 +4,18 @@ module FatCore
   # nils before proceeding. My original attempt to do this by monkey-patching
   # Array turned out badly.  This works much nicer.
   class Column
-    attr_reader :header, :type, :items
+    attr_reader :header, :raw_header, :type, :items
 
     TYPES = %w(NilClass Boolean DateTime Numeric String).freeze
 
     def initialize(header:, items: [])
-      @header = header.as_sym
+      @raw_header = header
+      @header =
+        if @raw_header.is_a?(Symbol)
+          @raw_header
+        else
+          @raw_header.gsub(/[^A-Za-z0-9 ]/, '').as_sym
+        end
       @type = 'NilClass'
       raise "Unknown column type '#{type}" unless TYPES.include?(@type.to_s)
       @items = []
