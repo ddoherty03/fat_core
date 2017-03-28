@@ -950,7 +950,7 @@ module FatCore
       end
       agg_cols.each_pair do |h, agg_func|
         items = rows.map { |r| r[h] }
-        new_h = "#{agg_func}_#{h}"
+        new_h = "#{agg_func}_#{h}".as_sym
         new_row[new_h] = Column.new(header: h,
                                     items: items).send(agg_func)
       end
