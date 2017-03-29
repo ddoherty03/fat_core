@@ -9,7 +9,7 @@ module FatCore
   ## formatting request available for the target. This base class will consist
   ## largely of stub methods with implementations provided by the subclass.
   class Formatter
-    attr_reader :table, :format
+    attr_reader :table, :format_at
 
     LOCATIONS = [:header, :body, :bfirst, :gfirst, :gfooter, :footer].freeze
 
@@ -154,7 +154,7 @@ module FatCore
         msg = "invalid #{location} column or type: #{invalid_keys.join(',')}"
         raise ArgumentError, msg
       end
-      @format[location] ||= {}
+      @format_at[location] ||= {}
       table.headers.each do |h|
         typ = table.type(h).as_sym
         format_h = DEFAULT_FORMAT.dup
@@ -179,7 +179,7 @@ module FatCore
           col_fmt = send(parse_typ_method_name, fmts[h])
           format_h = format_h.merge(col_fmt)
         end
-        format[location][h] = OpenStruct.new(format_h)
+        format_at[location][h] = OpenStruct.new(format_h)
       end
       self
     end
@@ -210,49 +210,49 @@ module FatCore
       # We parse the more complex formatting constructs first, and after each
       # parse, we remove the matched construct from fmt.  At the end, any
       # remaining characters in fmt should be invalid.
-      format = {}
-      format[:color] = 'black'
+      fmt_hash = {}
+      fmt_hash[:color] = 'black'
       if fmt =~ /c\[([-_a-zA-Z]+)\]/
-        format[:color] = $1
+        fmt_hash[:color] = $1
         fmt = fmt.sub($&, '')
       end
-      format[:case] = :none
+      fmt_hash[:case] = :none
       if fmt =~ /u/
-        format[:case] = :lower
+        fmt_hash[:case] = :lower
         fmt = fmt.sub($&, '')
       end
       if fmt =~ /U/
-        format[:case] = :upper
+        fmt_hash[:case] = :upper
         fmt = fmt.sub($&, '')
       end
       if fmt =~ /t/
-        format[:case] = :title
+        fmt_hash[:case] = :title
         fmt = fmt.sub($&, '')
       end
-      format[:bold] = false
+      fmt_hash[:bold] = false
       if fmt =~ /B/
-        format[:bold] = true
+        fmt_hash[:bold] = true
         fmt = fmt.sub($&, '')
       end
-      format[:italic] = false
+      fmt_hash[:italic] = false
       if fmt =~ /I/
-        format[:italic] = true
+        fmt_hash[:italic] = true
         fmt = fmt.sub($&, '')
       end
-      format[:alignment] = :left
+      fmt_hash[:alignment] = :left
       if fmt =~ /R/
-        format[:alignment] = :right
+        fmt_hash[:alignment] = :right
         fmt = fmt.sub($&, '')
       end
       if fmt =~ /C/
-        format[:alignment] = :center
+        fmt_hash[:alignment] = :center
         fmt = fmt.sub($&, '')
       end
       if fmt =~ /L/
-        format[:alignment] = :left
+        fmt_hash[:alignment] = :left
         fmt = fmt.sub($&, '')
       end
-      [format, fmt]
+      [fmt_hash, fmt]
     end
 
     # Utility method that extracts nil instructions and returns a hash of the
@@ -263,13 +263,13 @@ module FatCore
       # We parse the more complex formatting constructs first, and after each
       # parse, we remove the matched construct from fmt.  At the end, any
       # remaining characters in fmt should be invalid.
-      format = {}
-      format[:nil_text] = ''
+      fmt_hash = {}
+      fmt_hash[:nil_text] = ''
       if fmt =~ /n\[\s*([^\]]*)\s*\]/
-        format[:nil_text] = $1.clean
+        fmt_hash[:nil_text] = $1.clean
         fmt = fmt.sub($&, '')
       end
-      [format, fmt]
+      [fmt_hash, fmt]
     end
 
     # Return a hash that reflects the numeric or string formatting instructions
@@ -280,34 +280,34 @@ module FatCore
       # We parse the more complex formatting constructs first, and after each
       # parse, we remove the matched construct from fmt.  At the end, any
       # remaining characters in fmt should be invalid.
-      format, fmt = parse_str_fmt(fmt)
+      fmt_hash, fmt = parse_str_fmt(fmt)
       fmt = fmt.gsub(/\s+/, '')
-      format[:pre_digits] = -1
-      format[:post_digits] = -1
+      fmt_hash[:pre_digits] = -1
+      fmt_hash[:post_digits] = -1
       if fmt =~ /(\d+).(\d+)/
-        format[:pre_digits] = $1.to_i
-        format[:post_digits] = $2.to_i
+        fmt_hash[:pre_digits] = $1.to_i
+        fmt_hash[:post_digits] = $2.to_i
         fmt = fmt.sub($&, '')
       end
-      format[:commas] = false
+      fmt_hash[:commas] = false
       if fmt =~ /,/
-        format[:commas] = true
+        fmt_hash[:commas] = true
         fmt = fmt.sub($&, '')
       end
-      format[:currency] = false
+      fmt_hash[:currency] = false
       if fmt =~ /\$/
-        format[:currency] = true
+        fmt_hash[:currency] = true
         fmt = fmt.sub($&, '')
       end
-      format[:hms] = false
+      fmt_hash[:hms] = false
       if fmt =~ /H/
-        format[:hms] = true
+        fmt_hash[:hms] = true
         fmt = fmt.sub($&, '')
       end
       unless fmt.blank?
         raise ArgumentError, "unrecognized numeric formatting instructions '#{fmt}'"
       end
-      format
+      fmt_hash
     end
 
     # Return a hash that reflects the datetime or string formatting instructions
@@ -318,17 +318,17 @@ module FatCore
       # We parse the more complex formatting constructs first, and after each
       # parse, we remove the matched construct from fmt.  At the end, any
       # remaining characters in fmt should be invalid.
-      format, fmt = parse_str_fmt(fmt)
+      fmt_hash, fmt = parse_str_fmt(fmt)
       fmt = fmt.gsub(/\s+/, '')
-      format[:strftime_fmt] = '%F'
+      fmt_hash[:strftime_fmt] = '%F'
       if fmt =~ /d\[([^\]]*)\]/
-        format[:strftime_fmt] = $1
+        fmt_hash[:strftime_fmt] = $1
         fmt = fmt.sub($&, '')
       end
       unless fmt.blank?
         raise ArgumentError, "unrecognized datetime formatting instructions '#{fmt}'"
       end
-      format
+      fmt_hash
     end
 
     # Return a hash that reflects the boolean or string formatting instructions
@@ -339,62 +339,67 @@ module FatCore
       # We parse the more complex formatting constructs first, and after each
       # parse, we remove the matched construct from fmt.  At the end, any
       # remaining characters in fmt should be invalid.
-      format, fmt = parse_str_fmt(fmt)
-      format[:true_text] = 'T'
-      format[:false_text] = 'F'
+      fmt_hash, fmt = parse_str_fmt(fmt)
+      fmt_hash[:true_text] = 'T'
+      fmt_hash[:false_text] = 'F'
       if fmt =~ /b\[\s*([^\],]*),([^\]]*)\s*\]/
-        format[:true_text] = $1.clean
-        format[:false_text] = $2.clean
+        fmt_hash[:true_text] = $1.clean
+        fmt_hash[:false_text] = $2.clean
         fmt = fmt.sub($&, '')
       end
       # Since true_text, false_text and nil_text may want to have internal
       # spaces, defer removing extraneous spaces until after they are parsed.
       fmt = fmt.gsub(/\s+/, '')
-      format[:true_color] = 'black'
-      format[:false_color] = 'black'
+      fmt_hash[:true_color] = 'black'
+      fmt_hash[:false_color] = 'black'
       if fmt =~ /c\[([-_a-zA-Z]+),([-_a-zA-Z]+)\]/
-        format[:true_color] = $1
-        format[:false_color] = $2
+        fmt_hash[:true_color] = $1
+        fmt_hash[:false_color] = $2
         fmt = fmt.sub($&, '')
       end
       if fmt =~ /Y/
-        format[:true_text] = 'Y'
-        format[:false_text] = 'N'
+        fmt_hash[:true_text] = 'Y'
+        fmt_hash[:false_text] = 'N'
         fmt = fmt.sub($&, '')
       end
       if fmt =~ /T/
-        format[:true_text] = 'T'
-        format[:false_text] = 'F'
+        fmt_hash[:true_text] = 'T'
+        fmt_hash[:false_text] = 'F'
         fmt = fmt.sub($&, '')
       end
       if fmt =~ /X/
-        format[:true_text] = 'X'
-        format[:false_text] = ''
+        fmt_hash[:true_text] = 'X'
+        fmt_hash[:false_text] = ''
         fmt = fmt.sub($&, '')
       end
       unless fmt.blank?
         raise ArgumentError, "unrecognized boolean formatting instructions '#{fmt}'"
       end
-      format
+      fmt_hash
     end
 
     ###############################################################################
-    # Output routines
+    # Applying formatting
     ###############################################################################
 
     public
 
-    def format_cell(val, istruct)
-      return istruct.nil_text if val.nil?
+    def format_cell(val, istruct, width = nil)
       case val
       when Numeric
-        format_numeric(val, istruct)
+        str = format_numeric(val, istruct)
+        format_string(str, istruct, width)
       when DateTime, Date
-        format_datetime(val, istruct)
+        str = format_datetime(val, istruct)
+        format_string(str, istruct, width)
       when TrueClass, FalseClass
-        format_boolean(val, istruct)
+        str = format_boolean(val, istruct)
+        format_string(str, istruct, width)
+      when NilClass
+        str = istruct.nil_text
+        format_string(str, istruct, width)
       when String
-        format_string(val, istruct)
+        format_string(val, istruct, width)
       else
         raise ArgumentError,
               "cannot format value '#{val}' of class #{val.class}"
