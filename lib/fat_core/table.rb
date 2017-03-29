@@ -423,9 +423,9 @@ module FatCore
 
     public
 
-    # Return a new Table sorted on the rows of this Table on the possibly
-    # multiple keys given in the array of syms in headers. Append a ! to the
-    # symbol name to indicate reverse sorting on that column.  Resets groups.
+    # Return a new Table sorting the rows of this Table on the possibly multiple
+    # keys given in the array of syms in headers. Append a ! to the symbol name
+    # to indicate reverse sorting on that column. Resets groups.
     def order_by(*sort_heads)
       sort_heads = [sort_heads].flatten
       rev_heads = sort_heads.select { |h| h.to_s.ends_with?('!') }
@@ -956,79 +956,10 @@ module FatCore
     end
 
     ############################################################################
-    # Table output methods.
+    # Table construction methods.
     ############################################################################
 
     public
-
-    # This returns the table as an Array of Arrays with formatting applied.
-    # This would normally called after all calculations on the table are done
-    # and you want to return the results.  The Array of Arrays structure is
-    # what org-mode src blocks will render as an org table in the buffer.
-    def to_org(formats: {})
-      result = []
-
-      # Headers
-      header_row = []
-      headers.each do |hdr|
-        header_row << hdr.entitle
-      end
-      result << header_row
-      # This causes org to place an hline under the header row
-      result << nil unless header_row.empty?
-
-      # Body by groups with group footers
-      groups.each_with_index do |grp, _k|
-        grp_col = {}
-        grp.each do |row|
-          out_row = []
-          headers.each do |hdr|
-            grp_col[hdr] ||= Column.new(header: hdr)
-            grp_col[hdr] << row[hdr]
-            out_row << row[hdr].format_by(formats[hdr])
-          end
-          result << out_row
-        end
-        # Output group footers
-        result << nil
-        gfooters.each_pair do |label, gfooter|
-          gfoot_row = []
-          grp_col.each_pair do |hdr, col|
-            gfoot_row <<
-              if gfooter[hdr]
-                col.send(gfooter[hdr]).format_by(formats[hdr])
-              else
-                ''
-              end
-          end
-          gfoot_row[0] = label.entitle
-          result << gfoot_row
-        end
-        result << nil
-      end
-
-      # Footers
-      result << nil unless result.last.nil?
-      footers.each_pair do |label, footer|
-        foot_row = []
-        columns.each do |col|
-          hdr = col.header
-          foot_row <<
-            if footer[hdr]
-              col.send(footer[hdr]).format_by(formats[hdr])
-            else
-              ''
-            end
-        end
-        foot_row[0] = label.entitle
-        result << foot_row
-      end
-      result
-    end
-
-    ############################################################################
-    # Table construction methods.
-    ############################################################################
 
     # Add a row represented by a Hash having the headers as keys. If mark is
     # true, mark this row as a boundary. All tables should be built ultimately
@@ -1053,6 +984,5 @@ module FatCore
       columns << col
       self
     end
-
   end
 end
