@@ -237,6 +237,67 @@ module FatCore
       end
     end
 
+    describe 'footers' do
+      before :each do
+        aoa =
+          [['Ref', 'Date', 'Code', 'Raw', 'Shares', 'Price', 'Info', 'Bool'],
+           nil,
+           [1, '2013-05-02', 'P', 795_546.20, 795_546.2, 1.1850, 'ZMPEF1', 'T'],
+           [2, '2013-05-02', 'P', 118_186.40, 118_186.4, 11.8500, 'ZMPEF1', 'T'],
+           [7, '2013-05-20', 'S', 12_000.00, 5046.00, 28.2804, 'ZMEAC', 'F'],
+           [8, '2013-05-20', 'S', 85_000.00, 35_742.50, 28.3224, 'ZMEAC', 'T'],
+           [9, '2013-05-20', 'S', 33_302.00, 14_003.49, 28.6383, 'ZMEAC', 'T'],
+           [10, '2013-05-23', 'S', 8000.00, 3364.00, 27.1083, 'ZMEAC', 'T'],
+           [11, '2013-05-23', 'S', 23_054.00, 9694.21, 26.8015, 'ZMEAC', 'F'],
+           [12, '2013-05-23', 'S', 39_906.00, 16_780.47, 25.1749, 'ZMEAC', 'T'],
+           [13, '2013-05-29', 'S', 13_459.00, 5659.51, 24.7464, 'ZMEAC', 'T'],
+           [14, '2013-05-29', 'S', 15_700.00, 6601.85, 24.7790, 'ZMEAC', 'F'],
+           [15, '2013-05-29', 'S', 15_900.00, 6685.95, 24.5802, 'ZMEAC', 'T'],
+           [16, '2013-05-30', 'S', 6_679.00, 2808.52, 25.0471, 'ZMEAC', 'T']]
+        @tab = Table.from_aoa(aoa).order_by(:date)
+      end
+
+      it 'should be able to add a total footer to the output' do
+        fmt = Formatter.new(@tab) do |f|
+          f.sum_footer(:raw, :shares, :price)
+        end
+        expect(fmt.footers[:total][:raw]).to eq(:sum)
+        expect(fmt.footers[:total][:shares]).to eq(:sum)
+        expect(fmt.footers[:total][:price]).to eq(:sum)
+        expect(fmt.footers[:total][:info]).to be_nil
+      end
+
+      it 'should be able to add an average footer to the output' do
+        fmt = Formatter.new(@tab) do |f|
+          f.avg_footer(:raw, :shares, :price)
+        end
+        expect(fmt.footers[:average][:raw]).to eq(:avg)
+        expect(fmt.footers[:average][:shares]).to eq(:avg)
+        expect(fmt.footers[:average][:price]).to eq(:avg)
+        expect(fmt.footers[:average][:info]).to be_nil
+      end
+
+      it 'should be able to add a minimum footer to the output' do
+        fmt = Formatter.new(@tab) do |f|
+          f.min_footer(:raw, :shares, :price)
+        end
+        expect(fmt.footers[:minimum][:raw]).to eq(:min)
+        expect(fmt.footers[:minimum][:shares]).to eq(:min)
+        expect(fmt.footers[:minimum][:price]).to eq(:min)
+        expect(fmt.footers[:minimum][:info]).to be_nil
+      end
+
+      it 'should be able to add a maximum footer to the output' do
+        fmt = Formatter.new(@tab) do |f|
+          f.max_footer(:raw, :shares, :price)
+        end
+        expect(fmt.footers[:maximum][:raw]).to eq(:max)
+        expect(fmt.footers[:maximum][:shares]).to eq(:max)
+        expect(fmt.footers[:maximum][:price]).to eq(:max)
+        expect(fmt.footers[:maximum][:info]).to be_nil
+      end
+    end
+
     describe 'table output' do
       it 'should be able to output a table with default formatting instructions' do
         str = Formatter.new(@tab).output

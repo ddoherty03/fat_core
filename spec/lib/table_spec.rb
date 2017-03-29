@@ -362,11 +362,8 @@ EOS
         expect(dwtab.column(:g10).type).to eq('Boolean')
         expect(dwtab.column(:qp10).type).to eq('Boolean')
         dwo = dwtab.where('qp10 || g10')
-        dwo = dwo.to_org
-        dwo.each_with_index do |row, k|
-          next unless k > 1
-          next unless row
-          expect(row[5]).to match(/\A(T|F)\z/)
+        dwo.rows.each do |row|
+          expect(row[:qp10].class.to_s).to match(/TrueClass|FalseClass/)
         end
       end
     end
@@ -485,64 +482,6 @@ EOS
         expect(tab.column(:c).max.round(4)).to eq 9888
         expect(tab.column(:c).max.is_a?(Integer)).to be true
         expect(tab.column(:d).max).to eq 'pear'
-      end
-    end
-
-    describe 'footers' do
-      it 'should be able to add a total footer to the table' do
-        aoh = [
-          { a: '1', 'Two words' => '2', c: '3,123', d: 'apple' },
-          { a: '4', 'Two words' => '5', c: '6,412', d: 'orange' },
-          { a: '7', 'Two words' => '8', c: '$9,888', d: 'pear' }
-        ]
-        tab = Table.from_aoh(aoh)
-        tab.sum_footer(:a, :c, :two_words)
-        expect(tab.footers[:total][:a]).to eq(:sum)
-        expect(tab.footers[:total][:c]).to eq(:sum)
-        expect(tab.footers[:total][:two_words]).to eq(:sum)
-        expect(tab.footers[:total][:d]).to be_nil
-      end
-
-      it 'should be able to add an average footer to the table' do
-        aoh = [
-          { a: '1', 'Two words' => '2', c: '3,123', d: 'apple' },
-          { a: '4', 'Two words' => '5', c: '6,412', d: 'orange' },
-          { a: '7', 'Two words' => '8', c: '$9,888', d: 'pear' }
-        ]
-        tab = Table.from_aoh(aoh)
-        tab.avg_footer(:a, :c, :two_words)
-        expect(tab.footers[:average][:a]).to eq(:avg)
-        expect(tab.footers[:average][:c]).to eq(:avg)
-        expect(tab.footers[:average][:two_words]).to eq(:avg)
-        expect(tab.footers[:average][:d]).to be_nil
-      end
-
-      it 'should be able to add a minimum footer to the table' do
-        aoh = [
-          { a: '1', 'Two words' => '2', c: '3,123', d: 'apple' },
-          { a: '4', 'Two words' => '5', c: '6,412', d: 'orange' },
-          { a: '7', 'Two words' => '8', c: '$9,888', d: 'pear' }
-        ]
-        tab = Table.from_aoh(aoh)
-        tab.min_footer(:a, :c, :two_words)
-        expect(tab.footers[:minimum][:a]).to eq(:min)
-        expect(tab.footers[:minimum][:c]).to eq(:min)
-        expect(tab.footers[:minimum][:two_words]).to eq(:min)
-        expect(tab.footers[:minimum][:d]).to be_nil
-      end
-
-      it 'should be able to add a maximum footer to the table' do
-        aoh = [
-          { a: '1', 'Two words' => '2', c: '3,123', d: 'apple' },
-          { a: '4', 'Two words' => '5', c: '6,412', d: 'orange' },
-          { a: '7', 'Two words' => '8', c: '$9,888', d: 'pear' }
-        ]
-        tab = Table.from_aoh(aoh)
-        tab.max_footer(:a, :c, :two_words)
-        expect(tab.footers[:maximum][:a]).to eq(:max)
-        expect(tab.footers[:maximum][:c]).to eq(:max)
-        expect(tab.footers[:maximum][:two_words]).to eq(:max)
-        expect(tab.footers[:maximum][:d]).to be_nil
       end
     end
 
@@ -1045,52 +984,6 @@ EOS
           expect(row[:name]).to eq('Paul')
         end
         expect(tab.groups[5].size).to eq(1)
-      end
-    end
-
-    describe 'output' do
-      it 'should be able to return itself as an array of arrays' do
-        aoh = [
-          { a: '1', 'Two words' => '2', c: '3,123', d: 'apple' },
-          { a: '4', 'Two words' => '5', c: '6,412', d: 'orange' },
-          { a: '7', 'Two words' => '8', c: '$9,888', d: 'pear' }
-        ]
-        tab = Table.from_aoh(aoh)
-        aoa = tab.to_org
-        expect(aoa.class).to eq Array
-        expect(aoa[0].class).to eq Array
-        expect(aoa[0][0]).to eq 'A'
-      end
-
-      it 'should be able to output an org babel aoa' do
-        # This is what the data looks like when called from org babel code
-        # blocks.
-        aoa =
-          [['Ref', 'Date', 'Code', 'Raw', 'Shares', 'Price', 'Info', 'Bool'],
-           nil,
-           [1, '2013-05-02', 'P', 795_546.20, 795_546.2, 1.1850, 'ZMPEF1', 'T'],
-           [2, '2013-05-02', 'P', 118_186.40, 118_186.4, 11.8500, 'ZMPEF1', 'T'],
-           [7, '2013-05-20', 'S', 12_000.00, 5046.00, 28.2804, 'ZMEAC', 'F'],
-           [8, '2013-05-20', 'S', 85_000.00, 35_742.50, 28.3224, 'ZMEAC', 'T'],
-           [9, '2013-05-20', 'S', 33_302.00, 14_003.49, 28.6383, 'ZMEAC', 'T'],
-           [10, '2013-05-23', 'S', 8000.00, 3364.00, 27.1083, 'ZMEAC', 'T'],
-           [11, '2013-05-23', 'S', 23_054.00, 9694.21, 26.8015, 'ZMEAC', 'F'],
-           [12, '2013-05-23', 'S', 39_906.00, 16_780.47, 25.1749, 'ZMEAC', 'T'],
-           [13, '2013-05-29', 'S', 13_459.00, 5659.51, 24.7464, 'ZMEAC', 'T'],
-           [14, '2013-05-29', 'S', 15_700.00, 6601.85, 24.7790, 'ZMEAC', 'F'],
-           [15, '2013-05-29', 'S', 15_900.00, 6685.95, 24.5802, 'ZMEAC', 'T'],
-           [16, '2013-05-30', 'S', 6_679.00, 2808.52, 25.0471, 'ZMEAC', 'T']]
-        tg = Table.from_aoa(aoa)
-               .order_by(:date)
-               .gfooter('Sub Total', :raw, :shares, price: :dev, bool: :all?)
-               .sum_footer(:raw, :shares, :price)
-        aoa = tg.to_org(formats: { raw: '%,', shares: '%,', price: '%,4' })
-        expect(aoa[-1][0]).to eq 'Total'
-        expect(aoa[-1][1]).to eq ''
-        expect(aoa[-1][2]).to eq ''
-        expect(aoa[-1][3]).to eq '1,166,733'
-        expect(aoa[-1][4]).to eq '1,020,119'
-        expect(aoa[-1][5]).to eq '276.5135'
       end
     end
   end

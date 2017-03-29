@@ -23,12 +23,10 @@ module FatCore
   # spaces converted to underscore and everything down-cased. So, the heading,
   # 'Two Words' becomes the hash header :two_words.
   class Table
-    attr_reader :columns, :footers, :gfooters
+    attr_reader :columns
 
     def initialize
       @columns = []
-      @footers = {}
-      @gfooters = {}
       @boundaries = []
     end
 
@@ -955,121 +953,6 @@ module FatCore
                                     items: items).send(agg_func)
       end
       new_row
-    end
-
-    ############################################################################
-    # Footer methods
-    #
-    #
-    # A Table may have any number of footers and any number of group footers.
-    # Footers are not part of the table's data and never participate in any of
-    # the transformation methods on tables.  They are never inherited by output
-    # tables from input tables in any of the transformation methods.
-    #
-    # When output, a table footer will appear at the bottom of the table, and a
-    # group footer will appear at the bottom of each group.
-    #
-    # Each footer must have a label, usually a string such as 'Total', to
-    # identify the purpose of the footer, and the label must be distinct among
-    # all footers of the same type. That is you may have a table footer labeled
-    # 'Total' and a group footer labeled 'Total', but you may not have two table
-    # footers with that label.  If the first column of the table is not included
-    # in the footer, the footer's label will be placed there, otherwise, there
-    # will be no label output.  The footers are accessible with the #footers
-    # method, which returns a hash indexed by the label converted to a symbol.
-    # The symbol is reconverted to a title-cased string on output.
-    #
-    # Note that by adding footers or gfooters to the table, you are only stating
-    # what footers you want on output of the table.  No actual calculation is
-    # performed until the table is output.
-    #
-    ############################################################################
-
-    public
-
-    # Add a table footer to the table with a label given in the first parameter,
-    # defaulting to 'Total'.  After the label, you can given any number of
-    # headers (as symbols) for columns to be summed, and then any number of hash
-    # parameters for columns for with to apply an aggregate other than :sum.
-    # For example, these are valid footer definitions.
-    #
-    # # Just sum the shares column with a label of 'Total'
-    # tab.footer(:shares)
-    #
-    # # Change the label and sum the :price column as well
-    # tab.footer('Grand Total', :shares, :price)
-    #
-    # # Average then show standard deviation of several columns
-    # tab.footer.('Average', date: avg, shares: :avg, price: avg)
-    # tab.footer.('Sigma', date: dev, shares: :dev, price: :dev)
-    #
-    # # Do some sums and some other aggregates: sum shares, average date and
-    # # price.
-    # tab.footer.('Summary', :shares, date: avg, price: avg)
-    def footer(label, *sum_cols, **agg_cols)
-      label = label.as_sym
-      foot = {}
-      sum_cols.each do |h|
-        unless headers.include?(h)
-          raise "No '#{h}' column in table to sum in the footer"
-        end
-        foot[h] = :sum
-      end
-      agg_cols.each do |h, agg|
-        unless headers.include?(h)
-          raise "No '#{h}' column in table to #{aggregate} in the footer"
-        end
-        foot[h] = agg
-      end
-      @footers[label] = foot
-      self
-    end
-
-    def gfooter(label, *sum_cols, **agg_cols)
-      label = label.as_sym
-      foot = {}
-      sum_cols.each do |h|
-        unless headers.include?(h)
-          raise "No '#{h}' column in table to sum in the group footer"
-        end
-        foot[h] = :sum
-      end
-      agg_cols.each do |h, agg|
-        unless headers.include?(h)
-          raise "No '#{h}' column in table to #{aggregate} in the group footer"
-        end
-        foot[h] = agg
-      end
-      @gfooters[label] = foot
-      self
-    end
-
-    def sum_footer(*cols)
-      footer('Total', *cols)
-    end
-
-    def avg_footer(*cols)
-      hsh = {}
-      cols.each do |c|
-        hsh[c] = :avg
-      end
-      footer('Average', hsh)
-    end
-
-    def min_footer(*cols)
-      hsh = {}
-      cols.each do |c|
-        hsh[c] = :min
-      end
-      footer('Minimum', hsh)
-    end
-
-    def max_footer(*cols)
-      hsh = {}
-      cols.each do |c|
-        hsh[c] = :max
-      end
-      footer('Maximum', hsh)
     end
 
     ############################################################################
