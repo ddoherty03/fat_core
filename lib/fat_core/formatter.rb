@@ -712,25 +712,29 @@ module FatCore
       result = ''
       result += pre_table
       result += pre_header
+      cells = []
       formatted_headers.each_pair do |_h, v|
-        result += v
-        result += inter_cell
+        cells << v
       end
+      result += cells.join(inter_cell)
       result += post_header
       new_rows.each do |loc_row|
         result += hline if loc_row.nil?
         next if loc_row.nil?
         _loc, row = *loc_row
         result += pre_row
+        cells = []
         row.each_pair do |_h, v|
-          result += v
-          result += inter_cell
+          cells << v
         end
+        result += cells.join(inter_cell)
         result += post_row
       end
       result += post_table
       result
     end
+
+    private
 
     # Return a hash mapping the table's headers to their formatted versions. If
     # a hash of column widths is given, perform alignment within the given field
