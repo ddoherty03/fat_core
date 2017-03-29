@@ -236,5 +236,31 @@ module FatCore
           .to eq('2017 in February at  9pm, which was on a Thursday')
       end
     end
+
+    describe 'table output' do
+      it 'should be able to output a table with default formatting instructions' do
+        str = Formatter.new(@tab).output
+        expect(str.length).to be > 10
+      end
+
+      it 'should be able to output a table according to formatting instructions' do
+        fmt = Formatter.new(@tab)
+        fmt.format(ref: '5.0', code: 'C', raw: ',0.0R', shares: ',0.0R',
+                   price: '0.3', bool: 'X')
+        fmt.format_for(:header, string: 'CB')
+        str = fmt.output
+        expect(str.length).to be > 10
+      end
+
+      it 'should be able to set format and output in a block' do
+        fmt = Formatter.new(@tab) do |f|
+          f.format(ref: '5.0', code: 'C', raw: ',0.0R', shares: ',0.0R',
+                     price: '0.3', bool: 'X')
+          f.format_for(:header, string: 'CB')
+        end
+        str = fmt.output
+        expect(str.length).to be > 10
+      end
+    end
   end
 end

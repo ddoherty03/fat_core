@@ -128,6 +128,12 @@ module FatCore
       end
       yield self if block_given?
     end
+
+    # Define formats for all locations
+    def format(**fmts)
+      [:header, :bfirst, :gfirst, :body, :footer, :gfooter].each do |loc|
+        format_for(loc, fmts)
+      end
     end
 
     # Define a format for the given location, :header, :body, :footer, :gfooter
@@ -478,45 +484,284 @@ module FatCore
     end
 
     # Apply non-device-dependent string formatting instructions.
-    def format_string(val, istruct)
-      return istruct.nil_text if val.nil?
-      case istruct.case
-      when :lower
-        val.downcase
-      when :upper
-        val.upcase
-      when :title
-        val.entitle
-      when :none
-        val
+    def format_string(val, istruct, width = nil)
+      val = istruct.nil_text if val.nil?
+      val =
+        case istruct.case
+        when :lower
+          val.downcase
+        when :upper
+          val.upcase
+        when :title
+          val.entitle
+        when :none
+          val
+        end
+      if width && aligned?
+        pad = width - width(val)
+        case istruct.alignment
+        when :left
+          val += ' ' * pad
+        when :right
+          val = ' ' * pad + val
+        when :center
+          lpad = pad / 2 + (pad.odd? ? 1 : 0)
+          rpad = pad / 2
+          val = ' ' * lpad + val + ' ' * rpad
+        else
+          val = val
+        end
       end
+      val
+    end
+
+    ###############################################################################
+    # Output routines
+    ###############################################################################
+
+    public
+
+    def output
+      # Build the output as an array of row hashes, with the hashes keyed on the
+      # new header string and the values the string-formatted cells. Each group
+      # boundary, gfooter, and footer is marked by inserting a nil in the result
+      # array at that point.
+      formatted_headers = build_formatted_headers
+      new_rows = build_formatted_body
+      new_rows += build_formatted_footers
+
+      # Make a second pass over the formatted cells to add spacing according to
+      # the alignment instruction if this is a Formatter that performs its own
+      # alignment.
+      if aligned?
+        widths = width_map(new_rows)
+        table.headers.each do |h|
+          formatted_headers[h] = format_string(h, format_at[:header][h], widths[h])
+        end
+        aligned_rows = []
+        new_rows.each do |loc_row|
+          if loc_row.nil?
+            aligned_rows << nil
+            next
+          end
+          loc, row = *loc_row
+          aligned_row = {}
+          row.each_pair do |h, val|
+            aligned_row[h] << format_string(val, format_at[loc][h], widths[h])
+          end
+          aligned_rows << [loc, aligned_row]
+        end
+        new_rows = aligned_rows
+      end
+
+      # Now that the contents of the output table cells have been computed and
+      # alignment applied, we can actually construct the table using the methods
+      # for constructing table parts, pre_table, etc. We expect that these will
+      # be overridden by subclasses of Formatter for specific output targets. In
+      # any event, the result is a single string representing the table in the
+      # syntax of the output target.
+      result = ''
+      result += pre_table
+      result += pre_header
+      formatted_headers.each_pair do |_h, v|
+        result += v
+        result += inter_cell
+      end
+      result += post_header
+      new_rows.each do |loc_row|
+        result += hline if loc_row.nil?
+        next if loc_row.nil?
+        _loc, row = *loc_row
+        result += pre_row
+        row.each_pair do |_h, v|
+          result += v
+          result += inter_cell
+        end
+        result += post_row
+      end
+      result += post_table
+      result
+    end
+
+    # Return a hash mapping the table's headers to their formatted versions. If
+    # a hash of column widths is given, perform alignment within the given field
+    # widths.
+    def build_formatted_headers(widths = {})
+      map = {}
+      table.headers.each do |h|
+        map[h] = format_string(h.as_string, format_at[:header][h], widths[h])
+      end
+      map
+    end
+
+    # Return an array of two-element arrays, with the first element of the
+    # inner array being the location of the row and the second element being a
+    # hash, using the table's headers as keys and the formatted cells as the
+    # values. Add formatted group footers along the way.
+    def build_formatted_body
+      new_rows = []
+      tbl_row_k = 0
+      table.groups.each_with_index do |grp, _grp_k|
+        # Mark the beginning of a group
+        new_rows << nil
+        # Compute group body
+        grp_col = {}
+        grp.each_with_index do |row, grp_row_k|
+          new_row = {}
+          location =
+            if tbl_row_k.zero?
+              :bfirst
+            elsif grp_row_k.zero?
+              :gfirst
+            else
+              :body
+            end
+          table.headers.each do |h|
+            grp_col[h] ||= Column.new(header: h)
+            grp_col[h] << row[h]
+            new_row[h] = format_cell(row[h], format_at[location][h])
+          end
+          new_rows << [location, new_row]
+          tbl_row_k += 1
+        end
+        # Compute group footers
+        table.gfooters.each_pair do |label, gfooter|
+          # Mark the beginning of a group footer
+          new_rows << nil
+          gfoot_row = {}
+          first_h = nil
+          grp_col.each_pair do |h, col|
+            first_h ||= h
+            gfoot_row[h] =
+              if gfooter[h]
+                format_cell(col.send(gfooter[h]), format_at[:gfooter][h])
+              else
+                ''
+              end
+          end
+          if gfoot_row[first_h].blank?
+            gfoot_row[first_h] = format_cell(label, format_at[:gfooter][first_h])
+          end
+          new_rows << [:gfooter, gfoot_row]
+        end
+      end
+      new_rows
+    end
+
+    def build_formatted_footers
+      new_rows = []
+      # Done with body, compute the table footers.
+      table.footers.each_pair do |label, footer|
+        # Mark the beginning of a footer
+        new_rows << nil
+        foot_row = {}
+        first_h = nil
+        table.columns.each do |col|
+          h = col.header
+          first_h ||= h
+          foot_row[h] =
+            if footer[h]
+              format_cell(col.send(footer[h]), format_at[:footer][h])
+            else
+              ''
+            end
+        end
+        # Put the label in the first column of footer unless it has been
+        # formatted as part of footer.
+        if foot_row[first_h].blank?
+          foot_row[first_h] = format_cell(label, format_at[:footer][first_h])
+        end
+        new_rows << [:footer, foot_row]
+      end
+      new_rows
+    end
+
+    # Return a hash of the maximum widths of all the given rows, using the same
+    # keys as the first non-nil hash member of the rows array.
+    def width_map(rows)
+      widths = {}
+      rows.each do |loc_row|
+        next if row.nil?
+        _loc, row = *loc_row
+        row.each_pair do |h, v|
+          widths[h] ||= 0
+          widths[h] = [widths[h], width(v)].max
+        end
+      end
+      widths
+    end
+
+    # Does this Formatter require a second pass over the cells to align the
+    # columns according to the alignment formatting instruction to the width of
+    # the widest cell in each column?
+    def aligned?
+      false
+    end
+
+    # Compute the width of the string as displayed, taking into account the
+    # characteristics of the target device.  For example, a colored string
+    # should not include in the width terminal control characters that simply
+    # change the color without occupying any space.  Thus, this method must be
+    # overridden in a subclass if a simple character count does not reflect the
+    # width as displayed.
+    def width(str)
+      str.length
     end
 
     def pre_table
+      ''
     end
 
     def post_table
+      ''
+    end
+
+    def pre_header
+      ''
     end
 
     def post_header
+      "\n"
+    end
+
+    def pre_row
+      ''
+    end
+
+    def inter_cell
+      '|'
+    end
+
+    def post_row
+      "\n"
+    end
+
+    def hline
+      ''
     end
 
     def pre_group
+      ''
     end
 
     def post_group
+      ''
     end
 
     def pre_gfoot
+      ''
     end
 
     def post_gfoot
+      ''
     end
 
     def pre_foot
+      ''
     end
 
     def post_foot
+      ''
     end
   end
 end
