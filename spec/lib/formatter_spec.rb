@@ -261,40 +261,40 @@ module FatCore
         fmt = Formatter.new(@tab) do |f|
           f.sum_footer(:raw, :shares, :price)
         end
-        expect(fmt.footers[:total][:raw]).to eq(:sum)
-        expect(fmt.footers[:total][:shares]).to eq(:sum)
-        expect(fmt.footers[:total][:price]).to eq(:sum)
-        expect(fmt.footers[:total][:info]).to be_nil
+        expect(fmt.footers['Total'][:raw]).to eq(:sum)
+        expect(fmt.footers['Total'][:shares]).to eq(:sum)
+        expect(fmt.footers['Total'][:price]).to eq(:sum)
+        expect(fmt.footers['Total'][:info]).to be_nil
       end
 
       it 'should be able to add an average footer to the output' do
         fmt = Formatter.new(@tab) do |f|
           f.avg_footer(:raw, :shares, :price)
         end
-        expect(fmt.footers[:average][:raw]).to eq(:avg)
-        expect(fmt.footers[:average][:shares]).to eq(:avg)
-        expect(fmt.footers[:average][:price]).to eq(:avg)
-        expect(fmt.footers[:average][:info]).to be_nil
+        expect(fmt.footers['Average'][:raw]).to eq(:avg)
+        expect(fmt.footers['Average'][:shares]).to eq(:avg)
+        expect(fmt.footers['Average'][:price]).to eq(:avg)
+        expect(fmt.footers['Average'][:info]).to be_nil
       end
 
       it 'should be able to add a minimum footer to the output' do
         fmt = Formatter.new(@tab) do |f|
           f.min_footer(:raw, :shares, :price)
         end
-        expect(fmt.footers[:minimum][:raw]).to eq(:min)
-        expect(fmt.footers[:minimum][:shares]).to eq(:min)
-        expect(fmt.footers[:minimum][:price]).to eq(:min)
-        expect(fmt.footers[:minimum][:info]).to be_nil
+        expect(fmt.footers['Minimum'][:raw]).to eq(:min)
+        expect(fmt.footers['Minimum'][:shares]).to eq(:min)
+        expect(fmt.footers['Minimum'][:price]).to eq(:min)
+        expect(fmt.footers['Minimum'][:info]).to be_nil
       end
 
       it 'should be able to add a maximum footer to the output' do
         fmt = Formatter.new(@tab) do |f|
           f.max_footer(:raw, :shares, :price)
         end
-        expect(fmt.footers[:maximum][:raw]).to eq(:max)
-        expect(fmt.footers[:maximum][:shares]).to eq(:max)
-        expect(fmt.footers[:maximum][:price]).to eq(:max)
-        expect(fmt.footers[:maximum][:info]).to be_nil
+        expect(fmt.footers['Maximum'][:raw]).to eq(:max)
+        expect(fmt.footers['Maximum'][:shares]).to eq(:max)
+        expect(fmt.footers['Maximum'][:price]).to eq(:max)
+        expect(fmt.footers['Maximum'][:info]).to be_nil
       end
     end
 

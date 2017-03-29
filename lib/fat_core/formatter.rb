@@ -181,7 +181,7 @@ module FatCore
     # # price.
     # tab.footer.('Summary', :shares, date: avg, price: avg)
     def footer(label, *sum_cols, **agg_cols)
-      label = label.as_sym
+      label = label.to_s
       foot = {}
       sum_cols.each do |h|
         unless table.headers.include?(h)
@@ -200,7 +200,7 @@ module FatCore
     end
 
     def gfooter(label, *sum_cols, **agg_cols)
-      label = label.as_sym
+      label = label.to_s
       foot = {}
       sum_cols.each do |h|
         unless table.headers.include?(h)
@@ -761,7 +761,7 @@ module FatCore
               end
           end
           if gfoot_row[first_h].blank?
-            gfoot_row[first_h] = format_cell(label, format_at[:gfooter][first_h])
+            gfoot_row[first_h] = format_string(label, format_at[:gfooter][first_h])
           end
           new_rows << [:gfooter, gfoot_row]
         end
@@ -790,7 +790,7 @@ module FatCore
         # Put the label in the first column of footer unless it has been
         # formatted as part of footer.
         if foot_row[first_h].blank?
-          foot_row[first_h] = format_cell(label, format_at[:footer][first_h])
+          foot_row[first_h] = format_string(label, format_at[:footer][first_h])
         end
         new_rows << [:footer, foot_row]
       end
