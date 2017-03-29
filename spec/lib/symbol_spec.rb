@@ -3,7 +3,7 @@ require 'spec_helper'
 describe Symbol do
   it 'should be able to convert to a capitalized string' do
     expect(:i_am_a_symbol.entitle).to eq 'I Am a Symbol'
-    expect(:i_am_a_symbol.to_string).to eq 'I Am a Symbol'
+    expect(:i_am_a_symbol.as_string).to eq 'I Am a Symbol'
   end
 
   it 'should respond to tex_quote' do

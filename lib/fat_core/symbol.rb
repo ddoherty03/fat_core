@@ -3,7 +3,7 @@ class Symbol
   def entitle
     to_s.tr('_', ' ').split(' ').join(' ').entitle
   end
-  alias to_string entitle
+  alias as_string entitle
 
   def as_sym
     self
