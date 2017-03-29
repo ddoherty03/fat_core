@@ -119,11 +119,15 @@ module FatCore
       # inner hash is keyed on either a column sym or a type sym, :string, :numeric,
       # :datetime, :boolean, or :nil.  The value of the inner hashes are
       # OpenStruct structs.
-      @format = {}
-      # Initialize all location format to default.
-      # LOCATIONS.each do |loc|
-      #   format_for(loc, {})
-      # end
+      @format_at = {}
+      [:header, :bfirst, :gfirst, :body, :footer, :gfooter].each do |loc|
+        @format_at[loc] = {}
+        table.headers.each do |h|
+          format_at[loc][h] = OpenStruct.new(DEFAULT_FORMAT)
+        end
+      end
+      yield self if block_given?
+    end
     end
 
     # Define a format for the given location, :header, :body, :footer, :gfooter
