@@ -222,12 +222,24 @@ module FatCore
       footer('Total', *cols)
     end
 
+    def sum_gfooter(*cols)
+      gfooter('Group Total', *cols)
+    end
+
     def avg_footer(*cols)
       hsh = {}
       cols.each do |c|
         hsh[c] = :avg
       end
       footer('Average', hsh)
+    end
+
+    def avg_gfooter(*cols)
+      hsh = {}
+      cols.each do |c|
+        hsh[c] = :avg
+      end
+      gfooter('Group Average', hsh)
     end
 
     def min_footer(*cols)
@@ -238,12 +250,28 @@ module FatCore
       footer('Minimum', hsh)
     end
 
+    def min_gfooter(*cols)
+      hsh = {}
+      cols.each do |c|
+        hsh[c] = :min
+      end
+      gfooter('Group Minimum', hsh)
+    end
+
     def max_footer(*cols)
       hsh = {}
       cols.each do |c|
         hsh[c] = :max
       end
       footer('Maximum', hsh)
+    end
+
+    def max_gfooter(*cols)
+      hsh = {}
+      cols.each do |c|
+        hsh[c] = :max
+      end
+      gfooter('Group Maximum', hsh)
     end
 
     ############################################################################
