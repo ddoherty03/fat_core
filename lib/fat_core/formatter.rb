@@ -732,6 +732,7 @@ module FatCore
       end
       result += post_table
       result
+      evaluate? ? eval(result) : result
     end
 
     private
@@ -851,6 +852,14 @@ module FatCore
       false
     end
 
+    # Should the string result of output be evaluated to form a ruby data
+    # structure? For example, AoaFormatter wants to return an array of arrays of
+    # strings, so it should build a ruby expression to do that, then have it
+    # eval'ed.
+    def evaluate?
+      false
+    end
+
     # Compute the width of the string as displayed, taking into account the
     # characteristics of the target device.  For example, a colored string
     # should not include in the width terminal control characters that simply
@@ -881,6 +890,9 @@ module FatCore
       ''
     end
 
+    def quote_cell(v)
+      v
+    end
     def inter_cell
       '|'
     end
