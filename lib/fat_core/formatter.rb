@@ -711,27 +711,28 @@ module FatCore
       # syntax of the output target.
       result = ''
       result += pre_table
-      result += pre_header
-      cells = []
-      formatted_headers.each_pair do |_h, v|
-        cells << v
+      if include_header_row?
+        result += pre_header
+        cells = []
+        formatted_headers.each_pair do |h, v|
+          cells << pre_cell(h) + quote_cell(v) + post_cell
+        end
+        result += cells.join(inter_cell)
+        result += post_header
       end
-      result += cells.join(inter_cell)
-      result += post_header
       new_rows.each do |loc_row|
         result += hline if loc_row.nil?
         next if loc_row.nil?
         _loc, row = *loc_row
         result += pre_row
         cells = []
-        row.each_pair do |_h, v|
-          cells << v
+        row.each_pair do |h, v|
+          cells << pre_cell(h) + quote_cell(v) + post_cell
         end
         result += cells.join(inter_cell)
         result += post_row
       end
       result += post_table
-      result
       evaluate? ? eval(result) : result
     end
 
@@ -755,9 +756,10 @@ module FatCore
     def build_formatted_body
       new_rows = []
       tbl_row_k = 0
-      table.groups.each_with_index do |grp, _grp_k|
-        # Mark the beginning of a group
-        new_rows << nil
+      table.groups.each_with_index do |grp, grp_k|
+        # Mark the beginning of a group if this is the first group after the
+        # header or the second or later group.
+        new_rows << nil if include_header_row? || grp_k.positive?
         # Compute group body
         grp_col = {}
         grp.each_with_index do |row, grp_row_k|
@@ -878,6 +880,10 @@ module FatCore
       ''
     end
 
+    def include_header_row?
+      true
+    end
+
     def pre_header
       ''
     end
@@ -890,9 +896,18 @@ module FatCore
       ''
     end
 
+    def pre_cell(_h)
+      ''
+    end
+
     def quote_cell(v)
       v
     end
+
+    def post_cell
+      ''
+    end
+
     def inter_cell
       '|'
     end
