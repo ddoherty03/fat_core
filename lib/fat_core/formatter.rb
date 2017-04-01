@@ -684,9 +684,10 @@ module FatCore
       # the alignment instruction if this is a Formatter that performs its own
       # alignment.
       if aligned?
-        widths = width_map(new_rows)
+        widths = width_map(formatted_headers, new_rows)
         table.headers.each do |h|
-          formatted_headers[h] = format_string(h, format_at[:header][h], widths[h])
+          formatted_headers[h] =
+            format_string(formatted_headers[h], format_at[:header][h], widths[h])
         end
         aligned_rows = []
         new_rows.each do |loc_row|
@@ -697,7 +698,7 @@ module FatCore
           loc, row = *loc_row
           aligned_row = {}
           row.each_pair do |h, val|
-            aligned_row[h] << format_string(val, format_at[loc][h], widths[h])
+            aligned_row[h] = format_string(val, format_at[loc][h], widths[h])
           end
           aligned_rows << [loc, aligned_row]
         end
@@ -835,12 +836,15 @@ module FatCore
       new_rows
     end
 
-    # Return a hash of the maximum widths of all the given rows, using the same
-    # keys as the first non-nil hash member of the rows array.
-    def width_map(rows)
+    # Return a hash of the maximum widths of all the given headers and rows.
+    def width_map(formatted_headers, rows)
       widths = {}
+      formatted_headers.each_pair do |h, v|
+        widths[h] ||= 0
+        widths[h] = [widths[h], width(v)].max
+      end
       rows.each do |loc_row|
-        next if row.nil?
+        next if loc_row.nil?
         _loc, row = *loc_row
         row.each_pair do |h, v|
           widths[h] ||= 0
