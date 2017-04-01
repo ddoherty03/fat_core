@@ -9,11 +9,12 @@ module FatCore
   ## formatting request available for the target. This base class will consist
   ## largely of stub methods with implementations provided by the subclass.
   class Formatter
-    attr_reader :table, :format_at, :footers, :gfooters
-
     LOCATIONS = [:header, :body, :bfirst, :gfirst, :gfooter, :footer].freeze
 
-    DEFAULT_FORMAT = {
+    attr_reader :table, :format_at, :footers, :gfooters
+
+    class_attribute :default_format
+    self.default_format = {
       nil_text: '',
       case: :none,
       alignment: :left,
@@ -125,7 +126,7 @@ module FatCore
       [:header, :bfirst, :gfirst, :body, :footer, :gfooter].each do |loc|
         @format_at[loc] = {}
         table.headers.each do |h|
-          format_at[loc][h] = OpenStruct.new(DEFAULT_FORMAT)
+          format_at[loc][h] = OpenStruct.new(self.class.default_format)
         end
       end
       yield self if block_given?
@@ -316,7 +317,7 @@ module FatCore
       @format_at[location] ||= {}
       table.headers.each do |h|
         typ = table.type(h).as_sym
-        format_h = DEFAULT_FORMAT.dup
+        format_h = default_format.dup
         parse_typ_method_name = 'parse_' + typ.to_s + '_fmt'
         if location == :header && fmts.keys.include?(:string)
           str_fmt = parse_string_fmt(fmts[:string])

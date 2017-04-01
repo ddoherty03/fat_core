@@ -177,7 +177,7 @@ module FatCore
     describe 'cell formatting' do
       it 'should be able to format a string' do
         fmt = Formatter.new
-        istruct = OpenStruct.new(Formatter::DEFAULT_FORMAT)
+        istruct = OpenStruct.new(Formatter.default_format)
         istruct.case = :upper
         expect(fmt.format_cell('hello world', istruct)).to eq('HELLO WORLD')
         istruct.case = :lower
@@ -191,7 +191,7 @@ module FatCore
 
       it 'should be able to format a numeric' do
         fmt = Formatter.new
-        istruct = OpenStruct.new(Formatter::DEFAULT_FORMAT)
+        istruct = OpenStruct.new(Formatter.default_format)
         expect(fmt.format_cell(78546.254, istruct)).to eq('78546.254')
         istruct.commas = true
         expect(fmt.format_cell(78546.254, istruct)).to eq('78,546.254')
@@ -217,7 +217,7 @@ module FatCore
 
       it 'should be able to format a boolean' do
         fmt = Formatter.new
-        istruct = OpenStruct.new(Formatter::DEFAULT_FORMAT)
+        istruct = OpenStruct.new(Formatter.default_format)
         expect(fmt.format_cell(true, istruct)).to eq('T')
         expect(fmt.format_cell(false, istruct)).to eq('F')
         istruct.true_text = 'Yippers'
@@ -228,7 +228,7 @@ module FatCore
 
       it 'should be able to format a datetime' do
         fmt = Formatter.new
-        istruct = OpenStruct.new(Formatter::DEFAULT_FORMAT)
+        istruct = OpenStruct.new(Formatter.default_format)
         val = DateTime.parse('2017-02-23 9pm')
         expect(fmt.format_cell(val, istruct)).to eq('2017-02-23')
         istruct.strftime_fmt = '%Y in %B at %l%P, which was on a %A'
