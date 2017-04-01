@@ -26,12 +26,13 @@ module FatCore
       post_digits: -1,
       commas: false,
       currency: false,
-      strftime_fmt: '%F',
+      datetime_fmt: '%F %H:%M:%S',
+      date_fmt: '%F',
       true_text: 'T',
       false_text: 'F',
       true_color: 'black',
       false_color: 'black'
-    }.freeze
+    }
 
     @@currency_symbol = '$'
 
@@ -78,9 +79,14 @@ module FatCore
     #        formatting instruction.
     # - datetime :: for a datetime, all the instructions valid for string are
     #      available, in addition to the following:
-    #   + d[fmt] :: apply the format to the datetime where fmt is a valid format
-    #        string for Date#strftime, otherwise, the datetime will be formatted
-    #        as an ISO 8601 string, YYYY-MM-DD.
+    #   + d[fmt] :: apply the format to a datetime that has no or zero hour,
+    #        minute, second components, where fmt is a valid format string for
+    #        Date#strftime, otherwise, the datetime will be formatted as an ISO
+    #        8601 string, YYYY-MM-DD.
+    #   + D[fmt] :: apply the format to a datetime that has at least a non-zero
+    #        hour component where fmt is a valid format string for
+    #        Date#strftime, otherwise, the datetime will be formatted as an ISO
+    #        8601 string, YYYY-MM-DD.
     # - boolean :: all the instructions valid for string are available, in
     #      addition to the following:
     #   + Y :: print true as 'Y' and false as 'N',
@@ -480,9 +486,14 @@ module FatCore
       # remaining characters in fmt should be invalid.
       fmt_hash, fmt = parse_str_fmt(fmt)
       fmt = fmt.gsub(/\s+/, '')
-      fmt_hash[:strftime_fmt] = '%F'
+      fmt_hash[:date_fmt] = '%F'
       if fmt =~ /d\[([^\]]*)\]/
-        fmt_hash[:strftime_fmt] = $1
+        fmt_hash[:date_fmt] = $1
+        fmt = fmt.sub($&, '')
+      end
+      fmt_hash[:datetime_fmt] = '%F %H:%M:%S',
+      if fmt =~ /D\[([^\]]*)\]/
+        fmt_hash[:date_fmt] = $1
         fmt = fmt.sub($&, '')
       end
       unless fmt.blank?
@@ -585,7 +596,12 @@ module FatCore
     # specializing this method.
     def format_datetime(val, istruct)
       return istruct.nil_text if val.nil?
-      val.strftime(istruct.strftime_fmt)
+      if val.to_date == val
+        # It is a Date, with no time component.
+        val.strftime(istruct.date_fmt)
+      else
+        val.strftime(istruct.datetime_fmt)
+      end
     end
 
     # Convert a numeric to a string according to instructions in istruct, which

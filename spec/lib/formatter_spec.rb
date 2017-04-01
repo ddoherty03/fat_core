@@ -75,7 +75,8 @@ module FatCore
           expect(fmt.format_at[:header][h].false_color).to eq('black')
           expect(fmt.format_at[:header][h].true_text).to eq('T')
           expect(fmt.format_at[:header][h].false_text).to eq('F')
-          expect(fmt.format_at[:header][h].strftime_fmt).to eq('%F')
+          expect(fmt.format_at[:header][h].date_fmt).to eq('%F')
+          expect(fmt.format_at[:header][h].datetime_fmt).to eq('%F %H:%M:%S')
           expect(fmt.format_at[:header][h].nil_text).to eq('')
           expect(fmt.format_at[:header][h].pre_digits).to eq(-1)
           expect(fmt.format_at[:header][h].post_digits).to eq(-1)
@@ -97,7 +98,8 @@ module FatCore
           expect(fmt.format_at[:gfooter][h].color).to eq('black')
           expect(fmt.format_at[:gfooter][h].true_text).to eq('T')
           expect(fmt.format_at[:gfooter][h].false_text).to eq('F')
-          expect(fmt.format_at[:gfooter][h].strftime_fmt).to eq('%F')
+          expect(fmt.format_at[:header][h].date_fmt).to eq('%F')
+          expect(fmt.format_at[:header][h].datetime_fmt).to eq('%F %H:%M:%S')
           expect(fmt.format_at[:gfooter][h].nil_text).to eq('')
           expect(fmt.format_at[:gfooter][h].pre_digits).to eq(-1)
           expect(fmt.format_at[:gfooter][h].post_digits).to eq(-1)
@@ -107,8 +109,8 @@ module FatCore
           expect(fmt.format_at[:gfooter][h].currency).to eq(false)
           expect(fmt.format_at[:gfooter][h].nil_text).to eq('')
         end
-        # Footer date strftime_fmt for :date
-        expect(fmt.format_at[:footer][:date].strftime_fmt).to eq('%Y')
+        # Footer date_fmt for :date
+        expect(fmt.format_at[:footer][:date].date_fmt).to eq('%Y')
         expect(fmt.format_at[:footer][:date].bold).to eq(true)
         # Footer all others, the default
         @tab.headers.each do |h|
@@ -117,7 +119,8 @@ module FatCore
           expect(fmt.format_at[:footer][h].color).to eq('black')
           expect(fmt.format_at[:footer][h].true_text).to eq('T')
           expect(fmt.format_at[:footer][h].false_text).to eq('F')
-          expect(fmt.format_at[:footer][h].strftime_fmt).to eq(h == :date ? '%Y' : '%F')
+          expect(fmt.format_at[:header][h].date_fmt).to eq('%F')
+          expect(fmt.format_at[:header][h].datetime_fmt).to eq('%F %H:%M:%S')
           expect(fmt.format_at[:footer][h].nil_text).to eq('')
           expect(fmt.format_at[:footer][h].pre_digits).to eq(-1)
           expect(fmt.format_at[:footer][h].post_digits).to eq(-1)
@@ -157,7 +160,7 @@ module FatCore
             expect(fmt.format_at[:body][h].true_text).to eq('T')
             expect(fmt.format_at[:body][h].false_text).to eq('F')
           end
-          expect(fmt.format_at[:body][h].strftime_fmt).to eq('%F')
+          expect(fmt.format_at[:body][h].date_fmt).to eq('%F')
           unless [:raw, :price, :shares].include?(h)
             expect(fmt.format_at[:body][h].pre_digits).to eq(-1)
             expect(fmt.format_at[:body][h].post_digits).to eq(-1)
@@ -230,8 +233,8 @@ module FatCore
         fmt = Formatter.new
         istruct = OpenStruct.new(Formatter.default_format)
         val = DateTime.parse('2017-02-23 9pm')
-        expect(fmt.format_cell(val, istruct)).to eq('2017-02-23')
-        istruct.strftime_fmt = '%Y in %B at %l%P, which was on a %A'
+        expect(fmt.format_cell(val, istruct)).to eq('2017-02-23 21:00:00')
+        istruct.datetime_fmt = '%Y in %B at %l%P, which was on a %A'
         expect(fmt.format_cell(val, istruct))
           .to eq('2017 in February at  9pm, which was on a Thursday')
       end
