@@ -322,29 +322,41 @@ module FatCore
       end
       @format_at[location] ||= {}
       table.headers.each do |h|
-        typ = table.type(h).as_sym
+        # Default formatting hash
         format_h = default_format.dup
+
+        # Merge in type-based formatting
+        typ = table.type(h).as_sym
         parse_typ_method_name = 'parse_' + typ.to_s + '_fmt'
-        if location == :header && fmts.keys.include?(:string)
-          str_fmt = parse_string_fmt(fmts[:string])
-          format_h = format_h.merge(str_fmt)
+        if location == :header
+          # Treat header as string type
+          if fmts.keys.include?(:string)
+            str_fmt = parse_string_fmt(fmts[:string])
+            format_h = format_h.merge(str_fmt)
+          end
+        else
+          # Use column type for other locations
+          if fmts.keys.include?(typ)
+            typ_fmt = send(parse_typ_method_name, fmts[typ])
+            format_h = format_h.merge(typ_fmt)
+          end
+          if fmts.keys.include?(:string)
+            typ_fmt = parse_string_fmt(fmts[:string])
+            format_h = format_h.merge(typ_fmt)
+          end
+          if fmts.keys.include?(:nil)
+            typ_fmt = parse_nil_fmt(fmts[:nil]).first
+            format_h = format_h.merge(typ_fmt)
+          end
         end
-        if location != :header && fmts.keys.include?(typ)
-          typ_fmt = send(parse_typ_method_name, fmts[typ])
-          format_h = format_h.merge(typ_fmt)
-        end
-        if location != :header && fmts.keys.include?(:string)
-          typ_fmt = parse_string_fmt(fmts[:string])
-          format_h = format_h.merge(typ_fmt)
-        end
-        if location != :header && fmts.keys.include?(:nil)
-          typ_fmt = parse_nil_fmt(fmts[:nil]).first
-          format_h = format_h.merge(typ_fmt)
-        end
+
+        # Merge in column-based formatting
         if fmts[h]
           col_fmt = send(parse_typ_method_name, fmts[h])
           format_h = format_h.merge(col_fmt)
         end
+
+        # Convert to struct
         format_at[location][h] = OpenStruct.new(format_h)
       end
       self
