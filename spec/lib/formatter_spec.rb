@@ -49,6 +49,7 @@ module FatCore
                 .format_for(:gfooter, string: 'B')
                 .format_for(:footer, date: 'Bd[%Y]')
                 .format_for(:body, numeric: ',0.2', shares: '0.4', ref: 'B',
+                            price: '$,',
                             bool: '  c[green, red]  b[  Yippers, Nah Sir]',
                             nil: 'n[  Nothing to see here   ]')
         # Header color
@@ -151,6 +152,8 @@ module FatCore
         expect(fmt.format_at[:body][:bool].false_text).to eq('Nah Sir')
         # Body, :ref
         expect(fmt.format_at[:body][:ref].bold).to eq(true)
+        # Body, :price
+        expect(fmt.format_at[:body][:price].currency).to eq(true)
         # Body all others, the default
         @tab.headers.each do |h|
           expect(fmt.format_at[:body][h].color).to eq('black')
@@ -161,18 +164,19 @@ module FatCore
             expect(fmt.format_at[:body][h].false_text).to eq('F')
           end
           expect(fmt.format_at[:body][h].date_fmt).to eq('%F')
-          if @tab.type(h) == :numeric
+          if @tab.type(h) == 'Numeric'
             expect(fmt.format_at[:body][h].pre_digits).to eq(0)
-            expect(fmt.format_at[:body][h].post_digits).to eq(2)
+            expect(fmt.format_at[:body][h].post_digits)
+              .to eq(h == :shares ? 4 : 2)
             expect(fmt.format_at[:body][h].commas).to eq(true)
+            expect(fmt.format_at[:body][h].bold).to eq(h == :ref)
+            expect(fmt.format_at[:body][h].currency).to eq(h == :price)
+          else
+            expect(fmt.format_at[:body][h].italic).to eq(false)
+            expect(fmt.format_at[:body][h].alignment).to eq(:left)
+            expect(fmt.format_at[:body][h].currency).to eq(false)
+            expect(fmt.format_at[:body][h].nil_text).to eq('Nothing to see here')
           end
-          unless h == :ref
-            expect(fmt.format_at[:body][h].bold).to eq(false)
-          end
-          expect(fmt.format_at[:body][h].italic).to eq(false)
-          expect(fmt.format_at[:body][h].alignment).to eq(:left)
-          expect(fmt.format_at[:body][h].currency).to eq(false)
-          expect(fmt.format_at[:body][h].nil_text).to eq('Nothing to see here')
         end
       end
     end

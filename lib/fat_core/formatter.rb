@@ -34,15 +34,16 @@ module FatCore
       false_color: 'black'
     }
 
-    @@currency_symbol = '$'
+    class_attribute :currency_symbol
+    self.currency_symbol = '$'
 
-    def self.currency_symbol=(char)
-      @@currency_symbol = char.to_s
-    end
+    # def self.currency_symbol=(char)
+    #   @@currency_symbol = char.to_s
+    # end
 
-    def self.currency_symbol
-      @@currency_symbol
-    end
+    # def self.currency_symbol
+    #   @@currency_symbol
+    # end
 
     # A Formatter can specify a hash to hold the formatting instructions for
     # columns by using the column head as a key and the value as the format
@@ -614,7 +615,7 @@ module FatCore
         prec = istruct.post_digits == -1 ? 2 : istruct.post_digits
         delim = istruct.commas ? ',' : ''
         result = val.to_s(:currency, precision: prec, delimiter: delim,
-                                    unit: Formatter.currency_symbol)
+                          unit: currency_symbol)
         istruct.commas = false
       elsif istruct.pre_digits.positive?
         if val.whole?
