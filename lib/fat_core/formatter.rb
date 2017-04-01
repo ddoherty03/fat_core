@@ -350,11 +350,11 @@ module FatCore
       self
     end
 
-    private
-
     ###############################################################################
     # Parsing and validation routines
     ###############################################################################
+
+    private
 
     # Return a hash that reflects the formatting instructions given in the
     # string fmt. Raise an error if it contains invalid formatting instructions.
@@ -377,12 +377,10 @@ module FatCore
       # parse, we remove the matched construct from fmt.  At the end, any
       # remaining characters in fmt should be invalid.
       fmt_hash = {}
-      fmt_hash[:color] = 'black'
       if fmt =~ /c\[([-_a-zA-Z]+)\]/
         fmt_hash[:color] = $1
         fmt = fmt.sub($&, '')
       end
-      fmt_hash[:case] = :none
       if fmt =~ /u/
         fmt_hash[:case] = :lower
         fmt = fmt.sub($&, '')
@@ -395,17 +393,14 @@ module FatCore
         fmt_hash[:case] = :title
         fmt = fmt.sub($&, '')
       end
-      fmt_hash[:bold] = false
       if fmt =~ /B/
         fmt_hash[:bold] = true
         fmt = fmt.sub($&, '')
       end
-      fmt_hash[:italic] = false
       if fmt =~ /I/
         fmt_hash[:italic] = true
         fmt = fmt.sub($&, '')
       end
-      fmt_hash[:alignment] = :left
       if fmt =~ /R/
         fmt_hash[:alignment] = :right
         fmt = fmt.sub($&, '')
@@ -430,7 +425,6 @@ module FatCore
       # parse, we remove the matched construct from fmt.  At the end, any
       # remaining characters in fmt should be invalid.
       fmt_hash = {}
-      fmt_hash[:nil_text] = ''
       if fmt =~ /n\[\s*([^\]]*)\s*\]/
         fmt_hash[:nil_text] = $1.clean
         fmt = fmt.sub($&, '')
@@ -448,24 +442,19 @@ module FatCore
       # remaining characters in fmt should be invalid.
       fmt_hash, fmt = parse_str_fmt(fmt)
       fmt = fmt.gsub(/\s+/, '')
-      fmt_hash[:pre_digits] = -1
-      fmt_hash[:post_digits] = -1
       if fmt =~ /(\d+).(\d+)/
         fmt_hash[:pre_digits] = $1.to_i
         fmt_hash[:post_digits] = $2.to_i
         fmt = fmt.sub($&, '')
       end
-      fmt_hash[:commas] = false
       if fmt =~ /,/
         fmt_hash[:commas] = true
         fmt = fmt.sub($&, '')
       end
-      fmt_hash[:currency] = false
       if fmt =~ /\$/
         fmt_hash[:currency] = true
         fmt = fmt.sub($&, '')
       end
-      fmt_hash[:hms] = false
       if fmt =~ /H/
         fmt_hash[:hms] = true
         fmt = fmt.sub($&, '')
@@ -486,12 +475,10 @@ module FatCore
       # remaining characters in fmt should be invalid.
       fmt_hash, fmt = parse_str_fmt(fmt)
       fmt = fmt.gsub(/\s+/, '')
-      fmt_hash[:date_fmt] = '%F'
       if fmt =~ /d\[([^\]]*)\]/
         fmt_hash[:date_fmt] = $1
         fmt = fmt.sub($&, '')
       end
-      fmt_hash[:datetime_fmt] = '%F %H:%M:%S',
       if fmt =~ /D\[([^\]]*)\]/
         fmt_hash[:date_fmt] = $1
         fmt = fmt.sub($&, '')
@@ -511,8 +498,6 @@ module FatCore
       # parse, we remove the matched construct from fmt.  At the end, any
       # remaining characters in fmt should be invalid.
       fmt_hash, fmt = parse_str_fmt(fmt)
-      fmt_hash[:true_text] = 'T'
-      fmt_hash[:false_text] = 'F'
       if fmt =~ /b\[\s*([^\],]*),([^\]]*)\s*\]/
         fmt_hash[:true_text] = $1.clean
         fmt_hash[:false_text] = $2.clean
@@ -521,8 +506,6 @@ module FatCore
       # Since true_text, false_text and nil_text may want to have internal
       # spaces, defer removing extraneous spaces until after they are parsed.
       fmt = fmt.gsub(/\s+/, '')
-      fmt_hash[:true_color] = 'black'
-      fmt_hash[:false_color] = 'black'
       if fmt =~ /c\[([-_a-zA-Z]+),([-_a-zA-Z]+)\]/
         fmt_hash[:true_color] = $1
         fmt_hash[:false_color] = $2

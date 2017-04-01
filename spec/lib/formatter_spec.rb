@@ -45,7 +45,7 @@ module FatCore
 
       it 'should be able to set element formats' do
         fmt = Formatter.new(@tab)
-                .format_for(:header, string: 'Uc[red]', ref: 'c[blue]')
+                .format_for(:header, string: 'Uc[red]', ref: 'uc[blue]')
                 .format_for(:gfooter, string: 'B')
                 .format_for(:footer, date: 'Bd[%Y]')
                 .format_for(:body, numeric: ',0.2', shares: '0.4', ref: 'B',
@@ -61,7 +61,7 @@ module FatCore
         expect(fmt.format_at[:header][:info].color).to eq('red')
         expect(fmt.format_at[:header][:bool].color).to eq('red')
         # Header case
-        expect(fmt.format_at[:header][:ref].case).to eq(:none)
+        expect(fmt.format_at[:header][:ref].case).to eq(:lower)
         expect(fmt.format_at[:header][:date].case).to eq(:upper)
         expect(fmt.format_at[:header][:code].case).to eq(:upper)
         expect(fmt.format_at[:header][:raw].case).to eq(:upper)
@@ -141,7 +141,7 @@ module FatCore
           expect(fmt.format_at[:body][h].post_digits).to eq(2)
         end
         # Body, :shares
-        expect(fmt.format_at[:body][:shares].commas).to eq(false)
+        expect(fmt.format_at[:body][:shares].commas).to eq(true)
         expect(fmt.format_at[:body][:shares].pre_digits).to eq(0)
         expect(fmt.format_at[:body][:shares].post_digits).to eq(4)
         # Body, :bool
@@ -161,10 +161,10 @@ module FatCore
             expect(fmt.format_at[:body][h].false_text).to eq('F')
           end
           expect(fmt.format_at[:body][h].date_fmt).to eq('%F')
-          unless [:raw, :price, :shares].include?(h)
-            expect(fmt.format_at[:body][h].pre_digits).to eq(-1)
-            expect(fmt.format_at[:body][h].post_digits).to eq(-1)
-            expect(fmt.format_at[:body][h].commas).to eq(false)
+          if @tab.type(h) == :numeric
+            expect(fmt.format_at[:body][h].pre_digits).to eq(0)
+            expect(fmt.format_at[:body][h].post_digits).to eq(2)
+            expect(fmt.format_at[:body][h].commas).to eq(true)
           end
           unless h == :ref
             expect(fmt.format_at[:body][h].bold).to eq(false)
