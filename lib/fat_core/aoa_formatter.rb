@@ -12,12 +12,12 @@ module FatCore
       ']'
     end
 
-    def pre_header
-      '['
+    def pre_header(_widths)
+      ''
     end
 
-    def post_header
-      "],\n"
+    def post_header(_widths)
+      ''
     end
 
     def pre_row
@@ -53,7 +53,7 @@ module FatCore
       "],\n"
     end
 
-    def hline
+    def hline(_widths)
       "nil,\n"
     end
 

@@ -51,7 +51,7 @@ module FatCore
       "},\n"
     end
 
-    def hline
+    def hline(_widths)
       "nil,\n"
     end
 

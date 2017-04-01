@@ -712,16 +712,18 @@ module FatCore
       result = ''
       result += pre_table
       if include_header_row?
-        result += pre_header
+        result += pre_header(widths)
+        result += pre_row
         cells = []
         formatted_headers.each_pair do |h, v|
           cells << pre_cell(h) + quote_cell(v) + post_cell
         end
         result += cells.join(inter_cell)
-        result += post_header
+        result += post_row
+        result += post_header(widths)
       end
       new_rows.each do |loc_row|
-        result += hline if loc_row.nil?
+        result += hline(widths) if loc_row.nil?
         next if loc_row.nil?
         _loc, row = *loc_row
         result += pre_row
@@ -884,11 +886,11 @@ module FatCore
       true
     end
 
-    def pre_header
+    def pre_header(_widths)
       ''
     end
 
-    def post_header
+    def post_header(_widths)
       "\n"
     end
 
@@ -916,7 +918,7 @@ module FatCore
       "\n"
     end
 
-    def hline
+    def hline(_widths)
       ''
     end
 
