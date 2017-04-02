@@ -551,6 +551,8 @@ module FatCore
 
     public
 
+    # Convert a value to a string based on the instructions in istruct,
+    # depending on the type of val.
     def format_cell(val, istruct, width = nil)
       case val
       when Numeric
