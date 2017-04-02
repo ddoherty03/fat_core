@@ -458,10 +458,17 @@ describe Period do
       }.to raise_error /unknown chunk sym/
     end
 
-    it 'should raise error for too large a chunk' do
+    it 'should raise error for too large a chunk and no partials allowed' do
       expect {
-        Period.new('2012-12-01', '2012-12-31').chunks(size: :bimonth)
+        Period.new('2012-12-01', '2012-12-31').
+          chunks(size: :bimonth, partial_first: false, partial_last: false)
       }.to raise_error /longer than/
+    end
+
+    it 'should return period itself for too large chunk if partials allowed' do
+      pd = Period.new('2012-12-01', '2012-12-31')
+      expect(pd.chunks(size: :bimonth, partial_first: true).first).to eq(pd)
+      expect(pd.chunks(size: :bimonth, partial_last: true).first).to eq(pd)
     end
 
     it 'should not include a partial final chunk by default' do

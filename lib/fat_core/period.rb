@@ -462,7 +462,11 @@ class Period
              round_up_last: false)
     size = size.to_sym
     if Period.chunk_sym_to_min_days(size) > length
-      raise ArgumentError, "any #{size} is longer than this period's #{length} days"
+      if partial_first || partial_last
+        return [self]
+      else
+        raise ArgumentError, "any #{size} is longer than this period's #{length} days"
+      end
     end
     result = []
     chunk_start = first.dup
