@@ -1,4 +1,17 @@
 class Hash
+  # Yield each key-value pair in the Hash together with boolean flags that
+  # indicate whether the item is the first or last yielded.
+  def each_pair_with_flags
+    last_k = size - 1
+    k = 0
+    each_pair do |key, val|
+      first = (k == 0 ? true : false)
+      last  = (k == last_k ? true : false)
+      yield(key, val, first, last)
+      k += 1
+    end
+  end
+
   # Return all keys in hash that have a value == to the given value or have an
   # Enumerable value that includes the given value.
   def keys_with_value(val)
