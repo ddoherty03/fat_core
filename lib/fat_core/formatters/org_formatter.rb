@@ -12,37 +12,6 @@ module FatCore
       true
     end
 
-    # Should the string result of output be evaluated to form a ruby data
-    # structure? For example, AoaFormatter wants to return an array of arrays of
-    # strings, so it should build a ruby expression to do that, then have it
-    # eval'ed.
-    def evaluate?
-      false
-    end
-
-    # Compute the width of the string as displayed, taking into account the
-    # characteristics of the target device.  For example, a colored string
-    # should not include in the width terminal control characters that simply
-    # change the color without occupying any space.  Thus, this method must be
-    # overridden in a subclass if a simple character count does not reflect the
-    # width as displayed.
-    def width(str)
-      str.length
-    end
-
-    # Output
-    def pre_table
-      ''
-    end
-
-    def post_table
-      ''
-    end
-
-    def include_header_row?
-      true
-    end
-
     def pre_header(widths)
       result = '|'
       widths.values.each do |w|
@@ -50,10 +19,6 @@ module FatCore
       end
       result[-1] = '|'
       result + "\n"
-    end
-
-    def post_header(widths)
-      ''
     end
 
     def pre_row
@@ -89,30 +54,6 @@ module FatCore
       end
       result[-1] = '|'
       result + "\n"
-    end
-
-    def pre_group
-      ''
-    end
-
-    def post_group
-      ''
-    end
-
-    def pre_gfoot
-      ''
-    end
-
-    def post_gfoot
-      ''
-    end
-
-    def pre_foot
-      ''
-    end
-
-    def post_foot
-      ''
     end
 
     def post_footers(widths)
