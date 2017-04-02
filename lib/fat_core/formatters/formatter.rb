@@ -911,7 +911,7 @@ module FatCore
     end
 
     def post_header(_widths)
-      "\n"
+      ''
     end
 
     def pre_row
