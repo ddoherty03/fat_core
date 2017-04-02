@@ -750,6 +750,7 @@ module FatCore
         result += cells.join(inter_cell)
         result += post_row
       end
+      result += post_footers(widths)
       result += post_table
       evaluate? ? eval(result) : result
     end
@@ -962,6 +963,10 @@ module FatCore
     end
 
     def post_foot
+      ''
+    end
+
+    def post_footers(_widths)
       ''
     end
   end

@@ -53,7 +53,7 @@ module FatCore
     end
 
     def post_header(widths)
-      '' #hline(widths)
+      ''
     end
 
     def pre_row
@@ -113,6 +113,15 @@ module FatCore
 
     def post_foot
       ''
+    end
+
+    def post_footers(widths)
+      result = '|'
+      widths.values.each do |w|
+        result += '-' * (w + 2) + '+'
+      end
+      result[-1] = '|'
+      result + "\n"
     end
   end
 end
