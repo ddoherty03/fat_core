@@ -1,4 +1,8 @@
 module FatCore
+  # Output the table in the same way as org-mode for emacs does. This is almost
+  # identical to TextFormatter except that dates do get formatted as inactive
+  # timestamps and the connector at the beginning of hlines is a '|' rather than
+  # a '+' as for text tables.
   class OrgFormatter < Formatter
 
     self.default_format = default_format.dup
