@@ -11,7 +11,7 @@ module FatCore
   class Formatter
     LOCATIONS = [:header, :body, :bfirst, :gfirst, :gfooter, :footer].freeze
 
-    attr_reader :table, :format_at, :footers, :gfooters
+    attr_reader :table, :options, :format_at, :footers, :gfooters
 
     class_attribute :default_format
     self.default_format = {
@@ -117,11 +117,12 @@ module FatCore
     # - gfooter :: instructions for the cells of a group footer, and
     # - footer :: instructions for the cells of a footer.
     #
-    def initialize(table = Table.new)
+    def initialize(table = Table.new, **options)
       unless table && table.is_a?(Table)
         raise ArgumentError, 'must initialize Formatter with a Table'
       end
       @table = table
+      @options = options
       @footers = {}
       @gfooters = {}
       # Formatting instructions for various "locations" within the Table, as
