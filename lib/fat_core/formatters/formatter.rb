@@ -20,7 +20,8 @@ module FatCore
       alignment: :left,
       bold: false,
       italic: false,
-      color: 'black',
+      color: 'none',
+      bgcolor: 'none',
       hms: false,
       pre_digits: -1,
       post_digits: -1,
@@ -30,8 +31,10 @@ module FatCore
       date_fmt: '%F',
       true_text: 'T',
       false_text: 'F',
-      true_color: 'black',
-      false_color: 'black'
+      true_color: 'none',
+      true_bgcolor: 'none',
+      false_color: 'none',
+      false_bgcolor: 'none'
     }
 
     class_attribute :currency_symbol
@@ -64,7 +67,11 @@ module FatCore
     #   + R :: align the element on the right of the column
     #   + L :: align the element on the left of the column
     #   + C :: align the element in the center of the column
-    #   + c[color] :: render the element in the given color
+    #   + c[color] :: render the element in the given color; the color can have
+    #        the form fgcolor, fgcolor.bgcolor, or .bgcolor, to set the
+    #        foreground or background colors respectively, and each of those can
+    #        be an ANSI or X11 color name in addition to the special color,
+    #        'none', which keeps the terminal's default color.
     # - numeric :: for a numeric, all the instructions valid for string are
     #      available, in addition to the following:
     #   + , :: insert grouping commas,
@@ -96,7 +103,8 @@ module FatCore
     #   + b[xxx,yyy] :: print true as the string given as xxx and false as the
     #        string given as yyy,
     #   + c[tcolor,fcolor] :: color a true element with tcolor and a false
-    #        element with fcolor.
+    #        element with fcolor. Each of the colors may be specified in the
+    #        same manner as colors for strings described above.
     # - nil :: by default, nil elements are rendered as blank cells, but you can
     #      make them visible with the following, and in that case, all the
     #      formatting instructions valid for strings are available:
@@ -391,8 +399,9 @@ module FatCore
       # parse, we remove the matched construct from fmt.  At the end, any
       # remaining characters in fmt should be invalid.
       fmt_hash = {}
-      if fmt =~ /c\[([-_a-zA-Z]+)\]/
-        fmt_hash[:color] = $1
+      if fmt =~ /c\[([-_a-zA-Z]*)(\.([-_a-zA-Z]*))?\]/
+        fmt_hash[:color] = $1.downcase unless $1.blank?
+        fmt_hash[:bgcolor] = $3.downcase unless $3.blank?
         fmt = fmt.sub($&, '')
       end
       if fmt =~ /u/
@@ -511,7 +520,7 @@ module FatCore
       # We parse the more complex formatting constructs first, and after each
       # parse, we remove the matched construct from fmt.  At the end, any
       # remaining characters in fmt should be invalid.
-      fmt_hash, fmt = parse_str_fmt(fmt)
+      fmt_hash = {}
       if fmt =~ /b\[\s*([^\],]*),([^\]]*)\s*\]/
         fmt_hash[:true_text] = $1.clean
         fmt_hash[:false_text] = $2.clean
@@ -520,11 +529,15 @@ module FatCore
       # Since true_text, false_text and nil_text may want to have internal
       # spaces, defer removing extraneous spaces until after they are parsed.
       fmt = fmt.gsub(/\s+/, '')
-      if fmt =~ /c\[([-_a-zA-Z]+),([-_a-zA-Z]+)\]/
-        fmt_hash[:true_color] = $1
-        fmt_hash[:false_color] = $2
+      if fmt =~ /c\[([-_a-zA-Z]*)(\.([-_a-zA-Z]*))?,\s*([-_a-zA-Z]*)(\.([-_a-zA-Z]*))?\]/
+        fmt_hash[:true_color] = $1.downcase unless $1.blank?
+        fmt_hash[:true_bgcolor] = $3.downcase unless $3.blank?
+        fmt_hash[:false_color] = $4.downcase unless $4.blank?
+        fmt_hash[:false_bgcolor] = $6.downcase unless $6.blank?
         fmt = fmt.sub($&, '')
       end
+      str_fmt_hash, fmt = parse_str_fmt(fmt)
+      fmt_hash = fmt_hash.merge(str_fmt_hash)
       if fmt =~ /Y/
         fmt_hash[:true_text] = 'Y'
         fmt_hash[:false_text] = 'N'

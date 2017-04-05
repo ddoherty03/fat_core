@@ -45,22 +45,30 @@ module FatCore
 
       it 'should be able to set element formats' do
         fmt = Formatter.new(@tab)
-                .format_for(:header, string: 'Uc[red]', ref: 'uc[blue]')
+                .format_for(:header, string: 'Uc[red]', ref: 'uc[blue.aquamarine]')
                 .format_for(:gfooter, string: 'B')
                 .format_for(:footer, date: 'Bd[%Y]')
                 .format_for(:body, numeric: ',0.2', shares: '0.4', ref: 'B',
                             price: '$,',
-                            bool: '  c[green, red]  b[  Yippers, Nah Sir]',
+                            bool: '  c[white.green, red.white]  b[  Yippers, Nah Sir]',
                             nil: 'n[  Nothing to see here   ]')
         # Header color
         expect(fmt.format_at[:header][:ref].color).to eq('blue')
+        expect(fmt.format_at[:header][:ref].bgcolor).to eq('aquamarine')
         expect(fmt.format_at[:header][:date].color).to eq('red')
+        expect(fmt.format_at[:header][:date].bgcolor).to eq('none')
         expect(fmt.format_at[:header][:code].color).to eq('red')
+        expect(fmt.format_at[:header][:code].bgcolor).to eq('none')
         expect(fmt.format_at[:header][:raw].color).to eq('red')
+        expect(fmt.format_at[:header][:raw].bgcolor).to eq('none')
         expect(fmt.format_at[:header][:shares].color).to eq('red')
+        expect(fmt.format_at[:header][:shares].bgcolor).to eq('none')
         expect(fmt.format_at[:header][:price].color).to eq('red')
+        expect(fmt.format_at[:header][:price].bgcolor).to eq('none')
         expect(fmt.format_at[:header][:info].color).to eq('red')
+        expect(fmt.format_at[:header][:info].bgcolor).to eq('none')
         expect(fmt.format_at[:header][:bool].color).to eq('red')
+        expect(fmt.format_at[:header][:bool].bgcolor).to eq('none')
         # Header case
         expect(fmt.format_at[:header][:ref].case).to eq(:lower)
         expect(fmt.format_at[:header][:date].case).to eq(:upper)
@@ -72,8 +80,8 @@ module FatCore
         expect(fmt.format_at[:header][:bool].case).to eq(:upper)
         # Header all others, the default
         @tab.headers.each do |h|
-          expect(fmt.format_at[:header][h].true_color).to eq('black')
-          expect(fmt.format_at[:header][h].false_color).to eq('black')
+          expect(fmt.format_at[:header][h].true_color).to eq('none')
+          expect(fmt.format_at[:header][h].false_color).to eq('none')
           expect(fmt.format_at[:header][h].true_text).to eq('T')
           expect(fmt.format_at[:header][h].false_text).to eq('F')
           expect(fmt.format_at[:header][h].date_fmt).to eq('%F')
@@ -94,9 +102,9 @@ module FatCore
         end
         # Gfooter all others, the default
         @tab.headers.each do |h|
-          expect(fmt.format_at[:gfooter][h].true_color).to eq('black')
-          expect(fmt.format_at[:gfooter][h].false_color).to eq('black')
-          expect(fmt.format_at[:gfooter][h].color).to eq('black')
+          expect(fmt.format_at[:gfooter][h].true_color).to eq('none')
+          expect(fmt.format_at[:gfooter][h].false_color).to eq('none')
+          expect(fmt.format_at[:gfooter][h].color).to eq('none')
           expect(fmt.format_at[:gfooter][h].true_text).to eq('T')
           expect(fmt.format_at[:gfooter][h].false_text).to eq('F')
           expect(fmt.format_at[:header][h].date_fmt).to eq('%F')
@@ -115,9 +123,9 @@ module FatCore
         expect(fmt.format_at[:footer][:date].bold).to eq(true)
         # Footer all others, the default
         @tab.headers.each do |h|
-          expect(fmt.format_at[:footer][h].true_color).to eq('black')
-          expect(fmt.format_at[:footer][h].false_color).to eq('black')
-          expect(fmt.format_at[:footer][h].color).to eq('black')
+          expect(fmt.format_at[:footer][h].true_color).to eq('none')
+          expect(fmt.format_at[:footer][h].false_color).to eq('none')
+          expect(fmt.format_at[:footer][h].color).to eq('none')
           expect(fmt.format_at[:footer][h].true_text).to eq('T')
           expect(fmt.format_at[:footer][h].false_text).to eq('F')
           expect(fmt.format_at[:header][h].date_fmt).to eq('%F')
@@ -146,8 +154,10 @@ module FatCore
         expect(fmt.format_at[:body][:shares].pre_digits).to eq(0)
         expect(fmt.format_at[:body][:shares].post_digits).to eq(4)
         # Body, :bool
-        expect(fmt.format_at[:body][:bool].true_color).to eq('green')
+        expect(fmt.format_at[:body][:bool].true_color).to eq('white')
+        expect(fmt.format_at[:body][:bool].true_bgcolor).to eq('green')
         expect(fmt.format_at[:body][:bool].false_color).to eq('red')
+        expect(fmt.format_at[:body][:bool].false_bgcolor).to eq('white')
         expect(fmt.format_at[:body][:bool].true_text).to eq('Yippers')
         expect(fmt.format_at[:body][:bool].false_text).to eq('Nah Sir')
         # Body, :ref
@@ -156,10 +166,10 @@ module FatCore
         expect(fmt.format_at[:body][:price].currency).to eq(true)
         # Body all others, the default
         @tab.headers.each do |h|
-          expect(fmt.format_at[:body][h].color).to eq('black')
+          expect(fmt.format_at[:body][h].color).to eq('none')
           unless h == :bool
-            expect(fmt.format_at[:body][h].true_color).to eq('black')
-            expect(fmt.format_at[:body][h].false_color).to eq('black')
+            expect(fmt.format_at[:body][h].true_color).to eq('none')
+            expect(fmt.format_at[:body][h].false_color).to eq('none')
             expect(fmt.format_at[:body][h].true_text).to eq('T')
             expect(fmt.format_at[:body][h].false_text).to eq('F')
           end
