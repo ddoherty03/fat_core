@@ -34,19 +34,13 @@ module FatCore
       true_color: 'none',
       true_bgcolor: 'none',
       false_color: 'none',
-      false_bgcolor: 'none'
+      false_bgcolor: 'none',
+      underline: false,
+      blink: false
     }
 
     class_attribute :currency_symbol
     self.currency_symbol = '$'
-
-    # def self.currency_symbol=(char)
-    #   @@currency_symbol = char.to_s
-    # end
-
-    # def self.currency_symbol
-    #   @@currency_symbol
-    # end
 
     # A Formatter can specify a hash to hold the formatting instructions for
     # columns by using the column head as a key and the value as the format
@@ -72,6 +66,8 @@ module FatCore
     #        foreground or background colors respectively, and each of those can
     #        be an ANSI or X11 color name in addition to the special color,
     #        'none', which keeps the terminal's default color.
+    #   + _ :: underline the element,
+    #   + * :: cause the element to blink
     # - numeric :: for a numeric, all the instructions valid for string are
     #      available, in addition to the following:
     #   + , :: insert grouping commas,
@@ -434,6 +430,14 @@ module FatCore
       end
       if fmt =~ /L/
         fmt_hash[:alignment] = :left
+        fmt = fmt.sub($&, '')
+      end
+      if fmt =~ /_/
+        fmt_hash[:underline] = true
+        fmt = fmt.sub($&, '')
+      end
+      if fmt =~ /\*/
+        fmt_hash[:blink] = true
         fmt = fmt.sub($&, '')
       end
       [fmt_hash, fmt]

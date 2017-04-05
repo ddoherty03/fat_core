@@ -95,6 +95,8 @@ module FatCore
           expect(fmt.format_at[:header][h].commas).to eq(false)
           expect(fmt.format_at[:header][h].currency).to eq(false)
           expect(fmt.format_at[:header][h].nil_text).to eq('')
+          expect(fmt.format_at[:header][h].underline).to eq(false)
+          expect(fmt.format_at[:header][h].blink).to eq(false)
         end
         # Gfooter bold
         @tab.headers.each do |h|
