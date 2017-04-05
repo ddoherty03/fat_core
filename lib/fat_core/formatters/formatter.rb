@@ -689,6 +689,7 @@ module FatCore
         else
           val = val
         end
+        val = ' ' + val + ' '
       end
       val
     end

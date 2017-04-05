@@ -143,18 +143,16 @@ module FatCore
       vertical_rule
     end
 
-    # Add one space of padding.
     def pre_cell(_h)
-      ' '
+      ''
     end
 
     def quote_cell(v)
       v
     end
 
-    # Add one space of padding.
     def post_cell
-      ' '
+      ''
     end
 
     def inter_cell
