@@ -254,6 +254,10 @@ class String
     colorize(self, "\001\e[1m\e[35m\002")
   end
 
+  def console_cyan
+    colorize(self, "\001\e[1m\e[36m\002")
+  end
+
   def console_def
     colorize(self, "\001\e[1m\002")
   end
