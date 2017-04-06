@@ -364,6 +364,12 @@ module FatCore
 
         # Convert to struct
         format_at[location][h] = OpenStruct.new(format_h)
+        # Copy :body formatting to :bfirst and :gfirst.  Can be overridden with
+        # a format_for call with those locations.
+        if location == :body
+          format_at[:bfirst][h] = format_at[:body][h]
+          format_at[:gfirst][h] = format_at[:body][h]
+        end
       end
       self
     end
@@ -570,23 +576,96 @@ module FatCore
     public
 
     # Convert a value to a string based on the instructions in istruct,
-    # depending on the type of val.
-    def format_cell(val, istruct, width = nil)
+    # depending on the type of val. "Formatting," which changes the content of
+    # the string, such as adding commas, is always performed, except alignment
+    # which is only performed when the width parameter is non-nil. "Decorating",
+    # which changes the appearance without changing the content, is performed
+    # only if the decorate parameter is true.
+    def format_cell(val, istruct, width = nil, decorate = false)
       case val
       when Numeric
         str = format_numeric(val, istruct)
-        format_string(str, istruct, width)
+        str = format_string(str, istruct, width)
+        if decorate
+          decorate_string(str,
+                          color: istruct.color,
+                          bgcolor: istruct.bgcolor,
+                          bold: istruct.bold,
+                          italic: istruct.italic,
+                          underline: istruct.underline,
+                          blink: istruct.blink)
+        else
+          str
+        end
       when DateTime, Date
         str = format_datetime(val, istruct)
-        format_string(str, istruct, width)
-      when TrueClass, FalseClass
+        str = format_string(str, istruct, width)
+        if decorate
+          decorate_string(str,
+                          color: istruct.color,
+                          bgcolor: istruct.bgcolor,
+                          bold: istruct.bold,
+                          italic: istruct.italic,
+                          underline: istruct.underline,
+                          blink: istruct.blink)
+        else
+          str
+        end
+      when TrueClass
         str = format_boolean(val, istruct)
-        format_string(str, istruct, width)
+        str = format_string(str, istruct, width)
+        if decorate
+          decorate_string(str,
+                          color: istruct.true_color,
+                          bgcolor: istruct.true_bgcolor,
+                          bold: istruct.bold,
+                          italic: istruct.italic,
+                          underline: istruct.underline,
+                          blink: istruct.blink)
+        else
+          str
+        end
+      when FalseClass
+        str = format_boolean(val, istruct)
+        str = format_string(str, istruct, width)
+        if decorate
+          decorate_string(str,
+                          color: istruct.false_color,
+                          bgcolor: istruct.false_bgcolor,
+                          bold: istruct.bold,
+                          italic: istruct.italic,
+                          underline: istruct.underline,
+                          blink: istruct.blink)
+        else
+          str
+        end
       when NilClass
         str = istruct.nil_text
-        format_string(str, istruct, width)
+        str = format_string(str, istruct, width)
+        if decorate
+          decorate_string(str,
+                          color: istruct.color,
+                          bgcolor: istruct.bgcolor,
+                          bold: istruct.bold,
+                          italic: istruct.italic,
+                          underline: istruct.underline,
+                          blink: istruct.blink)
+        else
+          str
+        end
       when String
-        format_string(val, istruct, width)
+        str = format_string(val, istruct, width)
+        if decorate
+          decorate_string(str,
+                          color: istruct.color,
+                          bgcolor: istruct.bgcolor,
+                          bold: istruct.bold,
+                          italic: istruct.italic,
+                          underline: istruct.underline,
+                          blink: istruct.blink)
+        else
+          str
+        end
       else
         raise ArgumentError,
               "cannot format value '#{val}' of class #{val.class}"
@@ -594,6 +673,17 @@ module FatCore
     end
 
     private
+
+    # Add LaTeX control sequences, ANSI terminal escape codes, or other
+    # decorations to string to decorate it with the given attributes. None of
+    # the decorations may affect the displayed width of the string. Return the
+    # decorated string.
+    def decorate_string(str, color: 'none', bgcolor: 'none',
+                        bold: false, italic: false,
+                        underline: false, blink: false)
+      return str unless decorable?
+      str
+    end
 
     # Convert a boolean to a string according to instructions in istruct, which
     # is assumed to be the result of parsing a formatting instruction string as
@@ -705,22 +795,39 @@ module FatCore
     public
 
     def output
-      # Build the output as an array of row hashes, with the hashes keyed on the
-      # new header string and the values the string-formatted cells. Each group
-      # boundary, gfooter, and footer is marked by inserting a nil in the result
-      # array at that point.
+      # This results in a hash of two-element arrays. The key is the header and
+      # the value is an array of the header and formatted header. We do the
+      # latter so the structure parallels the structure for rows explained next.
       formatted_headers = build_formatted_headers
+
+      # These produce an array with each element representing a row of the
+      # table. Each element of the array is a two-element array. The location of
+      # the row in the table (:bfirst, :body, :gfooter, etc.) is the first
+      # element and a hash of the row is the second element. The keys for the
+      # hash are the row headers as in the Table, but the values are two element
+      # arrays as well. First is the raw, unformatted value of the cell, the
+      # second is a string of the first value formatted according to the
+      # instructions for the column and location in which it appears. The
+      # formatting done on this pass is only formatting that affects the
+      # contents of the cells, such as inserting commas, that would affect the
+      # width of the columns as displayed. We keep both the raw value and
+      # unformatted value around because we have to make two passes over the
+      # table if there is any alignment, and we want to know the type of the raw
+      # element for the second pass of formatting for type-specific formatting
+      # (e.g., true_color, false_color, etc.).
       new_rows = build_formatted_body
       new_rows += build_formatted_footers
 
-      # Make a second pass over the formatted cells to add spacing according to
-      # the alignment instruction if this is a Formatter that performs its own
-      # alignment.
+      # Having formatted the cells, we can now compute column widths so we can
+      # do any alignment called for if this is a Formatter that performs its own
+      # alignment. On this pass, we also decorate the cells with colors, bold,
+      # etc.
       if aligned?
         widths = width_map(formatted_headers, new_rows)
         table.headers.each do |h|
+          fmt_h = formatted_headers[h].last
           formatted_headers[h] =
-            format_string(formatted_headers[h], format_at[:header][h], widths[h])
+            [h, format_cell(fmt_h, format_at[:header][h], widths[h], true)]
         end
         aligned_rows = []
         new_rows.each do |loc_row|
@@ -730,8 +837,8 @@ module FatCore
           end
           loc, row = *loc_row
           aligned_row = {}
-          row.each_pair do |h, val|
-            aligned_row[h] = format_string(val, format_at[loc][h], widths[h])
+          row.each_pair do |h, (val, _fmt_v)|
+            aligned_row[h] = [val, format_cell(val, format_at[loc][h], widths[h], true)]
           end
           aligned_rows << [loc, aligned_row]
         end
@@ -742,16 +849,17 @@ module FatCore
       # alignment applied, we can actually construct the table using the methods
       # for constructing table parts, pre_table, etc. We expect that these will
       # be overridden by subclasses of Formatter for specific output targets. In
-      # any event, the result is a single string representing the table in the
-      # syntax of the output target.
+      # any event, the result is a single string (or ruby object if eval is true
+      # for the Formatter) representing the table in the syntax of the output
+      # target.
       result = ''
       result += pre_table
       if include_header_row?
         result += pre_header(widths)
         result += pre_row
         cells = []
-        formatted_headers.each_pair do |h, v|
-          cells << pre_cell(h) + quote_cell(v) + post_cell
+        formatted_headers.each_pair do |h, (_v, fmt_v)|
+          cells << pre_cell(h) + quote_cell(fmt_v) + post_cell
         end
         result += cells.join(inter_cell)
         result += post_row
@@ -763,14 +871,17 @@ module FatCore
         _loc, row = *loc_row
         result += pre_row
         cells = []
-        row.each_pair do |h, v|
-          cells << pre_cell(h) + quote_cell(v) + post_cell
+        row.each_pair do |h, (v, fmt_v)|
+          cells << pre_cell(h) + quote_cell(fmt_v) + post_cell
         end
         result += cells.join(inter_cell)
         result += post_row
       end
       result += post_footers(widths)
       result += post_table
+
+      # If this Formatter targets a ruby data structure (e.g., AoaFormatter), we
+      # eval the string to get the object.
       evaluate? ? eval(result) : result
     end
 
@@ -782,15 +893,15 @@ module FatCore
     def build_formatted_headers(widths = {})
       map = {}
       table.headers.each do |h|
-        map[h] = format_string(h.as_string, format_at[:header][h], widths[h])
+        map[h] = [h, format_string(h.as_string, format_at[:header][h], widths[h])]
       end
       map
     end
 
-    # Return an array of two-element arrays, with the first element of the
-    # inner array being the location of the row and the second element being a
-    # hash, using the table's headers as keys and the formatted cells as the
-    # values. Add formatted group footers along the way.
+    # Return an array of two-element arrays, with the first element of the inner
+    # array being the location of the row and the second element being a hash,
+    # using the table's headers as keys and an array of the raw and
+    # formatted cells as the values. Add formatted group footers along the way.
     def build_formatted_body
       new_rows = []
       tbl_row_k = 0
@@ -813,7 +924,7 @@ module FatCore
           table.headers.each do |h|
             grp_col[h] ||= Column.new(header: h)
             grp_col[h] << row[h]
-            new_row[h] = format_cell(row[h], format_at[location][h])
+            new_row[h] = [row[h], format_cell(row[h], format_at[location][h])]
           end
           new_rows << [location, new_row]
           tbl_row_k += 1
@@ -828,13 +939,14 @@ module FatCore
             first_h ||= h
             gfoot_row[h] =
               if gfooter[h]
-                format_cell(col.send(gfooter[h]), format_at[:gfooter][h])
+                val = col.send(gfooter[h])
+                [val, format_cell(val, format_at[:gfooter][h])]
               else
-                ''
+                [nil, '']
               end
           end
-          if gfoot_row[first_h].blank?
-            gfoot_row[first_h] = format_string(label, format_at[:gfooter][first_h])
+          if gfoot_row[first_h].last.blank?
+            gfoot_row[first_h] = [label, format_string(label, format_at[:gfooter][first_h])]
           end
           new_rows << [:gfooter, gfoot_row]
         end
@@ -855,15 +967,16 @@ module FatCore
           first_h ||= h
           foot_row[h] =
             if footer[h]
-              format_cell(col.send(footer[h]), format_at[:footer][h])
+              val = col.send(footer[h])
+              [val, format_cell(val, format_at[:footer][h])]
             else
-              ''
+              [nil, '']
             end
         end
         # Put the label in the first column of footer unless it has been
         # formatted as part of footer.
-        if foot_row[first_h].blank?
-          foot_row[first_h] = format_string(label, format_at[:footer][first_h])
+        if foot_row[first_h].last.blank?
+          foot_row[first_h] = [label, format_string(label, format_at[:footer][first_h])]
         end
         new_rows << [:footer, foot_row]
       end
@@ -873,16 +986,17 @@ module FatCore
     # Return a hash of the maximum widths of all the given headers and rows.
     def width_map(formatted_headers, rows)
       widths = {}
-      formatted_headers.each_pair do |h, v|
+      formatted_headers.each_pair do |h, (v, fmt_v)|
         widths[h] ||= 0
-        widths[h] = [widths[h], width(v)].max
+        widths[h] = [widths[h], width(fmt_v)].max
       end
       rows.each do |loc_row|
         next if loc_row.nil?
         _loc, row = *loc_row
-        row.each_pair do |h, v|
+        row.each_pair do |h, (v, fmt_v)|
           widths[h] ||= 0
-          widths[h] = [widths[h], width(v)].max
+          binding.pry if fmt_v.nil?
+          widths[h] = [widths[h], width(fmt_v)].max
         end
       end
       widths
@@ -900,6 +1014,12 @@ module FatCore
     # strings, so it should build a ruby expression to do that, then have it
     # eval'ed.
     def evaluate?
+      false
+    end
+
+    # Does this formatter support colors and other font effects?
+    # either through ANSI escape sequences, LaTeX, or other methods?
+    def decorable?
       false
     end
 
