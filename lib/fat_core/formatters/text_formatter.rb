@@ -12,11 +12,11 @@ module FatCore
     end
 
     def pre_header(widths)
-      result = '|'
+      result = '+'
       widths.values.each do |w|
-        result += '-' * (w + 2) + '+'
+        result += '=' * (w + 2) + '+'
       end
-      result[-1] = '|'
+      result[-1] = '+'
       result + "\n"
     end
 
@@ -80,7 +80,7 @@ module FatCore
     def post_footers(widths)
       result = '+'
       widths.values.each do |w|
-        result += '-' * (w + 2) + '+'
+        result += '=' * (w + 2) + '+'
       end
       result[-1] = '+'
       result + "\n"
