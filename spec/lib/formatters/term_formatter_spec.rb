@@ -78,7 +78,7 @@ module FatCore
         expect(trm.class).to eq(String)
       end
 
-      it 'should be able to set format and output unicode with block' do
+      it 'should be able to set format and output without unicode' do
         fmt = TermFormatter.new(@tab, unicode: false)
         fmt.format(ref: '5.0', code: 'C', raw: ',0.0', shares: ',0.0',
                    price: '0.3R', bool: 'Y', numeric: 'R')
@@ -106,6 +106,18 @@ module FatCore
         expect(trm).to match(/\bZMPEF1\b/)
         expect(trm).to match(/\bGroup Total\b/)
         expect(trm).to match(/\bGrp Std Dev\b/)
+      end
+
+      it 'should be able to display colors and decorations' do
+        fmt = TermFormatter.new(@tab, framecolor: 'black.yellow') do |t|
+          t.format_for(:header, string: 'BCc[tomato.white]')
+          t.format_for(:body, string: 'c[.yellow]', boolean: 'c[green.yellow,red.yellow]',
+                       numeric: 'Rc[purple]', shares: '0.0,', ref: '5.0')
+        end
+        trm = fmt.output
+        expect(trm).to match(/\e\[38;5;129m\e\[43m 795,546 \e\[0m/)
+        expect(trm).to match(/\e\[31m\e\[43m F    \e\[0m/)
+        expect(trm).to match(/\e\[32m\e\[43m T    \e\[0m/)
       end
     end
   end

@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+require 'rainbow'
+
 module FatCore
   # Output the table as for a unicode-enabled terminal.  This makes table
   # gridlines drawable with unicode characters, as well as supporting colored
@@ -9,6 +11,65 @@ module FatCore
     def initialize(table = Table.new, **options)
       super
       @options[:unicode] = options.fetch(:unicode, true)
+      @options[:framecolor] = options.fetch(:framecolor, 'none.none')
+      if @options[:framecolor] =~ /([-_a-zA-Z]*)(\.([-_a-zA-Z]*))/
+        @options[:frame_fg] = $1.downcase unless $1.blank?
+        @options[:frame_bg] = $3.downcase unless $3.blank?
+      end
+    end
+
+    # Compute the width of the string as displayed, taking into account the
+    # characteristics of the target device.  For example, a colored string
+    # should not include in the width terminal control characters that simply
+    # change the color without occupying any space.  Thus, this method must be
+    # overridden in a subclass if a simple character count does not reflect the
+    # width as displayed.
+    def width(str)
+      strip_ansi(str).length
+    end
+
+    def strip_ansi(str)
+      str.gsub(/\e\[[0-9;]+m/, '') if str
+    end
+
+    # Does this formatter support colors and other font effects?
+    # either through ANSI escape sequences, LaTeX, or other methods?
+    def decorable?
+      true
+    end
+
+    # Add ANSI codes to string to implement the given decorations
+    def decorate_string(str, color: 'none', bgcolor: 'none',
+                        bold: false, italic: false,
+                        underline: false, blink: false)
+      result = Rainbow(str)
+      result = colorize(result, color, bgcolor)
+      result = result.bold if bold
+      result = result.italic if italic
+      result = result.underline if underline
+      result = result.blink if blink
+      result
+    end
+
+    def colorize(str, fg, bg)
+      fg = nil if fg == 'none'
+      bg = nil if bg == 'none'
+      return str unless fg || bg
+      result = Rainbow(str)
+      if fg
+        fg = fg.tr(' ', '').downcase.as_sym
+        result = result.color(fg) if fg
+      end
+      if bg
+        bg = bg.tr(' ', '').downcase.as_sym
+        result = result.bg(bg) if bg
+      end
+      result
+    end
+
+    # Colorize frame components
+    def frame_colorize(str)
+      colorize(str, @options[:frame_fg], @options[:frame_bg])
     end
 
     # Unicode line-drawing characters. We use double lines before and after the
@@ -136,11 +197,12 @@ module FatCore
         result += double_rule * (w + 2) + upper_tee
       end
       result[-1] = upper_right
+      result = colorize(result, @options[:frame_fg], @options[:frame_bg])
       result + "\n"
     end
 
     def pre_row
-      vertical_rule
+      frame_colorize(vertical_rule)
     end
 
     def pre_cell(_h)
@@ -156,19 +218,20 @@ module FatCore
     end
 
     def inter_cell
-      vertical_rule
+      frame_colorize(vertical_rule)
     end
 
     def post_row
-      vertical_rule + "\n"
+      frame_colorize(vertical_rule) + "\n"
     end
 
     def hline(widths)
-      result = left_tee #"\u251C"
+      result = left_tee
       widths.values.each do |w|
         result += horizontal_rule * (w + 2) + single_cross
       end
       result[-1] = right_tee
+      result = frame_colorize(result)
       result + "\n"
     end
 
@@ -202,6 +265,7 @@ module FatCore
         result += double_rule * (w + 2) + lower_tee
       end
       result[-1] = lower_right
+      result = frame_colorize(result)
       result + "\n"
     end
   end
