@@ -879,7 +879,7 @@ module FatCore
         _loc, row = *loc_row
         result += pre_row
         cells = []
-        row.each_pair do |h, (v, fmt_v)|
+        row.each_pair do |h, (_v, fmt_v)|
           cells << pre_cell(h) + quote_cell(fmt_v) + post_cell
         end
         result += cells.join(inter_cell)
@@ -963,6 +963,9 @@ module FatCore
     end
 
     def build_formatted_footers
+      # Don't decorate if this Formatter calls for alignment.  It will be done
+      # in the second pass.
+      decorate = !aligned?
       new_rows = []
       # Done with body, compute the table footers.
       footers.each_pair do |label, footer|
@@ -994,16 +997,15 @@ module FatCore
     # Return a hash of the maximum widths of all the given headers and rows.
     def width_map(formatted_headers, rows)
       widths = {}
-      formatted_headers.each_pair do |h, (v, fmt_v)|
+      formatted_headers.each_pair do |h, (_v, fmt_v)|
         widths[h] ||= 0
         widths[h] = [widths[h], width(fmt_v)].max
       end
       rows.each do |loc_row|
         next if loc_row.nil?
         _loc, row = *loc_row
-        row.each_pair do |h, (v, fmt_v)|
+        row.each_pair do |h, (_v, fmt_v)|
           widths[h] ||= 0
-          binding.pry if fmt_v.nil?
           widths[h] = [widths[h], width(fmt_v)].max
         end
       end
