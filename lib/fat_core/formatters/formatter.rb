@@ -329,7 +329,12 @@ module FatCore
       @format_at[location] ||= {}
       table.headers.each do |h|
         # Default formatting hash
-        format_h = default_format.dup
+        format_h =
+          if format_at[location][h].empty?
+            default_format.dup
+          else
+            format_at[location][h].to_h
+          end
 
         # Merge in type-based formatting
         typ = table.type(h).as_sym
