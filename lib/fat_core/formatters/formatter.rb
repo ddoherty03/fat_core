@@ -899,9 +899,13 @@ module FatCore
     # a hash of column widths is given, perform alignment within the given field
     # widths.
     def build_formatted_headers(widths = {})
+      # Don't decorate if this Formatter calls for alignment.  It will be done
+      # in the second pass.
+      decorate = !aligned?
       map = {}
       table.headers.each do |h|
-        map[h] = [h, format_string(h.as_string, format_at[:header][h], widths[h])]
+        map[h] = [h, format_cell(h.as_string,
+                                   format_at[:header][h], widths[h], decorate)]
       end
       map
     end
@@ -911,6 +915,9 @@ module FatCore
     # using the table's headers as keys and an array of the raw and
     # formatted cells as the values. Add formatted group footers along the way.
     def build_formatted_body
+      # Don't decorate if this Formatter calls for alignment.  It will be done
+      # in the second pass.
+      decorate = !aligned?
       new_rows = []
       tbl_row_k = 0
       table.groups.each_with_index do |grp, grp_k|
@@ -932,7 +939,8 @@ module FatCore
           table.headers.each do |h|
             grp_col[h] ||= Column.new(header: h)
             grp_col[h] << row[h]
-            new_row[h] = [row[h], format_cell(row[h], format_at[location][h])]
+            new_row[h] = [row[h],
+                          format_cell(row[h], format_at[location][h], nil, decorate)]
           end
           new_rows << [location, new_row]
           tbl_row_k += 1
@@ -948,13 +956,15 @@ module FatCore
             gfoot_row[h] =
               if gfooter[h]
                 val = col.send(gfooter[h])
-                [val, format_cell(val, format_at[:gfooter][h])]
+                [val, format_cell(val, format_at[:gfooter][h], nil, decorate)]
               else
                 [nil, '']
               end
           end
           if gfoot_row[first_h].last.blank?
-            gfoot_row[first_h] = [label, format_string(label, format_at[:gfooter][first_h])]
+            gfoot_row[first_h] = [label,
+                                  format_cell(label, format_at[:gfooter][first_h],
+                                              nil, decorate)]
           end
           new_rows << [:gfooter, gfoot_row]
         end
@@ -979,7 +989,7 @@ module FatCore
           foot_row[h] =
             if footer[h]
               val = col.send(footer[h])
-              [val, format_cell(val, format_at[:footer][h])]
+              [val, format_cell(val, format_at[:footer][h], nil, decorate)]
             else
               [nil, '']
             end
@@ -987,7 +997,9 @@ module FatCore
         # Put the label in the first column of footer unless it has been
         # formatted as part of footer.
         if foot_row[first_h].last.blank?
-          foot_row[first_h] = [label, format_string(label, format_at[:footer][first_h])]
+          foot_row[first_h] = [label,
+                               format_cell(label, format_at[:footer][first_h],
+                                           nil, decorate)]
         end
         new_rows << [:footer, foot_row]
       end
