@@ -385,6 +385,9 @@ module FatCore
 
     private
 
+    # Re to match a color name
+    CLR_RE = /(?:[-_a-zA-Z0-9 ]*)/
+
     # Return a hash that reflects the formatting instructions given in the
     # string fmt. Raise an error if it contains invalid formatting instructions.
     # If fmt contains conflicting instructions, say C and L, there is no
@@ -406,9 +409,9 @@ module FatCore
       # parse, we remove the matched construct from fmt.  At the end, any
       # remaining characters in fmt should be invalid.
       fmt_hash = {}
-      if fmt =~ /c\[([-_a-zA-Z]*)(\.([-_a-zA-Z]*))?\]/
-        fmt_hash[:color] = $1.downcase unless $1.blank?
-        fmt_hash[:bgcolor] = $3.downcase unless $3.blank?
+      if fmt =~ /c\[(#{CLR_RE})(\.(#{CLR_RE}))?\]/
+        fmt_hash[:color] = $1 unless $1.blank?
+        fmt_hash[:bgcolor] = $3 unless $3.blank?
         fmt = fmt.sub($&, '')
       end
       if fmt =~ /u/
@@ -544,11 +547,11 @@ module FatCore
       # Since true_text, false_text and nil_text may want to have internal
       # spaces, defer removing extraneous spaces until after they are parsed.
       fmt = fmt.gsub(/\s+/, '')
-      if fmt =~ /c\[([-_a-zA-Z]*)(\.([-_a-zA-Z]*))?,\s*([-_a-zA-Z]*)(\.([-_a-zA-Z]*))?\]/
-        fmt_hash[:true_color] = $1.downcase unless $1.blank?
-        fmt_hash[:true_bgcolor] = $3.downcase unless $3.blank?
-        fmt_hash[:false_color] = $4.downcase unless $4.blank?
-        fmt_hash[:false_bgcolor] = $6.downcase unless $6.blank?
+      if fmt =~ /c\[(#{CLR_RE})(\.(#{CLR_RE}))?,\s*(#{CLR_RE})(\.(#{CLR_RE}))?\]/
+        fmt_hash[:true_color] = $1 unless $1.blank?
+        fmt_hash[:true_bgcolor] = $3 unless $3.blank?
+        fmt_hash[:false_color] = $4 unless $4.blank?
+        fmt_hash[:false_bgcolor] = $6 unless $6.blank?
         fmt = fmt.sub($&, '')
       end
       str_fmt_hash, fmt = parse_str_fmt(fmt)
