@@ -367,7 +367,10 @@ module FatCore
           format_h = format_h.merge(col_fmt)
         end
 
-        # Convert to struct
+        # Record its origin (using leading underscore so not to clash with any
+        # headers named h or location) and convert to struct
+        format_h[:_h] = h
+        format_h[:_location] = location
         format_at[location][h] = OpenStruct.new(format_h)
         # Copy :body formatting to :bfirst and :gfirst.  Can be overridden with
         # a format_for call with those locations.
