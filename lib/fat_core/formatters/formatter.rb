@@ -600,86 +600,32 @@ module FatCore
       when Numeric
         str = format_numeric(val, istruct)
         str = format_string(str, istruct, width)
-        if decorate
-          decorate_string(str,
-                          color: istruct.color,
-                          bgcolor: istruct.bgcolor,
-                          bold: istruct.bold,
-                          italic: istruct.italic,
-                          underline: istruct.underline,
-                          blink: istruct.blink)
-        else
-          str
-        end
+        decorate ? decorate_string(str, istruct) : str
       when DateTime, Date
         str = format_datetime(val, istruct)
         str = format_string(str, istruct, width)
-        if decorate
-          decorate_string(str,
-                          color: istruct.color,
-                          bgcolor: istruct.bgcolor,
-                          bold: istruct.bold,
-                          italic: istruct.italic,
-                          underline: istruct.underline,
-                          blink: istruct.blink)
-        else
-          str
-        end
+        decorate ? decorate_string(str, istruct) : str
       when TrueClass
         str = format_boolean(val, istruct)
         str = format_string(str, istruct, width)
-        if decorate
-          decorate_string(str,
-                          color: istruct.true_color,
-                          bgcolor: istruct.true_bgcolor,
-                          bold: istruct.bold,
-                          italic: istruct.italic,
-                          underline: istruct.underline,
-                          blink: istruct.blink)
-        else
-          str
-        end
+        true_istruct = istruct.dup
+        true_istruct.color = istruct.true_color
+        true_istruct.bgcolor = istruct.true_bgcolor
+        decorate ? decorate_string(str, true_istruct) : str
       when FalseClass
         str = format_boolean(val, istruct)
         str = format_string(str, istruct, width)
-        if decorate
-          decorate_string(str,
-                          color: istruct.false_color,
-                          bgcolor: istruct.false_bgcolor,
-                          bold: istruct.bold,
-                          italic: istruct.italic,
-                          underline: istruct.underline,
-                          blink: istruct.blink)
-        else
-          str
-        end
+        false_istruct = istruct.dup
+        false_istruct.color = istruct.false_color
+        false_istruct.bgcolor = istruct.false_bgcolor
+        decorate ? decorate_string(str, false_istruct) : str
       when NilClass
         str = istruct.nil_text
         str = format_string(str, istruct, width)
-        if decorate
-          decorate_string(str,
-                          color: istruct.color,
-                          bgcolor: istruct.bgcolor,
-                          bold: istruct.bold,
-                          italic: istruct.italic,
-                          underline: istruct.underline,
-                          blink: istruct.blink)
-        else
-          str
-        end
+        decorate ? decorate_string(str, istruct) : str
       when String
         str = format_string(val, istruct, width)
-        if decorate
-          decorate_string(str,
-                          color: istruct.color,
-                          bgcolor: istruct.bgcolor,
-                          bold: istruct.bold,
-                          italic: istruct.italic,
-                          underline: istruct.underline,
-                          blink: istruct.blink)
-        else
-          str
-        end
+        decorate ? decorate_string(str, istruct) : str
       else
         raise ArgumentError,
               "cannot format value '#{val}' of class #{val.class}"
@@ -692,10 +638,7 @@ module FatCore
     # decorations to string to decorate it with the given attributes. None of
     # the decorations may affect the displayed width of the string. Return the
     # decorated string.
-    def decorate_string(str, color: 'none', bgcolor: 'none',
-                        bold: false, italic: false,
-                        underline: false, blink: false)
-      return str unless decorable?
+    def decorate_string(str, _istruct)
       str
     end
 

@@ -39,15 +39,13 @@ module FatCore
     end
 
     # Add ANSI codes to string to implement the given decorations
-    def decorate_string(str, color: 'none', bgcolor: 'none',
-                        bold: false, italic: false,
-                        underline: false, blink: false)
+    def decorate_string(str, istruct)
       result = Rainbow(str)
-      result = colorize(result, color, bgcolor)
-      result = result.bold if bold
-      result = result.italic if italic
-      result = result.underline if underline
-      result = result.blink if blink
+      result = colorize(result, istruct.color, istruct.bgcolor)
+      result = result.bold if istruct.bold
+      result = result.italic if istruct.italic
+      result = result.underline if istruct.underline
+      result = result.blink if istruct.blink
       result
     end
 

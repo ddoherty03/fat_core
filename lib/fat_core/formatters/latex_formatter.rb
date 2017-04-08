@@ -9,19 +9,22 @@ module FatCore
       true
     end
 
-    # Add LaTeX control sequences, ANSI terminal escape codes, or other
-    # decorations to string to decorate it with the given attributes. None of
-    # the decorations may affect the displayed width of the string. Return the
-    # decorated string.
-    def decorate_string(str, color: 'none', bgcolor: 'none',
-                        bold: false, italic: false,
-                        underline: false, blink: false)
+    # Add LaTeX control sequences. Ignore background color, underline, and
+    # blink. Alignment needs to be done by LaTeX, so we have to take it into
+    # account unless it's the same as the body alignment, since that is the
+    # default.
+    def decorate_string(str, istruct)
       str = quote_for_decorate(str)
       result = ''
-      result += '\\bfseries' if bold
-      result += '\\itshape' if italic
-      result += "\\color{#{color}}" if color && color != 'none'
-      "{#{result}{#{str}}}"
+      result += '\\bfseries{}' if istruct.bold
+      result += '\\itshape{}' if istruct.italic
+      result += "\\color{#{istruct.color}}" if istruct.color && istruct.color != 'none'
+      result = "#{result}#{str}"
+      unless istruct.alignment == format_at[:body][istruct._h].alignment
+        ac = alignment_code(istruct.alignment)
+        result = "\\multicolumn{1}{#{ac}}{#{result}}"
+      end
+      result
     end
 
     def quote_for_decorate(str)
