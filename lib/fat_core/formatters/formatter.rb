@@ -42,6 +42,9 @@ module FatCore
     class_attribute :currency_symbol
     self.currency_symbol = '$'
 
+    class_attribute :valid_colors
+    self.valid_colors = ['none']
+
     # A Formatter can specify a hash to hold the formatting instructions for
     # columns by using the column head as a key and the value as the format
     # instructions.  In addition, the keys, :numeric, :string, :datetime,
@@ -418,6 +421,8 @@ module FatCore
       if fmt =~ /c\[(#{CLR_RE})(\.(#{CLR_RE}))?\]/
         fmt_hash[:color] = $1 unless $1.blank?
         fmt_hash[:bgcolor] = $3 unless $3.blank?
+        validate_color(fmt_hash[:color])
+        validate_color(fmt_hash[:bgcolor])
         fmt = fmt.sub($&, '')
       end
       if fmt =~ /u/
@@ -978,24 +983,42 @@ module FatCore
       widths
     end
 
+    # Raise an error unless the given color is valid for this Formatter.
+    def validate_color(clr)
+      return true unless clr
+      raise ArgumentError, invalid_color_msg(clr) unless color_valid?(clr)
+    end
+
+    ###########################################################################
+    # Class-specific methods.  Many of these should be overriden in any subclass
+    # of Formatter to implement a specific target output medium.
+    ###########################################################################
+
+    # Return whether clr is a valid color for this Formatter
+    def color_valid?(_clr)
+      true
+    end
+
+    # Return an error message string to display when clr is an invalid color.
+    def invalid_color_msg(_clr)
+      ''
+    end
+
     # Does this Formatter require a second pass over the cells to align the
     # columns according to the alignment formatting instruction to the width of
-    # the widest cell in each column?
+    # the widest cell in each column? If no alignment is needed, as for
+    # AoaFormatter, or the external target medium does alignment, as for
+    # LaTeXFormatter, this should be false.  For TextFormatter or TermFormatter,
+    # where we must pad out the cells with spaces, it should be true.
     def aligned?
       false
     end
 
-    # Should the string result of output be evaluated to form a ruby data
+    # Should the string result of #output be evaluated to form a ruby data
     # structure? For example, AoaFormatter wants to return an array of arrays of
     # strings, so it should build a ruby expression to do that, then have it
     # eval'ed.
     def evaluate?
-      false
-    end
-
-    # Does this formatter support colors and other font effects?
-    # either through ANSI escape sequences, LaTeX, or other methods?
-    def decorable?
       false
     end
 

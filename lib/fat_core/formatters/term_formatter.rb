@@ -18,6 +18,17 @@ module FatCore
       end
     end
 
+    # Taken from the xcolor documentation PDF, list of base colors and x11names.
+    self.valid_colors = ['none'] + Rainbow::X11ColorNames::NAMES.keys.map(&:to_s).sort
+
+    def color_valid?(clr)
+      valid_colors.include?(clr)
+    end
+
+    def invalid_color_msg(clr)
+      valid_colors_list = valid_colors.join(' ').wrap
+      "TermFormatter invalid color '#{clr}'. Valid colors are:\n#{valid_colors_list}"
+    end
     # Compute the width of the string as displayed, taking into account the
     # characteristics of the target device.  For example, a colored string
     # should not include in the width terminal control characters that simply
@@ -30,12 +41,6 @@ module FatCore
 
     def strip_ansi(str)
       str.gsub(/\e\[[0-9;]+m/, '') if str
-    end
-
-    # Does this formatter support colors and other font effects?
-    # either through ANSI escape sequences, LaTeX, or other methods?
-    def decorable?
-      true
     end
 
     # Add ANSI codes to string to implement the given decorations

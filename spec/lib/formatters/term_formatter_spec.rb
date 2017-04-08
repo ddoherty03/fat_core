@@ -38,6 +38,14 @@ module FatCore
         @tab = Table.from_aoa(@aoa).order_by(:date)
       end
 
+      it 'should raise an error for an invalid color' do
+        expect {
+          TermFormatter.new(@tab) do |f|
+            f.format_for(:body, date: 'c[Yeller]')
+          end
+        }.to raise_error(/invalid color 'Yeller'/)
+      end
+
       it 'should be able to output unicode with default formatting instructions' do
         trm = TermFormatter.new(@tab).output
         expect(trm.class).to eq(String)

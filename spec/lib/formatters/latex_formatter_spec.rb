@@ -28,6 +28,14 @@ module FatCore
         @ltxcmd = '/usr/bin/pdflatex -interaction nonstopmode'
       end
 
+      it 'should raise an error for an invalid color' do
+        expect {
+        LaTeXFormatter.new(@tab) do |f|
+          f.format_for(:body, date: 'c[Yeller]')
+        end
+        }.to raise_error(/invalid color 'Yeller'/)
+      end
+
       it 'should be able to output valid LaTeX with default formatting instructions' do
         tmp = File.open("#{__dir__}/../../tmp/example1.tex", 'w')
         ltx = LaTeXFormatter.new(@tab).output
