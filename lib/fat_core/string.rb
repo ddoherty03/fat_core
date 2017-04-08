@@ -109,20 +109,28 @@ class String
   end
 
   def wrap(width = 70, hang = 0)
-    offset = 0
-    trip = 1
     result = ''
-    while (s = slice(offset, width))
-      offset += width
-      if trip == 1
-        width -= hang
-      else
-        s = (' ' * hang) + s
+    first_line = true
+    first_word_on_line = true
+    line_width_so_far = 0
+    words = split(' ')
+    words.each do |w|
+      if !first_line && first_word_on_line
+        w = ' ' * hang + w
       end
-      result << s + "\n"
-      trip += 1
+      unless first_word_on_line
+        w = ' ' + w
+      end
+      result << w
+      first_word_on_line = false
+      line_width_so_far += 1 + w.length
+      if line_width_so_far >= width
+        result << "\n"
+        line_width_so_far = 0
+        first_line = false
+        first_word_on_line = true
+      end
     end
-    # Remove the final newline before exiting
     result.strip
   end
 
