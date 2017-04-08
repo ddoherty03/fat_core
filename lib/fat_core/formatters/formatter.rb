@@ -595,7 +595,7 @@ module FatCore
     # which is only performed when the width parameter is non-nil. "Decorating",
     # which changes the appearance without changing the content, is performed
     # only if the decorate parameter is true.
-    def format_cell(val, istruct, width = nil, decorate = false)
+    def format_cell(val, istruct, width: nil, decorate: false)
       case val
       when Numeric
         str = format_numeric(val, istruct)
@@ -840,8 +840,9 @@ module FatCore
         widths = width_map(formatted_headers, new_rows)
         table.headers.each do |h|
           fmt_h = formatted_headers[h].last
+          istruct = format_at[:header][h]
           formatted_headers[h] =
-            [h, format_cell(fmt_h, format_at[:header][h], widths[h], true)]
+            [h, format_cell(fmt_h, istruct, width: widths[h], decorate: true)]
         end
         aligned_rows = []
         new_rows.each do |loc_row|
@@ -852,7 +853,9 @@ module FatCore
           loc, row = *loc_row
           aligned_row = {}
           row.each_pair do |h, (val, _fmt_v)|
-            aligned_row[h] = [val, format_cell(val, format_at[loc][h], widths[h], true)]
+            istruct = format_at[loc][h]
+            aligned_row[h] =
+              [val, format_cell(val, istruct, width: widths[h], decorate: true)]
           end
           aligned_rows << [loc, aligned_row]
         end
@@ -910,8 +913,8 @@ module FatCore
       decorate = !aligned?
       map = {}
       table.headers.each do |h|
-        map[h] = [h, format_cell(h.as_string,
-                                   format_at[:header][h], widths[h], decorate)]
+        istruct = format_at[:header][h]
+        map[h] = [h, format_cell(h.as_string, istruct, decorate: decorate)]
       end
       map
     end
@@ -945,8 +948,8 @@ module FatCore
           table.headers.each do |h|
             grp_col[h] ||= Column.new(header: h)
             grp_col[h] << row[h]
-            new_row[h] = [row[h],
-                          format_cell(row[h], format_at[location][h], nil, decorate)]
+            istruct = format_at[location][h]
+            new_row[h] = [row[h], format_cell(row[h], istruct, decorate: decorate)]
           end
           new_rows << [location, new_row]
           tbl_row_k += 1
@@ -962,15 +965,16 @@ module FatCore
             gfoot_row[h] =
               if gfooter[h]
                 val = col.send(gfooter[h])
-                [val, format_cell(val, format_at[:gfooter][h], nil, decorate)]
+                istruct = format_at[:gfooter][h]
+                [val, format_cell(val, istruct, decorate: decorate)]
               else
                 [nil, '']
               end
           end
           if gfoot_row[first_h].last.blank?
-            gfoot_row[first_h] = [label,
-                                  format_cell(label, format_at[:gfooter][first_h],
-                                              nil, decorate)]
+            istruct = format_at[:gfooter][first_h]
+            gfoot_row[first_h] =
+              [label, format_cell(label, istruct, decorate: decorate)]
           end
           new_rows << [:gfooter, gfoot_row]
         end
@@ -995,7 +999,8 @@ module FatCore
           foot_row[h] =
             if footer[h]
               val = col.send(footer[h])
-              [val, format_cell(val, format_at[:footer][h], nil, decorate)]
+              istruct = format_at[:footer][h]
+              [val, format_cell(val, istruct, decorate: decorate)]
             else
               [nil, '']
             end
@@ -1003,9 +1008,9 @@ module FatCore
         # Put the label in the first column of footer unless it has been
         # formatted as part of footer.
         if foot_row[first_h].last.blank?
-          foot_row[first_h] = [label,
-                               format_cell(label, format_at[:footer][first_h],
-                                           nil, decorate)]
+          istruct = format_at[:footer][first_h]
+          foot_row[first_h] =
+            [label, format_cell(label, istruct, decorate: decorate)]
         end
         new_rows << [:footer, foot_row]
       end
