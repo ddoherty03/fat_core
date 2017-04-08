@@ -41,18 +41,21 @@ module FatCore
     def pre_table
       result = '\\begin{longtable}{'
       table.headers.each do |h|
-        result +=
-          case format_at[:body][h].alignment
-          when :center
-            'c'
-          when :right
-            'r'
-          else
-            'l'
-          end
+        result += alignment_code(format_at[:body][h].alignment)
       end
       result += "}\n"
       result
+    end
+
+    def alignment_code(al_sym)
+      case al_sym
+      when :center
+        'c'
+      when :right
+        'r'
+      else
+        'l'
+      end
     end
 
     def post_table
@@ -91,30 +94,6 @@ module FatCore
 
     # Hlines look to busy in a printed table
     def hline(widths)
-      ''
-    end
-
-    def pre_group
-      ''
-    end
-
-    def post_group
-      ''
-    end
-
-    def pre_gfoot
-      ''
-    end
-
-    def post_gfoot
-      ''
-    end
-
-    def pre_foot
-      ''
-    end
-
-    def post_foot
       ''
     end
 
