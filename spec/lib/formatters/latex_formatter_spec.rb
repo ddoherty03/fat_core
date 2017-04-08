@@ -54,13 +54,14 @@ module FatCore
           f.format_for(:footer, string: 'B')
           f.sum_gfooter(:price, :raw, :shares)
           f.gfooter('Grp Std Dev', price: :dev, shares: :dev, bool: :one?)
-          f.format_for(:gfooter, string: 'IBc[Tomato1]')
+          f.format_for(:gfooter, ref: 'LIBc[Tomato1]')
           f.sum_footer(:price, :raw, :shares)
           f.footer('Std Dev', price: :dev, shares: :dev, bool: :all?)
           f.footer('Any?', bool: :any?)
-          f.format_for(:footer, string: 'Bc[Blue2]')
+          f.format_for(:footer, ref: 'LBc[Blue2]')
         end
         ltx = fmt.output
+        expect(ltx.class).to eq(String)
         expect(ltx).to match(/\bRef\b/)
         expect(ltx).to match(/\bBool\b/)
         expect(ltx).to match(/\b2013-05-02\b/)
@@ -74,33 +75,25 @@ module FatCore
         expect(ltx).to match(/\bZMPEF1\b/)
         expect(ltx).to match(/\bGroup Total\b/)
         expect(ltx).to match(/\bGrp Std Dev\b/)
-        binding.pry
         tmp = File.open("#{__dir__}/../../tmp/example2.tex", 'w')
         result = false
         Dir.chdir(File.dirname(tmp.path)) do
           tmp << "\\documentclass{article}\n"
           tmp << LaTeXFormatter.preamble
+          tmp << "\\usepackage{geometry}\n"
+          tmp << "\\geometry{left=0.5in,right=0.5in}\n"
           tmp << "\\begin{document}\n"
+          tmp << "\\begin{center}\n"
+          tmp << "\\begin{small}\n"
           tmp << ltx
+          tmp << "\\end{small}\n"
+          tmp << "\\end{center}\n"
           tmp << "\\end{document}\n"
           tmp.flush
           result = system("#{@ltxcmd} #{tmp.path} >/dev/null 2>&1")
           result &&= system("#{@ltxcmd} #{tmp.path} >/dev/null 2>&1")
         end
-        expect(ltx.class).to eq(String)
         expect(result).to be true
-      end
-
-      it 'should be able to display colors and decorations' do
-        fmt = TermFormatter.new(@tab, framecolor: 'black.yellow') do |t|
-          t.format_for(:header, string: 'BCc[tomato.white]')
-          t.format_for(:body, string: 'c[.yellow]', boolean: 'c[green.yellow,red.yellow]',
-                       numeric: 'Rc[purple]', shares: '0.0,', ref: '5.0')
-        end
-        ltx = fmt.output
-        expect(ltx).to match(//)
-        expect(ltx).to match(//)
-        expect(ltx).to match(//)
       end
     end
   end
