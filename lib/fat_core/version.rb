@@ -1,7 +1,7 @@
 module FatCore
-  MAJOR = 1
-  MINOR = 7
-  PATCH = 1
+  MAJOR = 2
+  MINOR = 0
+  PATCH = 0
 
   VERSION = [MAJOR, MINOR, PATCH].compact.join('.')
 end
