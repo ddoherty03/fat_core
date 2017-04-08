@@ -31,6 +31,5 @@ Gem::Specification.new do |spec|
 
   spec.add_runtime_dependency 'activesupport'
   spec.add_runtime_dependency 'erubis'
-  spec.add_runtime_dependency 'rainbow'
   spec.add_runtime_dependency 'damerau-levenshtein'
 end
