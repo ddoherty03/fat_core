@@ -1057,30 +1057,6 @@ module FatCore
       ''
     end
 
-    def pre_group
-      ''
-    end
-
-    def post_group
-      ''
-    end
-
-    def pre_gfoot
-      ''
-    end
-
-    def post_gfoot
-      ''
-    end
-
-    def pre_foot
-      ''
-    end
-
-    def post_foot
-      ''
-    end
-
     def post_footers(_widths)
       ''
     end
