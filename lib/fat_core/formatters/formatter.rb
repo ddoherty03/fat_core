@@ -138,7 +138,10 @@ module FatCore
       [:header, :bfirst, :gfirst, :body, :footer, :gfooter].each do |loc|
         @format_at[loc] = {}
         table.headers.each do |h|
-          format_at[loc][h] = OpenStruct.new(self.class.default_format)
+          fmt_hash = self.class.default_format
+          fmt_hash[:_h] = h
+          fmt_hash[:_location] = loc
+          format_at[loc][h] = OpenStruct.new(fmt_hash)
         end
       end
       yield self if block_given?
