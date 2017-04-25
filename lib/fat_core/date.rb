@@ -869,7 +869,7 @@ class Date
   # They NYSE has closed on several occasions outside its normal holiday
   # rules.  This detects those dates beginning in 1960.  Closing for part of a
   # day is not counted. See http://www1.nyse.com/pdfs/closings.pdf
-  def nyse_special_holiday
+  def nyse_special_holiday?
     return false unless self > Date.parse('1960-01-01')
     case self
     when Date.parse('1961-05-29')
@@ -942,7 +942,7 @@ class Date
     # Is self a fixed holiday
     return true if nyse_fixed_holiday? || nyse_moveable_feast?
 
-    return true if nyse_special_holiday
+    return true if nyse_special_holiday?
 
     if friday? && (self >= Date.parse('1959-07-03'))
       # A Friday is a holiday if a holiday would fall on the following
