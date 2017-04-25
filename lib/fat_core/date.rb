@@ -1018,7 +1018,7 @@ class Date
   # Return self if its a trading day, otherwise skip back to the first prior
   # trading day.
   def prior_until_trading_day
-    date = self
+    date = dup
     date -= 1 until date.trading_day?
     date
   end
@@ -1026,7 +1026,7 @@ class Date
   # Return self if its a trading day, otherwise skip forward to the first
   # later trading day.
   def next_until_trading_day
-    date = self
+    date = dup
     date += 1 until date.trading_day?
     date
   end
