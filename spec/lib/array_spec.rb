@@ -15,10 +15,10 @@ describe Array do
   end
 
   it 'difference' do
-    expect(%w(A A B A C A B).difference(%w(A B A))).to eq(%w(A C A B))
-    expect(%w(A A B A C A B).difference(%w(A B))).to eq(%w(A A C A B))
-    expect(%w(A A B A C A B).difference(%w(A))).to eq(%w(A B A C A B))
-    expect(%w(A A B A C A B).difference(%w(B))).to eq(%w(A A A C A B))
+    expect(%w(A A B A C A B).difference(%w(A B A))).to eq(%w(C))
+    expect(%w(A A B A C A B).difference(%w(A B))).to eq(%w(C))
+    expect(%w(A A B A C A B).difference(%w(A))).to eq(%w(B C B))
+    expect(%w(A A B A C A B).difference(%w(B))).to eq(%w(A A A C A))
     expect(%w(A A B A C A B).difference(%w(C))).to eq(%w(A A B A A B))
   end
 end
