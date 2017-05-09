@@ -1,4 +1,4 @@
-require File.dirname(File.absolute_path(__FILE__)) + '/../spec_helper.rb'
+require 'fat_core/numeric'
 
 describe Numeric do
   it 'should implement signum function' do
@@ -15,10 +15,6 @@ describe Numeric do
 
   it 'should provide a tex_quote method for erb docs' do
     expect(195.45.tex_quote).to eq '195.45'
-  end
-
-  it 'should provide a human-readable inspect for BigDecimal' do
-    expect(BigDecimal('33.45').inspect).to eq '33.45'
   end
 
   it 'should be able to report if its a whole number' do

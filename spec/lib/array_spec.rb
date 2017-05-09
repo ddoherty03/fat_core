@@ -1,5 +1,7 @@
 require 'spec_helper'
 
+require 'fat_core/array'
+
 describe Array do
   it 'should be able to report its last index' do
     letters = ('a'..'z').to_a

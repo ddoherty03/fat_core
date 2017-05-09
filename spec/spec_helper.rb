@@ -5,8 +5,6 @@ SimpleCov.start
 require 'bundler/setup'
 Bundler.setup
 
-require 'fat_core'
-
 require 'pry'
 require 'byebug'
 

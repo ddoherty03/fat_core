@@ -1,9 +1,11 @@
+require 'fat_core/numeric'
+
 module Kernel
-  def time_it(message = '', &block)
+  def time_it(name = 'block', &block)
     start = Time.now
     result = yield block
     run_time = Time.now - start
-    puts "Ran #{message} in #{run_time.secs_to_hms}"
+    puts "Ran #{name} in #{run_time.secs_to_hms}"
     result
   end
 end

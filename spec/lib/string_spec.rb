@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'fat_core/string'
 
 describe String do
   before do
@@ -165,11 +165,6 @@ the people, for the people, shall not perish from the earth."
     it 'should be able to fuzzy match space-separated parts' do
       expect('Hello world'.fuzzy_match('hel or')).to be_truthy
       expect('Hello, world'.fuzzy_match('hel ox')).to be_falsy
-    end
-
-    it 'should be able to fuzzy match colon-separated parts' do
-      expect('Hello:world'.fuzzy_match('hel:or')).to be_truthy
-      expect('Hello:world'.fuzzy_match('hel:ox')).to be_falsy
     end
 
     it 'should be able to fuzzy match colon-separated parts' do

@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'fat_core/symbol'
 
 describe Symbol do
   it 'should be able to convert to a capitalized string' do

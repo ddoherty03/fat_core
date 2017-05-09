@@ -1,5 +1,7 @@
 # coding: utf-8
-require 'spec_helper'
+#require 'spec_helper'
+
+require 'fat_core/date'
 
 describe Date do
   before :each do
@@ -624,27 +626,6 @@ describe Date do
         }.to raise_error(ArgumentError)
       end
 
-      it 'should know how to expand to chunk periods' do
-        expect(Date.parse('2013-07-04').expand_to_period(:year))
-          .to eq Period.new('2013-01-01', '2013-12-31')
-        expect(Date.parse('2013-07-04').expand_to_period(:half))
-          .to eq Period.new('2013-07-01', '2013-12-31')
-        expect(Date.parse('2013-07-04').expand_to_period(:quarter))
-          .to eq Period.new('2013-07-01', '2013-09-30')
-        expect(Date.parse('2013-07-04').expand_to_period(:bimonth))
-          .to eq Period.new('2013-07-01', '2013-08-31')
-        expect(Date.parse('2013-07-04').expand_to_period(:month))
-          .to eq Period.new('2013-07-01', '2013-07-31')
-        expect(Date.parse('2013-07-04').expand_to_period(:semimonth))
-          .to eq Period.new('2013-07-01', '2013-07-15')
-        expect(Date.parse('2013-07-04').expand_to_period(:biweek))
-          .to eq Period.new('2013-07-01', '2013-07-14')
-        expect(Date.parse('2013-07-04').expand_to_period(:week))
-          .to eq Period.new('2013-07-01', '2013-07-07')
-        expect(Date.parse('2013-07-04').expand_to_period(:day))
-          .to eq Period.new('2013-07-04', '2013-07-04')
-      end
-
       it "should know if it's within 6 months of another date" do
         # This uses Section 16's logic that one date is "within a
         # period of less than six months" of another date only if it
@@ -833,15 +814,15 @@ describe Date do
         expect(Date.parse('2014-11-22')).to be_nyse_holiday
         expect(Date.parse('2014-11-23')).to be_nyse_holiday
 
+        # 9-11 Attacks
+        expect(Date.parse('2001-09-11')).to be_nyse_holiday
+        expect(Date.parse('2001-09-14')).to be_nyse_holiday
+
         # 1968 Paperwork Crisis (Closed every Wed unless other holiday in
         # week) from June 12 to December 31, 1968
         expect(Date.parse('1968-06-12')).to be_nyse_holiday
         expect(Date.parse('1968-07-03')).not_to be_nyse_holiday
         expect(Date.parse('1968-08-21')).to be_nyse_holiday
-
-        # 9-11 Attacks
-        expect(Date.parse('2001-09-11')).to be_nyse_holiday
-        expect(Date.parse('2001-09-14')).to be_nyse_holiday
 
         # Hurricane Sandy
         expect(Date.parse('2012-10-29')).to be_nyse_holiday

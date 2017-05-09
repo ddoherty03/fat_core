@@ -1,5 +1,7 @@
 require 'spec_helper'
 
+require 'fat_core/hash'
+
 describe Hash do
   it 'should be able to find keys with a value == to X' do
     hh = { :a => 1, :b => 2, :c => 1 }

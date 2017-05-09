@@ -1,4 +1,4 @@
-require File.dirname(File.absolute_path(__FILE__)) + '/../spec_helper.rb'
+require 'fat_core/range'
 
 describe Range do
   describe 'set operations' do

@@ -1,5 +1,7 @@
 require 'spec_helper'
 
+require 'fat_core/kernel'
+
 describe Kernel do
   it 'should know how to time a block of code' do
     $stdout = StringIO.new
