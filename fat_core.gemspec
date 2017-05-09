@@ -12,6 +12,7 @@ Gem::Specification.new do |spec|
   spec.description   = 'Write a longer description. Optional.'
   spec.homepage      = ''
   spec.license       = 'MIT'
+  spec.required_ruby_version = '>= 2.3.1'
 
   spec.files         = `git ls-files -z`.split("\x0")
   spec.files.reject! { |fn| fn =~ /^NYSE_closings.pdf/ }
