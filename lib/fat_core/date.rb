@@ -381,21 +381,22 @@ class Date
           Date.new(year, month, 15)
         elsif day == 15
           end_of_month + 1.day
+        elsif day < 15
+          # In the first half of the month (the 2nd to the 14th), go as far
+          # past the 15th as the date is past the 1st. Thus, as many as 13
+          # days past the 15th, so at most to the 28th of the month.
+          Date.new(year, month, 15) + (day - 1)
         else
-          if day < 15
-            # In the first half of the month, go as far past the 15th as the
-            # date is past the 1st.
-            Date.new(year, month, 15) + (day - 1)
-          else
-            # In the second half of the month, go as many days into the next
-            # month as we are past the 15th. Thus,
-            # Date.parse('2015-02-18').next_semimonth should be the 3rd of the
-            # following month.
-            end_of_month + (day - 15 + 1)
-          end
+          # In the second half of the month (16th to the 31st), go as many
+          # days into the next month as we are past the 15th. Thus, as many as
+          # 16 days.  But we don't want to go past the first half of the next
+          # month, so we only go so far as the 14th of the next month.
+          # Date.parse('2015-02-18').next_semimonth should be the 3rd of the
+          # following month.
+          end_of_month + [(day - 15 + 1), 14].min
         end
       n -= 1
-      # Now that n is even, advance n / 2 semimonths unless we're done.
+      # Now that n is even, advance n / 2 months unless we're done.
       if n >= 2
         next_sm.next_month(n / 2)
       else
