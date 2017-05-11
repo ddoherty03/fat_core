@@ -593,7 +593,7 @@ describe Date do
         expect(Date.today.add_chunk(:quarter)).to eq(Date.parse('2012-10-18'))
         expect(Date.today.add_chunk(:bimonth)).to eq(Date.parse('2012-09-18'))
         expect(Date.today.add_chunk(:month)).to eq(Date.parse('2012-08-18'))
-        expect(Date.today.add_chunk(:semimonth)).to eq(Date.parse('2012-08-02'))
+        expect(Date.today.add_chunk(:semimonth)).to eq(Date.parse('2012-08-04'))
         expect(Date.today.add_chunk(:biweek)).to eq(Date.parse('2012-08-01'))
         expect(Date.today.add_chunk(:week)).to eq(Date.parse('2012-07-25'))
         expect(Date.today.add_chunk(:day)).to eq(Date.parse('2012-07-19'))
