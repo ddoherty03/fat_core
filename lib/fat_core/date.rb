@@ -419,34 +419,65 @@ class Date
     next_bimonth(-n)
   end
 
+  # Return the date that is +n+ semimonths after this date. Each semimonth begins
+  # on the 1st or 16th of the month, and advancing one semimonth from the first
+  # half of a month means to go as far past the 16th as the current date is past
+  # the 1st; advancing one semimonth from the second half of a month means to go
+  # as far into the next month past the 1st as the current date is past the
+  # 16th, but never past the 15th of the next month.
+  #
+  # @param n [Integer] number of semimonths to advance, can be negative
+  # @return [Date] new date n semimonths after this date
   def next_semimonth(n = 1)
+    n = n.floor
+    return self if n.zero?
+    factor = n.negative? ? -1 : 1
+    n = n.abs
     if n.even?
       next_month(n / 2)
     else
-      # Advance one semimonth
+      # Advance or retreat one semimonth
       next_sm =
         if day == 1
-          Date.new(year, month, 15)
-        elsif day == 15
-          end_of_month + 1.day
-        elsif day < 15
-          # In the first half of the month (the 2nd to the 14th), go as far
-          # past the 15th as the date is past the 1st. Thus, as many as 13
-          # days past the 15th, so at most to the 28th of the month.
-          Date.new(year, month, 15) + (day - 1)
+          if factor.positive?
+            beginning_of_month + 16.days
+          else
+            prior_month.beginning_of_month + 16.days
+          end
+        elsif day == 16
+          if factor.positive?
+            next_month.beginning_of_month
+          else
+            beginning_of_month
+          end
+        elsif day < 16
+          # In the first half of the month (the 2nd to the 15th), go as far past
+          # the 16th as the date is past the 1st. Thus, as many as 14 days past
+          # the 16th, so at most to the 30th of the month unless there are less
+          # than 30 days in the month, then go to the end of the month.
+          if factor.positive?
+            [beginning_of_month + 16.days + (day - 1).days, end_of_month].min
+          else
+            [prior_month.beginning_of_month + 16.days + (day - 1).days,
+             prior_month.end_of_month].min
+          end
         else
-          # In the second half of the month (16th to the 31st), go as many
-          # days into the next month as we are past the 15th. Thus, as many as
-          # 16 days.  But we don't want to go past the first half of the next
-          # month, so we only go so far as the 14th of the next month.
+          # In the second half of the month (17th to the 31st), go as many
+          # days into the next month as we are past the 16th. Thus, as many as
+          # 15 days.  But we don't want to go past the first half of the next
+          # month, so we only go so far as the 15th of the next month.
           # Date.parse('2015-02-18').next_semimonth should be the 3rd of the
           # following month.
-          end_of_month + [(day - 15 + 1), 14].min
+          if factor.positive?
+            next_month.beginning_of_month + [(day - 16), 15].min
+          else
+            beginning_of_month + [(day - 16), 15].min
+          end
         end
       n -= 1
-      # Now that n is even, advance n / 2 months unless we're done.
+      # Now that n is even, advance (or retreat) n / 2 months unless we're done.
       if n >= 2
-        next_sm.next_month(n / 2)
+        next_sm.next_month(factor * n / 2)
       else
         next_sm
       end
