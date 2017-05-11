@@ -6,26 +6,19 @@ require 'active_support/core_ext/integer/time'
 require 'fat_core/string'
 
 class Date
-  # Constants for Begining of Time (BOT) and End of Time (EOT) Both outside
-  # the range of what we would find in commercial situations.
-  ::Date::BOT = ::Date.parse('1900-01-01')
-  ::Date::EOT = ::Date.parse('3000-12-31')
+  # Constant for Beginning of Time (BOT) outside the range of what we would ever
+  # want to find in commercial situations.
+  BOT = Date.parse('1900-01-01')
 
-  # Predecessor of self.  Allows Date to work as a countable element
-  # of a Range.
-  def pred
-    self - 1.day
-  end
-
-  # Successor of self.  Allows Date to work as a countable element
-  # of a Range.
-  def succ
-    self + 1.day
-  end
+  # Constant for End of Time (EOT) outside the range of what we would ever want
+  # to find in commercial situations.
+  EOT = Date.parse('3000-12-31')
 
   # :category: Formatting
+  # @group Formatting
 
-  # Format as an ISO string of the form YYYY-MM-DD.
+  # Format as an ISO string of the form `YYYY-MM-DD`.
+  # @return [String]
   def iso
     strftime('%Y-%m-%d')
   end
@@ -33,42 +26,50 @@ class Date
   # :category: Formatting
 
   # Format date to TeX documents as ISO strings
+  # @return [String]
   def tex_quote
     iso
   end
 
   # :category: Formatting
 
-  # Format as an all-numeric string, i.e. 'YYYYMMDD'
+  # Format as an all-numeric string of the form `YYYYMMDD`
+  # @return [String]
   def num
     strftime('%Y%m%d')
   end
 
   # :category: Formatting
 
-  # Format as an inactive Org date (see emacs org-mode)
+  # Format as an inactive Org date timestamp of the form `[YYYY-MM-DD <dow>]`
+  # (see Emacs org-mode)
+  # @return [String]
   def org
     strftime('[%Y-%m-%d %a]')
   end
 
   # :category: Formatting
 
-  # Format as an English string
+  # Format as an English string, like `'January 12, 2016'`
+  # @return [String]
   def eng
     strftime('%B %e, %Y')
   end
 
   # :category: Formatting
 
-  # Format date in MM/DD/YYYY form, as typical for the short American
+  # Format date in `MM/DD/YYYY` form, as typical for the short American
   # form.
+  # @return [String]
   def american
     strftime '%-m/%-d/%Y'
   end
 
   # :category: Queries
+  # @group Queries
 
   # Does self fall on a weekend?
+  # @return [Boolean]
   def weekend?
     saturday? || sunday?
   end
@@ -76,6 +77,7 @@ class Date
   # :category: Queries
 
   # Does self fall on a weekday?
+  # @return [Boolean]
   def weekday?
     !weekend?
   end
@@ -85,6 +87,7 @@ class Date
   # Self's calendar "half" by analogy to calendar quarters: 1 or 2, depending
   # on whether the date falls in the first or second half of the calendar
   # year.
+  # @return [1, 2]
   def half
     case month
     when (1..6)
@@ -98,6 +101,7 @@ class Date
 
   # Self's calendar quarter: 1, 2, 3, or 4, depending on which calendar quarter
   # the date falls in.
+  # @return [1, 2, 3, 4]
   def quarter
     case month
     when (1..3)
@@ -114,6 +118,7 @@ class Date
   # :category: Queries
 
   # Return whether the date falls on the first day of a year.
+  # @return [Boolean]
   def beginning_of_year?
     beginning_of_year == self
   end
@@ -121,6 +126,7 @@ class Date
   # :category: Queries
 
   # Return whether the date falls on the last day of a year.
+  # @return [Boolean]
   def end_of_year?
     end_of_year == self
   end
@@ -128,6 +134,7 @@ class Date
   # :category: Queries
 
   # Return whether the date falls on the first day of a half-year.
+  # @return [Boolean]
   def beginning_of_half?
     beginning_of_half == self
   end
@@ -135,6 +142,7 @@ class Date
   # :category: Queries
 
   # Return whether the date falls on the last day of a half-year.
+  # @return [Boolean]
   def end_of_half?
     end_of_half == self
   end
@@ -142,6 +150,7 @@ class Date
   # :category: Queries
 
   # Return whether the date falls on the first day of a calendar quarter.
+  # @return [Boolean]
   def beginning_of_quarter?
     beginning_of_quarter == self
   end
@@ -149,6 +158,7 @@ class Date
   # :category: Queries
 
   # Return whether the date falls on the last day of a calendar quarter.
+  # @return [Boolean]
   def end_of_quarter?
     end_of_quarter == self
   end
@@ -157,6 +167,7 @@ class Date
 
   # Return whether the date falls on the first day of a calendar bi-monthly
   # period, i.e., the beginning of an odd-numbered month.
+  # @return [Boolean]
   def beginning_of_bimonth?
     month.odd? && beginning_of_month == self
   end
@@ -165,6 +176,7 @@ class Date
 
   # Return whether the date falls on the last day of a calendar bi-monthly
   # period, i.e., the end of an even-numbered month.
+  # @return [Boolean]
   def end_of_bimonth?
     month.even? && end_of_month == self
   end
@@ -172,6 +184,7 @@ class Date
   # :category: Queries
 
   # Return whether the date falls on the first day of a calendar month.
+  # @return [Boolean]
   def beginning_of_month?
     beginning_of_month == self
   end
@@ -179,6 +192,7 @@ class Date
   # :category: Queries
 
   # Return whether the date falls on the last day of a calendar month.
+  # @return [Boolean]
   def end_of_month?
     end_of_month == self
   end
@@ -187,6 +201,7 @@ class Date
 
   # Return whether the date falls on the first day of a calendar semi-monthly
   # period, i.e., on the 1st or 15th of a month.
+  # @return [Boolean]
   def beginning_of_semimonth?
     beginning_of_semimonth == self
   end
@@ -195,6 +210,7 @@ class Date
 
   # Return whether the date falls on the last day of a calendar semi-monthly
   # period, i.e., on the 14th or the last day of a month.
+  # @return [Boolean]
   def end_of_semimonth?
     end_of_semimonth == self
   end
@@ -208,6 +224,7 @@ class Date
   # the first calendar week of the year is the one that includes the first
   # Thursday of that year. In the Gregorian calendar, this is equivalent to
   # the week which includes January 4."
+  # @return [Boolean]
   def beginning_of_biweek?
     beginning_of_biweek == self
   end
@@ -221,6 +238,7 @@ class Date
   # the first calendar week of the year is the one that includes the first
   # Thursday of that year. In the Gregorian calendar, this is equivalent to
   # the week which includes January 4."
+  # @return [Boolean]
   def end_of_biweek?
     end_of_biweek == self
   end
@@ -233,6 +251,7 @@ class Date
   # its ordinal number within the year; the first calendar week of the year is
   # the one that includes the first Thursday of that year. In the Gregorian
   # calendar, this is equivalent to the week which includes January 4."
+  # @return [Boolean]
   def beginning_of_week?
     beginning_of_week == self
   end
@@ -245,13 +264,63 @@ class Date
   # its ordinal number within the year; the first calendar week of the year is
   # the one that includes the first Thursday of that year. In the Gregorian
   # calendar, this is equivalent to the week which includes January 4."
+  # @return [Boolean]
   def end_of_week?
     end_of_week == self
   end
 
+  # Return whether this date falls within a period of *less* than six months
+  # from the date `d` using the *Stella v. Graham Page Motors* convention that
+  # "less" than six months is true only if this date falls within the range of
+  # dates 2 days after date six months before and 2 days before the date six
+  # months after the date `d`.
+  #
+  # @param d [Date] the middle of the six-month range
+  # @return [Boolean]
+  def within_6mos_of?(d)
+    # Date 6 calendar months before self
+    start_date = self - 6.months + 2.days
+    end_date = self + 6.months - 2.days
+    (start_date..end_date).cover?(d)
+  end
+
+  # Return whether this date is Easter Sunday for the year in which it falls
+  # according to the Western Church.  A few holidays key off this date as
+  # "moveable feasts."
+  #
+  # @return [Boolean]
+  def easter?
+    # Am I Easter?
+    self == easter_this_year
+  end
+
+  # Return whether this date is the `n`th weekday `wday` of the given `month` in
+  # this date's year.
+  #
+  # @param n [Integer] number of wday in month, if negative count from end of
+  #   the month
+  # @param wday [Integer] day of week, 0 is Sunday, 1 Monday, etc.
+  # @param month [Integer] the month number, 1 is January, 2 is February, etc.
+  # @return [Boolean]
+  def nth_wday_in_month?(n, wday, month)
+    # Is self the nth weekday in the given month of its year?
+    # If n is negative, count from last day of month
+    self == ::Date.nth_wday_in_year_month(n, wday, year, month)
+  end
+
   # :category: Relative Dates
+  # @group Relative Dates
+
+  # Predecessor of self, opposite if #succ.
+  # @return [Date]
+  def pred
+    self - 1.day
+  end
+
+  # Note: the Date class already has a #succ method.
 
   # The date that is the first day of the half-year in which self falls.
+  # @return [Date]
   def beginning_of_half
     if month > 9
       (beginning_of_quarter - 15).beginning_of_quarter
@@ -265,6 +334,7 @@ class Date
   # :category: Relative Dates
 
   # The date that is the last day of the half-year in which self falls.
+  # @return [Date]
   def end_of_half
     if month < 4
       (end_of_quarter + 15).end_of_quarter
@@ -281,6 +351,7 @@ class Date
   # falls. A 'bimonth' is a two-month calendar period beginning on the
   # first day of the odd-numbered months.  E.g., 2014-01-01 to
   # 2014-02-28 is the first bimonth of 2014.
+  # @return [Date]
   def beginning_of_bimonth
     if month.odd?
       beginning_of_month
@@ -295,6 +366,7 @@ class Date
   # A 'bimonth' is a two-month calendar period beginning on the first
   # day of the odd-numbered months.  E.g., 2014-01-01 to 2014-02-28 is
   # the first bimonth of 2014.
+  # @return [Date]
   def end_of_bimonth
     if month.odd?
       (self + 1.month).end_of_month
@@ -309,6 +381,7 @@ class Date
   # falls.  A semimonth is a calendar period beginning on the 1st or
   # 16th of each month and ending on the 15th or last day of the month
   # respectively.  So each year has exactly 24 semimonths.
+  # @return [Date]
   def beginning_of_semimonth
     if day >= 16
       ::Date.new(year, month, 16)
@@ -323,6 +396,7 @@ class Date
   # falls.  A semimonth is a calendar period beginning on the 1st or
   # 16th of each month and ending on the 15th or last day of the month
   # respectively.  So each year has exactly 24 semimonths.
+  # @return [Date]
   def end_of_semimonth
     if day <= 15
       ::Date.new(year, month, 15)
@@ -337,6 +411,7 @@ class Date
   # self falls. A biweek is a period of two commercial weeks starting with an
   # odd-numbered week and with each week starting in Monday and ending on
   # Sunday.
+  # @return [Date]
   def beginning_of_biweek
     if cweek.odd?
       beginning_of_week(:monday)
@@ -351,6 +426,7 @@ class Date
   # self falls. A biweek is a period of two commercial weeks starting with an
   # odd-numbered week and with each week starting in Monday and ending on
   # Sunday. So this will always return a Sunday in an even-numbered week.
+  # @return [Date]
   def end_of_biweek
     if cweek.odd?
       (self + 1.week).end_of_week(:monday)
@@ -553,11 +629,12 @@ class Date
 
   # :category: Relative Dates
 
-  # Return the date that is one chunk later than self, where +chunk+ can be
-  # one of +:year+, +:half+, +:quarter+, +:bimonth+, +:month+, +:semimonth+,
-  # +:biweek+, +:week+, or +:day+. For this purpose, a +:semimonth+ advances
-  # to the next semimonth if this date falls on the 1st or 15th, but otherwise
-  # advances by 15 days.
+  # Return the date that is n chunks later than self.
+  #
+  # @param chunk [Symbol] one of +:year+, +:half+, +:quarter+, +:bimonth+,
+  #   +:month+, +:semimonth+, +:biweek+, +:week+, or +:day+.
+  # @param n [Integer] the number of chunks to add, can be negative
+  # @return [Date] the date n chunks from this date
   def add_chunk(chunk, n = 1)
     case chunk
     when :year
@@ -583,8 +660,15 @@ class Date
     end
   end
 
-  def beginning_of_chunk(sym)
-    case sym
+  # Return the date that is the beginning of the +chunk+ in which this date
+  # falls.
+  #
+  # @param chunk [Symbol] one of +:year+, +:half+, +:quarter+, +:bimonth+,
+  #   +:month+, +:semimonth+, +:biweek+, +:week+, or +:day+.
+  # @return [Date] the first date in the chunk-sized period in which this date
+  #   falls
+  def beginning_of_chunk(chunk)
+    case chunk
     when :year
       beginning_of_year
     when :half
@@ -604,10 +688,17 @@ class Date
     when :day
       self
     else
-      raise ArgumentError, "unknown chunk sym: '#{sym}'"
+      raise ArgumentError, "unknown chunk sym: '#{chunk}'"
     end
   end
 
+  # Return the date that is the end of the +chunk+ in which this date
+  # falls.
+  #
+  # @param chunk [Symbol] one of +:year+, +:half+, +:quarter+, +:bimonth+,
+  #   +:month+, +:semimonth+, +:biweek+, +:week+, or +:day+.
+  # @return [Date] the first date in the chunk-sized period in which this date
+  #   falls
   def end_of_chunk(sym)
     case sym
     when :year
@@ -633,40 +724,84 @@ class Date
     end
   end
 
-  def within_6mos_of?(d)
-    # Date 6 calendar months before self
-    start_date = self - 6.months + 2.days
-    end_date = self + 6.months - 2.days
-    (start_date..end_date).cover?(d)
-  end
-
+  # Return the date for Easter in the Western Church for the year in which this
+  # date falls.
+  #
+  # @return [Boolean]
   def easter_this_year
     # Return the date of Easter in self's year
-    ::Date.easter(year)
+    Date.easter(year)
   end
 
-  def easter?
-    # Am I Easter?
-    self == easter_this_year
-  end
+  # @group Federal Holidays and Workdays
 
-  def nth_wday_in_month?(n, wday, month)
-    # Is self the nth weekday in the given month of its year?
-    # If n is negative, count from last day of month
-    self == ::Date.nth_wday_in_year_month(n, wday, year, month)
-  end
+  # Calculations for Federal holidays as provided for in 5 USC 6103
 
-  #######################################################
-  # Calculations for Federal holidays
-  # 5 USC 6103
-  #######################################################
-  # Holidays decreed by executive order
-  # See http://www.whitehouse.gov/the-press-office/2012/12/21/
-  #  executive-order-closing-executive-departments-and-agencies-federal-gover
+  # Holidays decreed by executive order See http://www.whitehouse.gov/the-press-office/2012/12/21
   FED_DECREED_HOLIDAYS =
     [
       ::Date.parse('2012-12-24')
     ].freeze
+
+  def fed_holiday?
+    # All Saturdays and Sundays are "holidays"
+    return true if weekend?
+
+    # Some days are holidays by executive decree
+    return true if FED_DECREED_HOLIDAYS.include?(self)
+
+    # Is self a fixed holiday
+    return true if fed_fixed_holiday? || fed_moveable_feast?
+
+    if friday? && month == 12 && day == 26
+      # If Christmas falls on a Thursday, apparently, the Friday after is
+      # treated as a holiday as well.  See 2003, 2008, for example.
+      true
+    elsif friday?
+      # A Friday is a holiday if a fixed-date holiday
+      # would fall on the following Saturday
+      (self + 1).fed_fixed_holiday? || (self + 1).fed_moveable_feast?
+    elsif monday?
+      # A Monday is a holiday if a fixed-date holiday
+      # would fall on the preceding Sunday
+      (self - 1).fed_fixed_holiday? || (self - 1).fed_moveable_feast?
+    else
+      false
+    end
+  end
+
+  def fed_workday?
+    !fed_holiday?
+  end
+
+  # :category: Queries
+
+  def add_fed_business_days(n)
+    d = dup
+    return d if n.zero?
+    incr = n.negative? ? -1 : 1
+    n = n.abs
+    while n.positive?
+      d += incr
+      n -= 1 if d.fed_workday?
+    end
+    d
+  end
+
+  def next_fed_workday
+    add_fed_business_days(1)
+  end
+
+  def prior_fed_workday
+    add_fed_business_days(-1)
+  end
+
+  def nyse_workday?
+    !nyse_holiday?
+  end
+  alias trading_day? nyse_workday?
+
+  protected
 
   def fed_fixed_holiday?
     # Fixed-date holidays on weekdays
@@ -716,32 +851,9 @@ class Date
     end
   end
 
-  def fed_holiday?
-    # All Saturdays and Sundays are "holidays"
-    return true if weekend?
+  # @group NYSE Holidays and Workdays
 
-    # Some days are holidays by executive decree
-    return true if FED_DECREED_HOLIDAYS.include?(self)
-
-    # Is self a fixed holiday
-    return true if fed_fixed_holiday? || fed_moveable_feast?
-
-    if friday? && month == 12 && day == 26
-      # If Christmas falls on a Thursday, apparently, the Friday after is
-      # treated as a holiday as well.  See 2003, 2008, for example.
-      true
-    elsif friday?
-      # A Friday is a holiday if a fixed-date holiday
-      # would fall on the following Saturday
-      (self + 1).fed_fixed_holiday? || (self + 1).fed_moveable_feast?
-    elsif monday?
-      # A Monday is a holiday if a fixed-date holiday
-      # would fall on the preceding Sunday
-      (self - 1).fed_fixed_holiday? || (self - 1).fed_moveable_feast?
-    else
-      false
-    end
-  end
+  public
 
   #######################################################
   # Calculations for NYSE holidays
@@ -763,6 +875,75 @@ class Date
   # Christmas Day, December 25.
 
   # :category: Queries
+
+  def nyse_holiday?
+    # All Saturdays and Sundays are "holidays"
+    return true if weekend?
+
+    # Is self a fixed holiday
+    return true if nyse_fixed_holiday? || nyse_moveable_feast?
+
+    return true if nyse_special_holiday?
+
+    if friday? && (self >= ::Date.parse('1959-07-03'))
+      # A Friday is a holiday if a holiday would fall on the following
+      # Saturday.  The rule does not apply if the Friday "ends a monthly or
+      # yearly accounting period." Adopted July 3, 1959. E.g, December 31,
+      # 2010, fell on a Friday, so New Years was on Saturday, but the NYSE
+      # opened because it ended a yearly accounting period.  I believe 12/31
+      # is the only date to which the exception can apply since only New
+      # Year's can fall on the first of the month.
+      !end_of_quarter? &&
+        ((self + 1).nyse_fixed_holiday? || (self + 1).nyse_moveable_feast?)
+    elsif monday?
+      # A Monday is a holiday if a holiday would fall on the
+      # preceding Sunday.  This has apparently always been the rule.
+      (self - 1).nyse_fixed_holiday? || (self - 1).nyse_moveable_feast?
+    else
+      false
+    end
+  end
+
+  def add_nyse_business_days(n)
+    d = dup
+    return d if n.zero?
+    incr = n.negative? ? -1 : 1
+    n = n.abs
+    while n.positive?
+      d += incr
+      n -= 1 if d.nyse_workday?
+    end
+    d
+  end
+  alias add_trading_days add_nyse_business_days
+
+  def next_nyse_workday
+    add_nyse_business_days(1)
+  end
+  alias next_trading_day next_nyse_workday
+
+  def prior_nyse_workday
+    add_nyse_business_days(-1)
+  end
+  alias prior_trading_day prior_nyse_workday
+
+  # Return self if its a trading day, otherwise skip forward to the first
+  # later trading day.
+  def next_until_trading_day
+    date = dup
+    date += 1 until date.trading_day?
+    date
+  end
+
+  # Return self if its a trading day, otherwise skip back to the first prior
+  # trading day.
+  def prior_until_trading_day
+    date = dup
+    date -= 1 until date.trading_day?
+    date
+  end
+
+  protected
 
   def nyse_fixed_holiday?
     # Fixed-date holidays
@@ -930,109 +1111,9 @@ class Date
     end
   end
 
-  # :category: Queries
-
-  def nyse_holiday?
-    # All Saturdays and Sundays are "holidays"
-    return true if weekend?
-
-    # Is self a fixed holiday
-    return true if nyse_fixed_holiday? || nyse_moveable_feast?
-
-    return true if nyse_special_holiday?
-
-    if friday? && (self >= ::Date.parse('1959-07-03'))
-      # A Friday is a holiday if a holiday would fall on the following
-      # Saturday.  The rule does not apply if the Friday "ends a monthly or
-      # yearly accounting period." Adopted July 3, 1959. E.g, December 31,
-      # 2010, fell on a Friday, so New Years was on Saturday, but the NYSE
-      # opened because it ended a yearly accounting period.  I believe 12/31
-      # is the only date to which the exception can apply since only New
-      # Year's can fall on the first of the month.
-      !end_of_quarter? &&
-        ((self + 1).nyse_fixed_holiday? || (self + 1).nyse_moveable_feast?)
-    elsif monday?
-      # A Monday is a holiday if a holiday would fall on the
-      # preceding Sunday.  This has apparently always been the rule.
-      (self - 1).nyse_fixed_holiday? || (self - 1).nyse_moveable_feast?
-    else
-      false
-    end
-  end
-
-  # :category: Queries
-
-  def fed_workday?
-    !fed_holiday?
-  end
-
-  # :category: Queries
-
-  def nyse_workday?
-    !nyse_holiday?
-  end
-  alias trading_day? nyse_workday?
-
-  def add_fed_business_days(n)
-    d = dup
-    return d if n.zero?
-    incr = n.negative? ? -1 : 1
-    n = n.abs
-    while n.positive?
-      d += incr
-      n -= 1 if d.fed_workday?
-    end
-    d
-  end
-
-  def next_fed_workday
-    add_fed_business_days(1)
-  end
-
-  def prior_fed_workday
-    add_fed_business_days(-1)
-  end
-
-  def add_nyse_business_days(n)
-    d = dup
-    return d if n.zero?
-    incr = n.negative? ? -1 : 1
-    n = n.abs
-    while n.positive?
-      d += incr
-      n -= 1 if d.nyse_workday?
-    end
-    d
-  end
-  alias add_trading_days add_nyse_business_days
-
-  def next_nyse_workday
-    add_nyse_business_days(1)
-  end
-  alias next_trading_day next_nyse_workday
-
-  def prior_nyse_workday
-    add_nyse_business_days(-1)
-  end
-  alias prior_trading_day prior_nyse_workday
-
-  # Return self if its a trading day, otherwise skip back to the first prior
-  # trading day.
-  def prior_until_trading_day
-    date = dup
-    date -= 1 until date.trading_day?
-    date
-  end
-
-  # Return self if its a trading day, otherwise skip forward to the first
-  # later trading day.
-  def next_until_trading_day
-    date = dup
-    date += 1 until date.trading_day?
-    date
-  end
-
   class << self
+    # @group Parsing
+
     # Convert a string +str+ with an American style date into a Date object
     #
     # An American style date is of the form MM/DD/YYYY, that is it places the
@@ -1069,15 +1150,17 @@ class Date
     # using the default spec_type of :from.  The return values are actually Date
     # objects, but are shown below as textual dates.
     #
-    # A fully specified date returns that date:
-    #     Date.parse_spec('2001-09-11')  # =>
+    # @example
+    #   A fully specified date returns that date:
+    #   Date.parse_spec('2001-09-11')  # =>
     #
     # Commercial weeks can be specified using, for example W32 or 32W, with the
     # week beginning on Monday, ending on Sunday.
+    #
     # @example
-    #     Date.parse_spec('2012-W32')     # =>
-    #     Date.parse_spec('2012-W32', :to) # =>
-    #     Date.parse_spec('W32') # =>
+    #   Date.parse_spec('2012-W32').iso      # => "2012-08-06"
+    #   Date.parse_spec('2012-W32', :to).iso # => "2012-08-12"
+    #   Date.parse_spec('W32')               # => "2012-08-06" if executed in 2012
     #
     # A spec of the form Q3 or 3Q returns the beginning or end of calendar
     # quarters.
@@ -1089,7 +1172,8 @@ class Date
     # @param spec_type [:from, :to] return the first (:from) or last (:to)
     #   date in the spec's period respectively
     #
-    # @return [Date] a date object equivalent to the date spec
+    # @return [Date] date that is the first (:from) or last (:to) in the period
+    #   designated by `spec`
     def parse_spec(spec, spec_type = :from)
       spec = spec.to_s.strip
       unless [:from, :to].include?(spec_type)
@@ -1301,6 +1385,8 @@ class Date
       end
     end
 
+    # @group Utilities
+
     COMMON_YEAR_DAYS_IN_MONTH = [31, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31,
                                  30, 31].freeze
     def days_in_month(y, m)
@@ -1362,14 +1448,7 @@ class Date
       l = (32 + 2 * e + 2 * i - h - k) % 7
       m = (a + 11 * h + 22 * l) / 451
       n, p = (h + l - 7 * m + 114).divmod(31)
-      ::Date.new(y, n, p + 1)
+      Date.new(y, n, p + 1)
     end
-  end
-
-  # This hook gets called by the host class when it includes this
-  # module, extending that class to include the methods defined in
-  # ClassMethods as class methods of the host class.
-  def self.included(host_class)
-    host_class.extend(ClassMethods)
   end
 end
