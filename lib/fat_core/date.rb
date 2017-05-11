@@ -5,6 +5,44 @@ require 'active_support/core_ext/numeric/time'
 require 'active_support/core_ext/integer/time'
 require 'fat_core/string'
 
+# ## FatCore Date Extensions
+#
+# The FatCore extensions to the Date class add the notion of several additional
+# calendar periods besides years, months, and weeks to those provided for in the
+# Date class and the active_support extensions to Date.  In particular, there
+# are several additional calendar subdivisions (called "chunks" in this
+# documentation) supported by FatCore's extension to the Date class:
+#
+# * year,
+# * half,
+# * quarter,
+# * bimonth,
+# * month,
+# * semimonth,
+# * biweek,
+# * week, and
+# * day
+#
+# For each of those chunks, there are methods for finding the beginning and end
+# of the chunk, for advancing or retreating a Date by the chunk, and for testing
+# whether a Date is at the beginning or end of each of the chunk.
+#
+# FatCore's Date extension defines a few convenience formatting methods, such as
+# Date#iso and Date#org for formatting Dates as ISO strings and as Emacs
+# org-mode inactive timestamps respectively. It also has a few utility methods
+# for determining the date of Easter, the number of days in any given month, and
+# the Date of the nth workday in a given month (say the third Thursday in
+# October, 2014).
+#
+# The Date extension defines a couple of class methods for parsing strings into
+# Dates, especially Date.parse_spec, which allows Dates to be specified in a
+# lazy way, either absolutely or relative to the computer's clock.
+#
+# Finally FatCore's Date extensions provide thorough methods for determining if
+# a Date is a United States federal holiday or workday based on US law,
+# including executive orders. It does the same for the New York Stock Exchange,
+# based on the rules of the New York Stock Exchange, including dates on which
+# the NYSE was closed for special reasons, such as the 9-11 attacks in 2001.
 class Date
   # Constant for Beginning of Time (BOT) outside the range of what we would ever
   # want to find in commercial situations.
@@ -311,7 +349,7 @@ class Date
   # :category: Relative Dates
   # @group Relative Dates
 
-  # Predecessor of self, opposite if #succ.
+  # Predecessor of self, opposite of `#succ`.
   # @return [Date]
   def pred
     self - 1.day
@@ -727,7 +765,7 @@ class Date
   # Return the date for Easter in the Western Church for the year in which this
   # date falls.
   #
-  # @return [Boolean]
+  # @return [Date]
   def easter_this_year
     # Return the date of Easter in self's year
     Date.easter(year)
@@ -735,14 +773,18 @@ class Date
 
   # @group Federal Holidays and Workdays
 
-  # Calculations for Federal holidays as provided for in 5 USC 6103
-
   # Holidays decreed by executive order See http://www.whitehouse.gov/the-press-office/2012/12/21
   FED_DECREED_HOLIDAYS =
     [
       ::Date.parse('2012-12-24')
     ].freeze
 
+  # Return whether this date is a United States federal holiday.
+  #
+  # Calculations for Federal holidays are based on 5 USC 6103, include all
+  # weekends, and holidays based on executive orders.
+  #
+  # @return [Boolean]
   def fed_holiday?
     # All Saturdays and Sundays are "holidays"
     return true if weekend?
@@ -770,13 +812,22 @@ class Date
     end
   end
 
+  # Return whether this date is a date on which the US federal government is
+  # open for business.  It is the opposite of #fed_holiday?
+  #
+  # @return [Boolean]
   def fed_workday?
     !fed_holiday?
   end
 
   # :category: Queries
 
-  def add_fed_business_days(n)
+  # Return the date that is n federal workdays after or before (if n < 0) this
+  # date.
+  #
+  # @param n [Integer] number of federal workdays to add to this date
+  # @return [Date]
+  def add_fed_workdays(n)
     d = dup
     return d if n.zero?
     incr = n.negative? ? -1 : 1
@@ -788,18 +839,39 @@ class Date
     d
   end
 
+  # Return the next federal workday after this date. The date returned is always
+  # a date at least one day after this date, never this date.
+  #
+  # @return [Date]
   def next_fed_workday
-    add_fed_business_days(1)
+    add_fed_workdays(1)
   end
 
+  # Return the last federal workday before this date.  The date returned is always
+  # a date at least one day before this date, never this date.
+  #
+  # @return [Date]
   def prior_fed_workday
-    add_fed_business_days(-1)
+    add_fed_workdays(-1)
   end
 
-  def nyse_workday?
-    !nyse_holiday?
+  # Return this date if its a federal workday, otherwise skip forward to the
+  # first later federal workday.
+  #
+  # @return [Date]
+  def next_until_fed_workday
+    date = dup
+    date += 1 until date.fed_workday?
+    date
   end
-  alias trading_day? nyse_workday?
+
+  # Return this if its a federal workday, otherwise skip back to the first prior
+  # federal workday.
+  def prior_until_fed_workday
+    date = dup
+    date -= 1 until date.fed_workday?
+    date
+  end
 
   protected
 
@@ -853,29 +925,41 @@ class Date
 
   # @group NYSE Holidays and Workdays
 
-  public
-
-  #######################################################
-  # Calculations for NYSE holidays
-  # Rule 51 and supplementary material
-  #######################################################
-
-  # Rule: if it falls on Saturday, observe on preceding Friday.
-  # Rule: if it falls on Sunday, observe on following Monday.
-  #
-  # New Year's Day, January 1.
-  # Birthday of Martin Luther King, Jr., the third Monday in January.
-  # Washington's Birthday, the third Monday in February.
-  # Good Friday Friday before Easter Sunday.  NOTE: not a fed holiday
-  # Memorial Day, the last Monday in May.
-  # Independence Day, July 4.
-  # Labor Day, the first Monday in September.
-  # NOTE: Columbus and Veterans days not observed
-  # Thanksgiving Day, the fourth Thursday in November.
-  # Christmas Day, December 25.
-
   # :category: Queries
 
+  public
+
+  # Returns whether this date is one on which the NYSE was or is expected to be
+  # closed for business.
+  #
+  # Calculations for NYSE holidays are from Rule 51 and supplementary materials
+  # for the Rules of the New York Stock Exchange, Inc.
+  #
+  # * General Rule 1: if a regular holiday falls on Saturday, observe it on the preceding Friday.
+  # * General Rule 2: if a regular holiday falls on Sunday, observe it on the following Monday.
+  #
+  # These are the regular holidays:
+  #
+  # * New Year's Day, January 1.
+  # * Birthday of Martin Luther King, Jr., the third Monday in January.
+  # * Washington's Birthday, the third Monday in February.
+  # * Good Friday Friday before Easter Sunday.  NOTE: this is not a fed holiday
+  # * Memorial Day, the last Monday in May.
+  # * Independence Day, July 4.
+  # * Labor Day, the first Monday in September.
+  # * Thanksgiving Day, the fourth Thursday in November.
+  # * Christmas Day, December 25.
+  #
+  # Columbus and Veterans days not observed.
+  #
+  # In addition, there have been several days on which the exchange has been
+  # closed for special events such as Presidential funerals, the 9-11 attacks,
+  # the paper-work crisis in the 1960's, hurricanes, etc.  All of these are
+  # considered holidays for purposes of this method.
+  #
+  # In addition, every weekend is considered a holiday.
+  #
+  # @return [Boolean]
   def nyse_holiday?
     # All Saturdays and Sundays are "holidays"
     return true if weekend?
@@ -904,7 +988,20 @@ class Date
     end
   end
 
-  def add_nyse_business_days(n)
+  # Return whether the NYSE is open for trading on this date.
+  #
+  # @return [Boolean]
+  def nyse_workday?
+    !nyse_holiday?
+  end
+  alias trading_day? nyse_workday?
+
+  # Return the date that is n NYSE trading days after or before (if n < 0) this
+  # date.
+  #
+  # @param n [Integer] number of NYSE trading days to add to this date
+  # @return [Date]
+  def add_nyse_workdays(n)
     d = dup
     return d if n.zero?
     incr = n.negative? ? -1 : 1
@@ -915,28 +1012,40 @@ class Date
     end
     d
   end
-  alias add_trading_days add_nyse_business_days
+  alias add_trading_days add_nyse_workdays
 
+  # Return the next NYSE trading day after this date. The date returned is always
+  # a date at least one day after this date, never this date.
+  #
+  # @return [Date]
   def next_nyse_workday
-    add_nyse_business_days(1)
+    add_nyse_workdays(1)
   end
   alias next_trading_day next_nyse_workday
 
+  # Return the last NYSE trading day before this date. The date returned is always
+  # a date at least one day before this date, never this date.
+  #
+  # @return [Date]
   def prior_nyse_workday
-    add_nyse_business_days(-1)
+    add_nyse_workdays(-1)
   end
   alias prior_trading_day prior_nyse_workday
 
-  # Return self if its a trading day, otherwise skip forward to the first
+  # Return this date if its a trading day, otherwise skip forward to the first
   # later trading day.
+  #
+  # @return [Date]
   def next_until_trading_day
     date = dup
     date += 1 until date.trading_day?
     date
   end
 
-  # Return self if its a trading day, otherwise skip back to the first prior
+  # Return this date if its a trading day, otherwise skip back to the first prior
   # trading day.
+  #
+  # @return [Date]
   def prior_until_trading_day
     date = dup
     date -= 1 until date.trading_day?
@@ -1113,33 +1222,33 @@ class Date
 
   class << self
     # @group Parsing
-
+    #
     # Convert a string +str+ with an American style date into a Date object
     #
-    # An American style date is of the form MM/DD/YYYY, that is it places the
-    # month first, then the day of the month, and finally the year. The
-    # European convention is to place the day of the month first, DD/MM/YYYY.
-    # Because a date found in the wild can be ambiguous, e.g. 3/5/2014, a date
-    # string known to be using the American convention can be parsed using
-    # this method. Both the month and the day can be a single digit. The year
-    # can be either 2 or 4 digits, and if given as 2 digits, it adds 2000 to
-    # it to give the year.
+    # An American style date is of the form `MM/DD/YYYY`, that is it places the
+    # month first, then the day of the month, and finally the year. The European
+    # convention is to place the day of the month first, `DD/MM/YYYY`. A date
+    # found in the wild can be ambiguous, e.g. 3/5/2014, but a date string known
+    # to be using the American convention can be parsed using this method. Both
+    # the month and the day can be a single digit. The year can be either 2 or 4
+    # digits, and if given as 2 digits, it adds 2000 to it to give the year.
     #
-    # @example Date.parse_american('9/11/2001') #=> Date(2011, 9, 11)
-    #     Date.parse_american('9/11/01') #=> Date(2011, 9, 11)
-    #     Date.parse_american('9/11/1') #=> ArgumentError
+    # @example
+    #   Date.parse_american('9/11/2001') #=> Date(2011, 9, 11)
+    #   Date.parse_american('9/11/01')   #=> Date(2011, 9, 11)
+    #   Date.parse_american('9/11/1')    #=> ArgumentError
     #
-    # @param str [#to_s] a stringling of the form MM/DD/YYYY
-    # @return [date] the date represented by the str paramenter.
+    # @param str [String, #to_s] a stringling of the form MM/DD/YYYY
+    # @return [Date] the date represented by the str paramenter.
     def parse_american(str)
-      unless str.to_s =~ %r{\A\s*(\d\d?)\s*/\s*(\d\d?)\s*/\s*(\d?\d?\d\d)\s*\z}
+      unless str.to_s =~ %r{\A\s*(\d\d?)\s*/\s*(\d\d?)\s*/\s*((\d\d)?\d\d)\s*\z}
         raise ArgumentError, "date string must be of form 'MM?/DD?/YY(YY)?'"
       end
       year = $3.to_i
       month = $1.to_i
       day = $2.to_i
       year += 2000 if year < 100
-      ::Date.new(year, month, day)
+      Date.new(year, month, day)
     end
 
     # Convert a 'date spec' +spec+ to a Date.  A date spec is a short-hand way of
