@@ -1,1 +1,1 @@
---no-private --protected lib/**/*.rb - README LICENSE
+--no-private lib/**/*.rb - README.md

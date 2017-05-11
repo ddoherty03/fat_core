@@ -13,6 +13,7 @@ Gem::Specification.new do |spec|
   spec.homepage      = ''
   spec.license       = 'MIT'
   spec.required_ruby_version = '>= 2.3.1'
+  spec.metadata['yard.run'] = 'yri' # use "yard" to build full HTML docs.
 
   spec.files         = `git ls-files -z`.split("\x0")
   spec.files.reject! { |fn| fn =~ /^NYSE_closings.pdf/ }
