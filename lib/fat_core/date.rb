@@ -359,16 +359,64 @@ class Date
     end
   end
 
+  # Return the date that is +n+ calendar halves after this date, where a
+  # calendar half is a period of 6 months.
+  #
+  # @param n [Integer] number of halves to advance, can be negative
+  # @return [Date] new date n halves after this date
   def next_half(n = 1)
+    n = n.floor
+    return self if n.zero?
     next_month(n * 6)
   end
 
+  # Return the date that is +n+ calendar halves before this date, where a
+  # calendar half is a period of 6 months.
+  #
+  # @param n [Integer] number of halves to retreat, can be negative
+  # @return [Date] new date n halves before this date
+  def prior_half(n = 1)
+    next_half(-n)
+  end
+
+  # Return the date that is +n+ calendar quarters after this date, where a
+  # calendar quarter is a period of 3 months.
+  #
+  # @param n [Integer] number of quarters to advance, can be negative
+  # @return [Date] new date n quarters after this date
   def next_quarter(n = 1)
+    n = n.floor
+    return self if n.zero?
     next_month(n * 3)
   end
 
+  # Return the date that is +n+ calendar quarters before this date, where a
+  # calendar quarter is a period of 3 months.
+  #
+  # @param n [Integer] number of quarters to retreat, can be negative
+  # @return [Date] new date n quarters after this date
+  def prior_quarter(n = 1)
+    next_quarter(-n)
+  end
+
+  # Return the date that is +n+ calendar bimonths after this date, where a
+  # calendar bimonth is a period of 2 months.
+  #
+  # @param n [Integer] number of bimonths to advance, can be negative
+  # @return [Date] new date n bimonths after this date
   def next_bimonth(n = 1)
+    n = n.floor
+    return self if n.zero?
     next_month(n * 2)
+  end
+
+  # Return the date that is +n+ calendar bimonths before this date, where a
+  # calendar bimonth is a period of 2 months.
+  #
+  # @param n [Integer] number of bimonths to retreat, can be negative
+  # @return [Date] new date n bimonths before this date
+  def prior_bimonth(n = 1)
+    next_bimonth(-n)
   end
 
   def next_semimonth(n = 1)
@@ -405,16 +453,71 @@ class Date
     end
   end
 
+  # Return the date that is +n+ semimonths before this date. Each semimonth
+  # begins on the 1st or 15th of the month, and retreating one semimonth from
+  # the first half of a month means to go as far past the 15th of the prior
+  # month as the current date is past the 1st; retreating one semimonth from the
+  # second half of a month means to go as far past the 1st of the current month
+  # as the current date is past the 15th, but never past the 14th of the the
+  # current month.
+  #
+  # @param n [Integer] number of semimonths to retreat, can be negative
+  # @return [Date] new date n semimonths before this date
+  def prior_semimonth(n = 1)
+    next_semimonth(-n)
+  end
+
+  # Return the date that is +n+ biweeks after this date where each biweek is 14
+  # days.
+  #
+  # @param n [Integer] number of biweeks to advance, can be negative
+  # @return [Date] new date n biweeks after this date
   def next_biweek(n = 1)
+    n = n.floor
+    return self if n.zero?
     self + (14 * n)
   end
 
+  # Return the date that is +n+ biweeks before this date where each biweek is 14
+  # days.
+  #
+  # @param n [Integer] number of biweeks to retreat, can be negative
+  # @return [Date] new date n biweeks before this date
+  def prior_biweek(n = 1)
+    next_biweek(-n)
+  end
+
+  # Return the date that is +n+ weeks after this date where each week is 7 days.
+  # This is different from the #next_week method in active_support, which
+  # goes to the first day of the week in the next week and does not take an
+  # argument +n+ to go multiple weeks.
+  #
+  # @param n [Integer] number of weeks to advance
+  # @return [Date] new date n weeks after this date
   def next_week(n = 1)
+    n = n.floor
+    return self if n.zero?
     self + (7 * n)
   end
 
-  def next_day(n = 1)
-    self + n
+  # Return the date that is +n+ weeks before this date where each week is 7
+  # days.
+  #
+  # @param n [Integer] number of weeks to retreat
+  # @return [Date] new date n weeks from this date
+  def prior_week(n)
+    next_week(-n)
+  end
+
+  # NOTE: #next_day is defined in active_support.
+
+  # Return the date that is +n+ weeks before this date where each week is 7
+  # days.
+  #
+  # @param n [Integer] number of days to retreat
+  # @return [Date] new date n days before this date
+  def prior_day(n)
+    next_day(-n)
   end
 
   # :category: Relative Dates
