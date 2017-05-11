@@ -29,7 +29,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'pry'
   spec.add_development_dependency 'pry-doc'
   spec.add_development_dependency 'pry-byebug'
-  spec.add_development_dependency 'rcodetools'
+  spec.add_development_dependency 'redcarpet'
 
   spec.add_runtime_dependency 'activesupport'
   spec.add_runtime_dependency 'erubis'

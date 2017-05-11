@@ -8,6 +8,13 @@ RDoc::Task.new do |rdoc|
   rdoc.options << "--ri"
 end
 
+YARD::Rake::YardocTask.new do |t|
+  t.files   = ['lib/**/*.rb', README.md]
+  t.options = ['--embed-mixins', '--readme README.md',
+               '-m markdown', '-M redcarpet']
+  t.stats_options = ['--list-undoc']         # optional
+end
+
 RSpec::Core::RakeTask.new(:spec, :tag) do |t|
   t.rspec_opts = '--tag ~online -f p'
 end
