@@ -1297,7 +1297,7 @@ class Date
       when /\AW(\d\d?)\z/, /\A(\d\d?)W\z/
         week_num = $1.to_i
         if week_num < 1 || week_num > 53
-          raise ArgumentError, "invalid week number (1-53): 'W#{week_num}'"
+          raise ArgumentError, "invalid week number (1-53): '#{spec}'"
         end
         if spec_type == :from
           ::Date.commercial(today.year, week_num).beginning_of_week
@@ -1308,7 +1308,7 @@ class Date
         year = $1.to_i
         week_num = $2.to_i
         if week_num < 1 || week_num > 53
-          raise ArgumentError, "invalid week number (1-53): 'W#{week_num}'"
+          raise ArgumentError, "invalid week number (1-53): '#{spec}'"
         end
         if spec_type == :from
           ::Date.commercial(year, week_num).beginning_of_week
@@ -1320,7 +1320,7 @@ class Date
         year = $1.to_i
         quarter = $2.to_i
         unless [1, 2, 3, 4].include?(quarter)
-          raise ArgumentError, "bad date format: #{spec}"
+          raise ArgumentError, "invalid quarter number (1-4): '#{spec}'"
         end
         month = quarter * 3
         if spec_type == :from
@@ -1332,6 +1332,9 @@ class Date
         # Quarter only
         this_year = today.year
         quarter = $1.to_i
+        unless [1, 2, 3, 4].include?(quarter)
+          raise ArgumentError, "invalid quarter number (1-4): '#{spec}'"
+        end
         date = ::Date.new(this_year, quarter * 3, 15)
         if spec_type == :from
           date.beginning_of_quarter
@@ -1343,7 +1346,7 @@ class Date
         year = $1.to_i
         half = $2.to_i
         unless [1, 2].include?(half)
-          raise ArgumentError, "bad date format: #{spec}"
+          raise ArgumentError, "invalid half number: '#{spec}'"
         end
         month = half * 6
         if spec_type == :from
@@ -1355,6 +1358,9 @@ class Date
         # Half only
         this_year = today.year
         half = $1.to_i
+        unless [1, 2].include?(half)
+          raise ArgumentError, "invalid half number: '#{spec}'"
+        end
         date = ::Date.new(this_year, half * 6, 15)
         if spec_type == :from
           date.beginning_of_half
@@ -1363,24 +1369,38 @@ class Date
         end
       when /^(\d\d\d\d)[-\/](\d\d?)*$/
         # Year-Month only
+        year = $1.to_i
+        month = $2.to_i
+        unless [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].include?(month)
+          raise ArgumentError, "invalid month number (1-12): '#{spec}'"
+        end
         if spec_type == :from
-          ::Date.new($1.to_i, $2.to_i, 1)
+          ::Date.new(year, month, 1)
         else
-          ::Date.new($1.to_i, $2.to_i, 1).end_of_month
+          ::Date.new(year, month, 1).end_of_month
         end
       when /^(\d\d?)[-\/](\d\d?)*$/
         # Month-Day only
+        month = $1.to_i
+        day = $2.to_i
+        unless [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].include?(month)
+          raise ArgumentError, "invalid month number (1-12): '#{spec}'"
+        end
         if spec_type == :from
-          ::Date.new(today.year, $1.to_i, $2.to_i)
+          ::Date.new(today.year, month, day)
         else
-          ::Date.new(today.year, $1.to_i, $2.to_i).end_of_month
+          ::Date.new(today.year, month, day).end_of_month
         end
       when /\A(\d\d?)\z/
         # Month only
+        month = $1.to_i
+        unless [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].include?(month)
+          raise ArgumentError, "invalid month number (1-12): '#{spec}'"
+        end
         if spec_type == :from
-          ::Date.new(today.year, $1.to_i, 1)
+          ::Date.new(today.year, month, 1)
         else
-          ::Date.new(today.year, $1.to_i, 1).end_of_month
+          ::Date.new(today.year, month, 1).end_of_month
         end
       when /^(\d\d\d\d)$/
         # Year only
