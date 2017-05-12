@@ -1,6 +1,7 @@
 require 'bundler/gem_tasks'
 require 'rspec/core/rake_task'
 require 'rdoc/task'
+require 'yard/rake/yardoc_task'
 
 RDoc::Task.new do |rdoc|
   rdoc.main = 'README.rdoc'
@@ -9,7 +10,7 @@ RDoc::Task.new do |rdoc|
 end
 
 YARD::Rake::YardocTask.new do |t|
-  t.files   = ['lib/**/*.rb', README.md]
+  t.files   = ['lib/**/*.rb', 'README.md']
   t.options = ['--embed-mixins', '--readme README.md',
                '-m markdown', '-M redcarpet']
   t.stats_options = ['--list-undoc']         # optional
