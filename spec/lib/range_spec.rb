@@ -164,23 +164,25 @@ describe Range do
     end
 
     it 'should be able to determine whether a set contains covered overlaps' do
-      expect((0..10)).to have_overlaps_within([(0..3), (2..6), (7..10)])
+      expect(Range.overlaps_among?([(0..3), (2..6), (7..10)])).to be true
+      expect((0..10).overlaps_among?([(0..3), (2..6), (7..10)])).to be true
     end
 
-    it 'should not care about overlaps outside range' do
-      expect((11..15)).to_not have_overlaps_within([(0..3), (2..6), (7..10)])
+    it 'should not care about overlaps outside self' do
+      expect(Range.overlaps_among?([(0..3), (2..6), (7..10)])).to be true
+      expect((11..15).overlaps_among?([(0..3), (2..6), (7..10)])).to be false
     end
 
     it 'should not count contiguous ranges as overlapping' do
-      expect((0..10)).to_not have_overlaps_within([(0..3), (4..6), (7..10)])
+      expect(Range.overlaps_among?([(0..3), (4..6), (7..10)])).to be false
     end
 
     it 'should not count non-contiguous ranges as overlapping' do
-      expect((0..10)).to_not have_overlaps_within([(0..3), (4..6), (8..10)])
+      expect(Range.overlaps_among?([(0..3), (4..6), (8..10)])).to be false
     end
 
     it 'should not count an empty set as overlapping' do
-      expect((0..10)).to_not have_overlaps_within([])
+      expect(Range.overlaps_among?([])).to be false
     end
   end
 
