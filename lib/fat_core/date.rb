@@ -1054,6 +1054,10 @@ class Date
 
   protected
 
+  # Return whether this date is a fixed holiday for the NYSE, that is, a holiday
+  # that falls on the same date each year.
+  #
+  # @return [Boolean]
   def nyse_fixed_holiday?
     # Fixed-date holidays
     if mon == 1 && mday == 1
@@ -1072,6 +1076,10 @@ class Date
 
   # :category: Queries
 
+  # Return whether this date is a non-fixed holiday for the NYSE, that is, a holiday
+  # that can fall on different dates each year, a so-called "moveable feast".
+  #
+  # @return [Boolean]
   def nyse_moveable_feast?
     # See if today is a "movable feast," all of which are
     # rigged to fall on Monday except Thanksgiving
@@ -1152,7 +1160,10 @@ class Date
 
   # They NYSE has closed on several occasions outside its normal holiday
   # rules.  This detects those dates beginning in 1960.  Closing for part of a
-  # day is not counted. See http://www1.nyse.com/pdfs/closings.pdf
+  # day is not counted. See http://www1.nyse.com/pdfs/closings.pdf.  Return
+  # whether this date is one of those special closings.
+  #
+  # @return [Boolean]
   def nyse_special_holiday?
     return false unless self > ::Date.parse('1960-01-01')
     case self
@@ -1204,7 +1215,6 @@ class Date
       true
     when (::Date.parse('2001-09-11')..::Date.parse('2001-09-14'))
       # 9-11 Attacks
-      a = a
       true
     when (::Date.parse('2004-06-11')..::Date.parse('2001-09-14'))
       # Reagan Funeral
@@ -1227,11 +1237,12 @@ class Date
     #
     # An American style date is of the form `MM/DD/YYYY`, that is it places the
     # month first, then the day of the month, and finally the year. The European
-    # convention is to place the day of the month first, `DD/MM/YYYY`. A date
-    # found in the wild can be ambiguous, e.g. 3/5/2014, but a date string known
-    # to be using the American convention can be parsed using this method. Both
-    # the month and the day can be a single digit. The year can be either 2 or 4
-    # digits, and if given as 2 digits, it adds 2000 to it to give the year.
+    # convention is typically to place the day of the month first, `DD/MM/YYYY`.
+    # A date found in the wild can be ambiguous, e.g. 3/5/2014, but a date
+    # string known to be using the American convention can be parsed using this
+    # method. Both the month and the day can be a single digit. The year can be
+    # either 2 or 4 digits, and if given as 2 digits, it adds 2000 to it to give
+    # the year.
     #
     # @example
     #   Date.parse_american('9/11/2001') #=> Date(2011, 9, 11)
@@ -1251,38 +1262,58 @@ class Date
       Date.new(year, month, day)
     end
 
-    # Convert a 'date spec' +spec+ to a Date.  A date spec is a short-hand way of
-    # specifying a date, relative to the computer clock.  A date spec can
-    # interpreted as either a 'from spec' or a 'to spec'.
+    # Convert a 'period spec' `spec` to a Date. A date spec is a short-hand way of
+    # specifying a calendar period either absolutely or relative to the computer
+    # clock. This method returns the first date of that period, when `spec_type`
+    # is set to `:from`, the default, and returns the last date of the period
+    # when `spec_type` is `:to`.
     #
-    # Assuming that Date.current at the time of execution is 2014-07-26 and
-    # using the default spec_type of :from.  The return values are actually Date
-    # objects, but are shown below as textual dates.
+    # There are a number of forms the `spec` can take. In each case,
+    # `Date.parse_spec` returns the first date in the period if `spec_type` is
+    # `:from` and the last date in the period if `spec_type` is `:to`:
     #
-    # @example
-    #   A fully specified date returns that date:
-    #   Date.parse_spec('2001-09-11')  # =>
+    # * `YYYY` is the whole year `YYYY`,
+    # * `YYYY-1H` or `YYYY-H1` is the first calendar half in year `YYYY`,
+    # * `H2` or `2H` is the second calendar half of the current year,
+    # * `YYYY-3Q` or `YYYY-Q3` is the third calendar quarter of year YYYY,
+    # * `Q3` or `3Q` is the third calendar quarter in the current year,
+    # * `YYYY-04` or `YYYY-4` is April, the fourth month of year `YYYY`,
+    # * `4-12` or `04-12` is the 12th of April in the current year,
+    # * `4` or `04` is April in the current year,
+    # * `YYYY-W32` or `YYYY-32W` is the 32nd week in year YYYY,
+    # * `W32` or `32W` is the 32nd week in the current year,
+    # * `YYYY-MM-DD` a particular date, so `:from` and `:to` return the same
+    #   date,
+    # * `this_<chunk>` where `<chunk>` is one of `year`, `half`, `quarter`,
+    #   `bimonth`, `month`, `semimonth`, `biweek`, `week`, or `day`, the
+    #   corresponding calendar period in which the current date falls,
+    # * `last_<chunk>` where `<chunk>` is one of `year`, `half`, `quarter`,
+    #   `bimonth`, `month`, `semimonth`, `biweek`, `week`, or `day`, the
+    #   corresponding calendar period immediately before the one in which the
+    #   current date falls,
+    # * `today` is the same as `this_day`,
+    # * `yesterday` is the same as `last_day`,
+    # * `forever` is the period from Date::BOT to Date::EOT, essentially all
+    #   dates of commercial interest, and
+    # * `never` causes the method to return nil.
     #
-    # Commercial weeks can be specified using, for example W32 or 32W, with the
-    # week beginning on Monday, ending on Sunday.
+    # In all of the above example specs, letter used for calendar chunks, `W`,
+    # `Q`, and `H` can be written in lower case as well. Also, you can use `/`
+    # to separate date components instead of `-`.
     #
     # @example
     #   Date.parse_spec('2012-W32').iso      # => "2012-08-06"
     #   Date.parse_spec('2012-W32', :to).iso # => "2012-08-12"
-    #   Date.parse_spec('W32')               # => "2012-08-06" if executed in 2012
+    #   Date.parse_spec('W32').iso           # => "2012-08-06" if executed in 2012
+    #   Date.parse_spec('W32').iso           # => "2012-08-04" if executed in 2014
     #
-    # A spec of the form Q3 or 3Q returns the beginning or end of calendar
-    # quarters.
-    # @example
-    #     Date.parse_spec('Q3')         # =>
-    #
-    # @param spec [#to_s] the spec to be interpreted as a calendar period
+    # @param spec [String, #to_s] the spec to be interpreted as a calendar period
     #
     # @param spec_type [:from, :to] return the first (:from) or last (:to)
     #   date in the spec's period respectively
     #
     # @return [Date] date that is the first (:from) or last (:to) in the period
-    #   designated by `spec`
+    #   designated by spec
     def parse_spec(spec, spec_type = :from)
       spec = spec.to_s.strip
       unless [:from, :to].include?(spec_type)
@@ -1516,6 +1547,8 @@ class Date
 
     # @group Utilities
 
+    # An Array of the number of days in each month indexed by month number,
+    # starting with January = 1, etc.
     COMMON_YEAR_DAYS_IN_MONTH = [31, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31,
                                  30, 31].freeze
     def days_in_month(y, m)
@@ -1528,9 +1561,14 @@ class Date
       end
     end
 
+    # Return the nth weekday in the given month. If n is negative, count from
+    # last day of month.
+    #
+    # @param n [Integer] the ordinal number for the weekday
+    # @param wday [Integer] the weekday of interest with Monday 0 to Sunday 6
+    # @param year [Integer] the year of interest
+    # @param month [Integer] the month of interest with January 1 to December 12
     def nth_wday_in_year_month(n, wday, year, month)
-      # Return the nth weekday in the given month
-      # If n is negative, count from last day of month
       wday = wday.to_i
       raise ArgumentError, 'illegal weekday number' if wday < 0 || wday > 6
       month = month.to_i
@@ -1560,11 +1598,14 @@ class Date
         end
         d
       else
-        raise ArgumentError,
-              'Arg 1 to nth_wday_in_month_year cannot be zero'
+        raise ArgumentError, 'Argument n cannot be zero'
       end
     end
 
+    # Return the date of Easter for the Western Church in the given year.
+    #
+    # @param year [Integer] the year of interest
+    # @return [Date] the date of Easter for year
     def easter(year)
       y = year
       a = y % 19
