@@ -737,8 +737,8 @@ class Date
   #   +:month+, +:semimonth+, +:biweek+, +:week+, or +:day+.
   # @return [Date] the first date in the chunk-sized period in which this date
   #   falls
-  def end_of_chunk(sym)
-    case sym
+  def end_of_chunk(chunk)
+    case chunk
     when :year
       end_of_year
     when :half
@@ -758,7 +758,7 @@ class Date
     when :day
       self
     else
-      raise ArgumentError, "unknown chunk sym: '#{sym}'"
+      raise ArgumentError, "unknown chunk: '#{chunk}'"
     end
   end
 
