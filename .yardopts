@@ -1,1 +1,4 @@
-lib/**/*.rb --embed-mixins --readme README.md -m markdown -M redcarpet
+--embed-mixins
+--readme README.md
+--markup-provider=redcarpet
+--markup=markdown
