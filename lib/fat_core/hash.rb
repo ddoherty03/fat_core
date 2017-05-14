@@ -1,3 +1,25 @@
+# The FatCore extensions to Hash provide a handful of generally useful methods
+# on Ruby Hash objects.
+#
+# You can get these with:
+#
+# ```
+# require 'fat_core/hash'
+# ```
+#
+# It provides a couple of methods for manipulating the keys of a Hash:
+# `#remap_keys` for translating the current set of keys to a new set provided by
+# a Hash of old to new keys, and `#replace_keys` for doing a similar operation
+# with an Array of new keys. Along the same line, the method `#keys_with_value`
+# will return the keys in a Hash equal to the given value of any of an Array of
+# values.
+#
+# It also provides a method for deleting all entries in a Hash whose value match
+# a single value or any one of an Array of values in `#delete_with_value`
+#
+# Finally, it provides an `#each_pair`-like method, `#each_pair_with_flags`,
+# that yields each key-value pair of the Hash along with two boolean flags that
+# indicate whether the element is the first or last in the Hash.
 class Hash
   # @group Enumerable Extensions
   #
@@ -18,7 +40,7 @@ class Hash
   #   b => 2 is nothing special
   #   c => 3 is last
   #
-  # @return self [Hash]
+  # @return [Hash] return self
   def each_pair_with_flags
     last_k = size - 1
     k = 0
@@ -60,7 +82,7 @@ class Hash
   #   h.keys_with_value(2) #=> [:b, :d]
   #   h.keys_with_value([1, 3]) #=> [:a, :c, :e]
   #
-  # @param v [Object, Enumerable<Object>] value to test for
+  # @param val [Object, Enumerable<Object>] value to test for
   # @return [Array<Object>] the keys with value or values v
   def keys_with_value(val)
     result = []
