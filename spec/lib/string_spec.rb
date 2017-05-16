@@ -70,8 +70,11 @@ the people, for the people, shall not perish from the earth."
       expect('   string    here  '.clean).to eq 'string here'
     end
 
-    it 'should be able to convert a digital date to iso form' do
-      expect('20140521'.digdate2iso).to eq '2014-05-21'
+    it 'should be able to convert a digital date to a Date' do
+      expect('20140521'.as_date.iso).to eq '2014-05-21'
+      expect('2014-05-21'.as_date.iso).to eq '2014-05-21'
+      expect('2014/05/21'.as_date.iso).to eq '2014-05-21'
+      expect('2014/5/21'.as_date.iso).to eq '2014-05-21'
     end
 
     it 'should wrap a short string' do
@@ -95,13 +98,6 @@ the people, for the people, shall not perish from the earth."
       expect(str.split("\n")[1]).to match(/^#{second_line}/)
       expect(str.split("\n")[2]).to match(/^#{third_line}/)
       expect(str.split("\n")[23]).to match(/^#{twenty_fourth_line}/)
-    end
-
-    it 'should be able to quote special TeX characters' do
-      expect('$10,000'.tex_quote).to eq('\\$10,000')
-      expect('would~~have'.tex_quote).to eq('would\\textasciitilde{}\\textasciitilde{}have')
-      expect('<hello>'.tex_quote).to eq('\\textless{}hello\\textgreater{}')
-      expect('{hello}'.tex_quote).to eq('\\{hello\\}')
     end
 
     it 'should be able to determine is it\'s a valid number' do
@@ -147,44 +143,6 @@ the people, for the people, shall not perish from the earth."
         .to eq "hello world   it's me"
     end
 
-    it 'should be able to fuzzy match with another string' do
-      expect('Hello, world'.fuzzy_match('or')).to be_truthy
-      expect('Hello, world'.fuzzy_match('ox')).to be_falsy
-    end
-
-    it 'should be able to match with another string containing re' do
-      expect('Hello, world'.matches_with('/or/')).to be_truthy
-      expect('Hello, world'.matches_with('/ox/')).to be_falsy
-    end
-
-    it 'should be able to match with another string containing string' do
-      expect('Hello, world'.matches_with('or')).to be_truthy
-      expect('Hello, world'.matches_with('ox')).to be_falsy
-    end
-
-    it 'should be able to fuzzy match space-separated parts' do
-      expect('Hello world'.fuzzy_match('hel or')).to be_truthy
-      expect('Hello, world'.fuzzy_match('hel ox')).to be_falsy
-    end
-
-    it 'should be able to fuzzy match colon-separated parts' do
-      expect('Hello:world'.fuzzy_match('hel:or')).to be_truthy
-      expect('Hello:world'.fuzzy_match('hel:ox')).to be_falsy
-    end
-
-    it 'should return the matched text' do
-      expect('Hello:world'.fuzzy_match('hel')).to eq('Hel')
-      expect('Hello:world'.fuzzy_match('hel:or')).to eq('Hello:wor')
-      expect('Hello:world'.matches_with('/^h.*r/')).to eq('Hello:wor')
-    end
-
-    it 'should ignore periods, commas, and apostrophes when matching' do
-      expect("St. Luke's".fuzzy_match('st lukes')).to eq('St Lukes')
-      expect('St Lukes'.fuzzy_match('st. luke\'s')).to eq('St Lukes')
-      expect('St Lukes, Inc.'.fuzzy_match('st luke inc')).to eq('St Lukes Inc')
-      expect('E*TRADE'.fuzzy_match('etrade')).to eq('ETRADE')
-    end
-
     it 'should be able to properly capitalize a string as a title' do
       # Capitalize little words only at beginning and end
       expect('the cat in the hat'.entitle).to eq('The Cat in the Hat')
@@ -194,14 +152,14 @@ the people, for the people, shall not perish from the earth."
       expect('tr'.entitle).to eq('Tr')
       expect('trd'.entitle).to eq('TRD')
       # Don't capitalize c/o
-      expect('IBM c/o watson'.entitle).to eq('Ibm c/o Watson')
+      expect('IBM c/o watson'.entitle).to eq('IBM c/o Watson')
       # Capitlaize p.o.
       expect('p.o. box 123'.entitle).to eq('P.O. Box 123')
       # Don't capitalize ordinals
       expect('22nd of september'.entitle).to eq('22nd of September')
       # Capitalize common abbrevs
-      expect('US BANK'.entitle).to eq('US Bank')
-      expect('NW territory'.entitle).to eq('NW Territory')
+      expect('US BANK'.entitle).to eq('US BANK')
+      expect('nw territory'.entitle).to eq('NW Territory')
       # Leave word starting with numbers alone
       expect('apartment 33-B'.entitle).to eq('Apartment 33-B')
       # Assume all consanants is an acronym
@@ -212,14 +170,60 @@ the people, for the people, shall not perish from the earth."
 
     it 'should be able to compute its Levenshtein distance from another string' do
       expect('Something'.distance('Smoething')).to eq 1
-      expect('Something'.distance('Smoething', block_size: 0)).to eq 2
-      expect('Something'.distance('meSothing', block_size: 1)).to eq 4
-      expect('Something'.distance('meSothing', block_size: 2)).to eq 2
-      expect('SomethingElse'.distance('Encyclopedia')).to eq 10
-      expect('SomethingElseUnrelated'.distance('EncyclopediaBritanica', max_distance: 40))
-        .to eq 21
-      expect('SomethingElseUnrelated'.distance('EncyclopediaBritanica',
-                                               max_distance: 15)).to eq 15
+      expect('Something'.distance('meSothing')).to eq 4
+      expect('SomethingElse'.distance('Encyclopedia')).to eq 11
+      expect('SomethingElseUnrelated'.distance('EncyclopediaBritanica'))
+        .to eq 11
+      expect('SomethingElseUnrelated'.distance('EncyclopediaBritanica')).to eq 11
+    end
+
+    describe 'Quoting' do
+      it 'should be able to quote special TeX characters' do
+        expect('$10,000'.tex_quote).to eq('\\$10,000')
+        expect('would~~have'.tex_quote).to eq('would\\textasciitilde{}\\textasciitilde{}have')
+        expect('<hello>'.tex_quote).to eq('\\textless{}hello\\textgreater{}')
+        expect('{hello}'.tex_quote).to eq('\\{hello\\}')
+      end
+    end
+
+    describe 'Matching' do
+      it 'should be able to fuzzy match with another string' do
+        expect('Hello, world'.fuzzy_match('or')).to be_truthy
+        expect('Hello, world'.fuzzy_match('ox')).to be_falsy
+      end
+
+      it 'should be able to fuzzy match with another string containing re' do
+        expect('Hello, world'.matches_with('/or/')).to be_truthy
+        expect('Hello, world'.matches_with('/ox/')).to be_falsy
+      end
+
+      it 'should be able to fuzzy match space-separated parts' do
+        expect('Hello world'.fuzzy_match('hel or')).to be_truthy
+        expect('Hello, world'.fuzzy_match('hel ox')).to be_falsy
+      end
+
+      it 'should be able to fuzzy match colon-separated parts' do
+        expect('Hello:world'.fuzzy_match('hel:or')).to be_truthy
+        expect('Hello:world'.fuzzy_match('hel:ox')).to be_falsy
+      end
+
+      it 'should be able to fuzzy match colon-separated parts' do
+        expect('Hello:world'.fuzzy_match('hel:or')).to be_truthy
+        expect('Hello:world'.fuzzy_match('hel:ox')).to be_falsy
+      end
+
+      it 'should return the matched text' do
+        expect('Hello:world'.fuzzy_match('hel')).to eq('Hel')
+        expect('Hello:world'.fuzzy_match('hel:or')).to eq('Hello:wor')
+        expect('Hello:world'.matches_with('/^h.*r/')).to eq('Hello:wor')
+      end
+
+      it 'should ignore periods, commas, and apostrophes when matching' do
+        expect("St. Luke's".fuzzy_match('st lukes')).to eq('St Lukes')
+        expect('St Lukes'.fuzzy_match('st. luke\'s')).to eq('St Lukes')
+        expect('St Lukes, Inc.'.fuzzy_match('st luke inc')).to eq('St Lukes Inc')
+        expect('E*TRADE'.fuzzy_match('etrade')).to eq('ETRADE')
+      end
     end
   end
 end
