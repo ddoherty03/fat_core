@@ -3,117 +3,49 @@ require 'active_support/core_ext/regexp'
 
 module FatCore
   module String
+    # @group Transforming
+    # :section: Transforming
+
     # Remove leading and trailing white space and compress internal runs of
     # white space to a single space.
+    #
+    # @example
+    #   '  hello   world\n  '.clean #=> 'hello world'
+    #
+    # @return [String]
     def clean
       strip.squeeze(' ')
     end
 
-    def distance(other, block_size: 1, max_distance: 10)
-      dl = DamerauLevenshtein
-      # NOTE: DL 'gives up after' max_distance, so the distance function
-      # will return max_distance+1 if the distance is bigger than that.
-      # Here we subtract 1 so the max_distance also becomes the max
-      # return value.
-      dl.distance(self, other, block_size, max_distance - 1)
-    end
-
-    # See if self contains colon- or space-separated words that include
-    # the colon- or space-separated words of other.  Return the matched
-    # portion of self.  Other cannot be a regex embedded in a string.
-    def fuzzy_match(other)
-      # Remove periods, commas, and apostrophes
-      other = other.gsub(/[\*.,']/, '')
-      target = gsub(/[\*.,']/, '')
-      matchers = other.split(/[: ]+/)
-      regexp_string = matchers.map { |m| ".*?#{Regexp.escape(m)}.*?" }.join('[: ]')
-      regexp_string.sub!(/^\.\*\?/, '')
-      regexp_string.sub!(/\.\*\?$/, '')
-      regexp = /#{regexp_string}/i
-      matched_text =
-        if (match = regexp.match(target))
-          match[0]
-        end
-      matched_text
-    end
-
-    # Here are instance methods for the class that includes Matchable
-    # This tries to convert the receiver object into a string, then
-    # matches against the given matcher, either via regex or a fuzzy
-    # string matcher.
-    def matches_with(str)
-      if str.nil?
-        nil
-      elsif str =~ %r{^\s*/}
-        re = str.to_regexp
-        $& if to_s =~ re
-      else
-        to_s.fuzzy_match(str)
-      end
-    end
-
-    def blank?
-      !!self =~ /\A\s*\z/
-    end
-
-    # Convert a string of the form '/.../Iixm' to a regular expression. However,
-    # make the regular expression case-insensitive by default and extend the
-    # modifier syntax to allow '/I' to indicate case-sensitive.
-    def to_regexp
-      if self =~ %r{^\s*/([^/]*)/([Iixm]*)\s*$}
-        body = $1
-        opts = $2
-        flags = Regexp::IGNORECASE
-        unless opts.blank?
-          flags = 0 if opts.include?('I')
-          flags |= Regexp::IGNORECASE if opts.include?('i')
-          flags |= Regexp::EXTENDED if opts.include?('x')
-          flags |= Regexp::MULTILINE if opts.include?('m')
-        end
-        flags = nil if flags.zero?
-        Regexp.new(body, flags)
-      else
-        Regexp.new(self)
-      end
-    end
-
-    # Convert to symbol "Hello World" -> :hello_world
+    # Convert to a lower-case symbol with all white space converted to a single
+    # '_' and all non-alphanumerics deleted, such that the string will work as
+    # an unquoted Symbol.
+    #
+    # @example
+    #   "Hello World" -> :hello_world
+    #   "Hello*+World" -> :helloworld
+    #
+    # @return [Symbol] self converted to a Symbol
     def as_sym
-      strip.squeeze(' ').gsub(/\s+/, '_')
-        .gsub(/[^_A-Za-z0-9]/, '').downcase.to_sym
+      clean
+        .gsub(/\s+/, '_')
+        .gsub(/[^_A-Za-z0-9]/, '')
+        .downcase.to_sym
     end
 
+    # Return self unmodified. This method is here so to comply with the API of
+    # Symbol#as_string so that it can be applied to a variable that is either a
+    # String or a Symbol.
+    #
+    # @return [String] self unmodified
     def as_string
       self
     end
 
-    def number?
-      Float(self)
-      true
-    rescue ArgumentError
-      return false
-    end
-
-    # If the string is a number, add grouping commas to the whole number part.
-    def commify
-      # Break the number into parts
-      return self unless clean =~ /\A(-)?(\d*)((\.)?(\d*))?\z/
-      neg = $1 || ''
-      whole = $2
-      frac = $5
-      # Place the commas in the whole part only
-      whole = whole.reverse
-      whole.gsub!(/([0-9]{3})/, '\\1,')
-      whole.gsub!(/,$/, '')
-      whole.reverse!
-      # Reassemble
-      if frac.blank?
-        neg + whole
-      else
-        neg + whole + '.' + frac
-      end
-    end
-
+    # Return a string wrapped to `width` characters with lines following the
+    # first indented by `hang` characters.
+    #
+    # @return [String] self wrapped
     def wrap(width = 70, hang = 0)
       result = ''
       first_line = true
@@ -140,6 +72,14 @@ module FatCore
       result.strip
     end
 
+    # Return self with special TeX characters replaced with control-sequences
+    # that output the literal value of the special characters instead.  It
+    # handles _, $, &, %, #, {, }, \, ^, ~, <, and >.
+    #
+    # @example
+    #   '$100 & 20#'.tex_quote #=> '\\$100 \\& 20\\#'
+    #
+    # @return [String] self quoted
     def tex_quote
       r = dup
       r = r.gsub(/[{]/, 'XzXzXobXzXzX')
@@ -155,20 +95,46 @@ module FatCore
       r.gsub('XzXzXcbXzXzX', '\\}')
     end
 
-    # Convert a string with an all-digit date to an iso string
-    # E.g., "20090923" -> "2009-09-23"
-    def digdate2iso
-      sub(/(\d\d\d\d)(\d\d)(\d\d)/, '\1-\2-\3')
+    # Convert a string representing a date with only digits, hyphens, or slashes
+    # to a Date.
+    #
+    # @example
+    #   "20090923".as_date.iso -> "2009-09-23"
+    #   "2009/09/23".as_date.iso -> "2009-09-23"
+    #   "2009-09-23".as_date.iso -> "2009-09-23"
+    #   "2009-9-23".as_date.iso -> "2009-09-23"
+    #
+    # @return [Date] the translated Date
+    def as_date
+      ::Date.new($1.to_i, $2.to_i, $3.to_i) if self =~ %r{(\d\d\d\d)[-/]?(\d\d?)[-/]?(\d\d?)}
     end
 
-    def entitle!
-      little_words = %w(a an the and or in on under of from as by to)
+    # Return self capitalized according to the conventions for capitalizing
+    # titles of books or articles. Tries to follow the rules of the University
+    # of Chicago's *A Manual of Style*, Section 7.123, except to the extent that
+    # doing so requires knowing the parts of speech of words in the title. Also
+    # tries to use sensible capitalization for things such as postal address
+    # abbreviations, like P.O Box, Ave., Cir., etc. Considers all-consonant
+    # words of 3 or more characters as acronyms to be kept all uppercase, e.g.,
+    # ddt => DDT, and words that are all uppercase in the input are kept that
+    # way, e.g. IBM stays IBM. Thus, if the source string is all uppercase, you
+    # should lowercase the whole string before using #entitle, otherwise is will
+    # not have the intended effect.
+    #
+    # @example 'now is the time for all good men' #=> 'Now Is the Time for All
+    #   Good Men' 'how in the world does IBM do it?'.entitle #=> "How in the
+    #   World Does IBM Do It?" 'how in the world does ibm do it?'.entitle #=>
+    #   "How in the World Does Ibm Do It?" 'ne by nw'.entitle #=> 'NE by NW' 'my
+    #   life: a narcissistic tale' => 'My Life: A Narcissistic Tale'
+    #
+    # @return [String]
+    def entitle
+      little_words = %w[a an the at for up and but
+                        or nor in on under of from as by to]
       newwords = []
+      capitalize_next = false
       words = split(/\s+/)
-      first_word = true
-      num_words = words.length
-      words.each_with_index do |w, k|
-        last_word = (k + 1 == num_words)
+      words.each_with_flags do |w, first, last|
         if w =~ %r{c/o}i
           # Care of
           newwords.push('c/o')
@@ -194,96 +160,196 @@ module FatCore
         elsif w =~ /^[^aeiouy]*$/i && w.size > 2
           # All consonants and at least 3 chars, probably abbr
           newwords.push(w.upcase)
+        elsif w =~ /^[A-Z0-9]+\z/
+          # All uppercase and numbers, keep as is
+          newwords.push(w)
         elsif w =~ /^(\w+)-(\w+)$/i
           # Hyphenated double word
           newwords.push($1.capitalize + '-' + $2.capitalize)
+        elsif capitalize_next
+          # Last word ended with a ':'
+          newwords.push(w.capitalize)
+          capitalize_next = false
         elsif little_words.include?(w.downcase)
           # Only capitalize at beginning or end
-          newwords.push(first_word || last_word ? w.capitalize : w.downcase)
+          newwords.push(first || last ? w.capitalize : w.downcase)
         else
           # All else
           newwords.push(w.capitalize)
         end
-        first_word = false
+        # Capitalize following a ':'
+        capitalize_next = true if newwords.last =~ /:\s*\z/
       end
-      self[0..-1] = newwords.join(' ')
+      newwords.join(' ')
     end
 
-    def entitle
-      dup.entitle!
+    # @group Matching
+    # :section: Matching
+
+    # Return the Damerau-Levenshtein distance between self an another string
+    # using a transposition block size of 1 and quitting if a max distance of 10
+    # is reached.
+    #
+    # @param other [#to_s] string to compute self's distance from
+    # @return [Integer] the distance between self and other
+    def distance(other)
+      DamerauLevenshtein.distance(self, other.to_s, 1, 10)
     end
 
-    # Thanks to Eugene at stackoverflow for the following.
-    # http://stackoverflow.com/questions/8806643/
-    #   colorized-output-breaks-linewrapping-with-readline
-    # These color strings without confusing readline about the length of
-    # the prompt string in the shell. (Unlike the rainbow routines)
-    def console_red
-      colorize(self, "\001\e[1m\e[31m\002")
+    # Test whether self matches the `matcher` treating `matcher` as a
+    # case-insensitive regular expression if it is of the form '/.../' or as a
+    # string to #fuzzy_match against otherwise.
+    #
+    # @param matcher [String] regexp if looks like /.../; #fuzzy_match pattern otherwise
+    # @return [nil] if no match
+    # @return [String] the matched portion of self, with punctuation stripped in
+    #   case of #fuzzy_match
+    # @see #fuzzy_match #fuzzy_match for the specifics of string matching
+    # @see #to_regexp #to_regexp for conversion of `matcher` to regular expression
+    def matches_with(matcher)
+      if matcher.nil?
+        nil
+      elsif matcher =~ %r{^\s*/}
+        re = matcher.to_regexp
+        $& if to_s =~ re
+      else
+        to_s.fuzzy_match(matcher)
+      end
     end
 
-    def console_dark_red
-      colorize(self, "\001\e[31m\002")
+    # Return the matched portion of self, minus punctuation characters, if self
+    # matches the string `matcher` using the following notion of matching:
+    #
+    # 1. Remove all periods, commas, apostrophes, and asterisks (the punctuation
+    #    characters) from both self and `matcher`,
+    # 2. Treat ':' in the matcher as the equivalent of '.*' in a regular
+    #    expression, that is, match anything in self,
+    # 3. Ignore case in the match
+    # 4. Match if any part of self matches `matcher`
+    #
+    # @example
+    #   "St. Luke's Hospital".fuzzy_match('st lukes') #=> 'St Lukes'
+    #   "St. Luke's Hospital".fuzzy_match('luk:hosp') #=> 'Lukes Hosp'
+    #   "St. Luke's Hospital".fuzzy_match('st:spital') #=> 'St Lukes Hospital'
+    #   "St. Luke's Hospital".fuzzy_match('st:laks') #=> nil
+    #
+    # @param matcher [String] pattern to test against where ':' is wildcard
+    # @return [String] the unpunctuated part of self that matched
+    # @return [nil] if self did not match matcher
+    def fuzzy_match(matcher)
+      # Remove periods, asterisks, commas, and apostrophes
+      matcher = matcher.gsub(/[\*.,']/, '')
+      target = gsub(/[\*.,']/, '')
+      matchers = matcher.split(/[: ]+/)
+      regexp_string = matchers.map { |m| ".*?#{Regexp.escape(m)}.*?" }.join('[: ]')
+      regexp_string.sub!(/^\.\*\?/, '')
+      regexp_string.sub!(/\.\*\?$/, '')
+      regexp = /#{regexp_string}/i
+      matched_text =
+        if (match = regexp.match(target))
+          match[0]
+        end
+      matched_text
     end
 
-    def console_green
-      colorize(self, "\001\e[1m\e[32m\002")
+    # Convert a string of the form '/.../Iixm' to a regular expression. However,
+    # make the regular expression case-insensitive by default and extend the
+    # modifier syntax to allow '/I' to indicate case-sensitive.  Without the
+    # surrounding '/', do not make the Regexp case insensitive, just translate
+    # it to a Regexp with Regexp.new.
+    #
+    # @example
+    #   '/Hello/'.to_regexp #=> /Hello/i
+    #   '/Hello/I'.to_regexp #=> /Hello/
+    #   'Hello'.to_regexp #=> /Hello/
+    #
+    # @return [Regexp]
+    def to_regexp
+      if self =~ %r{^\s*/([^/]*)/([Iixm]*)\s*$}
+        body = $1
+        opts = $2
+        flags = Regexp::IGNORECASE
+        unless opts.blank?
+          flags = 0 if opts.include?('I')
+          flags |= Regexp::IGNORECASE if opts.include?('i')
+          flags |= Regexp::EXTENDED if opts.include?('x')
+          flags |= Regexp::MULTILINE if opts.include?('m')
+        end
+        flags = nil if flags.zero?
+        Regexp.new(body, flags)
+      else
+        Regexp.new(self)
+      end
     end
 
-    def console_dark_green
-      colorize(self, "\001\e[32m\002")
+    # @group Numbers
+    # :section: Numbers
+
+    # Return whether self is convertible into a valid number.
+    #
+    # @example
+    #   '6465321'.number?        #=> true
+    #   '6465321.271828'.number? #=> true
+    #   '76 trombones'           #=> false
+    #   '2.77e7'                 #=> true
+    #   '+12_534'                #=> true
+    #
+    # @return [Boolean] does self represent a valid number
+    def number?
+      Float(self)
+      true
+    rescue ArgumentError
+      return false
     end
 
-    def console_yellow
-      colorize(self, "\001\e[1m\e[33m\002")
-    end
-
-    def console_dark_yellow
-      colorize(self, "\001\e[33m\002")
-    end
-
-    def console_blue
-      colorize(self, "\001\e[1m\e[34m\002")
-    end
-
-    def console_dark_blue
-      colorize(self, "\001\e[34m\002")
-    end
-
-    def console_purple
-      colorize(self, "\001\e[1m\e[35m\002")
-    end
-
-    def console_cyan
-      colorize(self, "\001\e[1m\e[36m\002")
-    end
-
-    def console_def
-      colorize(self, "\001\e[1m\002")
-    end
-
-    def console_bold
-      colorize(self, "\001\e[1m\002")
-    end
-
-    def console_blink
-      colorize(self, "\001\e[5m\002")
-    end
-
-    def colorize(text, color_code)
-      "#{color_code}#{text}\001\e[0m\002"
+    # If the string is a valid number, return a string that adds grouping commas
+    # to the whole number part.
+    #
+    # @example
+    #   'hello'.commify #=> 'hello'
+    #   '+4654656.33e66' #=> '+4_654_656.33e66'
+    #
+    # @return [String]
+    def commify
+      # Break the number into parts
+      return self unless clean =~ /\A([-+])?(\d*)((\.)?(\d*))?([eE]\d+)?\z/
+      sig = $1 || ''
+      whole = $2
+      frac = $5
+      exp = $6
+      # Place the commas in the whole part only
+      whole = whole.reverse
+      whole.gsub!(/([0-9]{3})/, '\\1,')
+      whole.gsub!(/,$/, '')
+      whole.reverse!
+      # Reassemble
+      if frac.blank?
+        sig + whole + exp
+      else
+        sig + whole + '.' + frac + exp
+      end
     end
 
     module ClassMethods
+      # @group Generating
+      # :section: Generating
+
+      # Return a random string composed of all lower-case letters of length
+      # `size`
       def random(size = 8)
         ('a'..'z').cycle.take(size).shuffle.join
       end
     end
 
+    # @private
     def self.included(base)
       base.extend(ClassMethods)
     end
   end
 end
 
-String.include FatCore::String
+class String
+  include FatCore::String
+  # @!parse include FatCore::String
+  # @!parse extend FatCore::String::ClassMethods
+end
