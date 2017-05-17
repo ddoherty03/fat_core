@@ -301,57 +301,72 @@ module FatCore
       min < other.min && max > other.max
     end
 
-  # Return whether self overlaps with other Range.
-  #
-  # @param other [Range] range to test for overlap with self
-  # @return [Boolean] is there an overlap?
-  def overlaps?(other)
-    (cover?(other.min) || cover?(other.max) ||
-     other.cover?(min) || other.cover?(max))
-  end
+    # Return whether self overlaps with other Range.
+    #
+    # @param other [Range] range to test for overlap with self
+    # @return [Boolean] is there an overlap?
+    def overlaps?(other)
+      (cover?(other.min) || cover?(other.max) ||
+       other.cover?(min) || other.cover?(max))
+    end
 
-  # Return whether any of the `ranges` that overlap self have overlaps among one
-  # another.
-  #
-  # This does the same thing as `Range.overlaps_among?`, except that it filters
-  # the `ranges` to only those overlapping self before testing for overlaps
-  # among them.
-  #
-  # @param ranges [Array<Range>] ranges to test for overlaps
-  # @return [Boolean] were there overlaps among ranges?
-  def overlaps_among?(ranges)
-    iranges = ranges.select { |r| overlaps?(r) }
-    Range.overlaps_among?(iranges)
-  end
+    # Return whether any of the `ranges` that overlap self have overlaps among one
+    # another.
+    #
+    # This does the same thing as `Range.overlaps_among?`, except that it filters
+    # the `ranges` to only those overlapping self before testing for overlaps
+    # among them.
+    #
+    # @param ranges [Array<Range>] ranges to test for overlaps
+    # @return [Boolean] were there overlaps among ranges?
+    def overlaps_among?(ranges)
+      iranges = ranges.select { |r| overlaps?(r) }
+      ::Range.overlaps_among?(iranges)
+    end
 
-  # Return whether any of the `ranges` overlap one another
-  #
-  # @param ranges [Array<Range>] ranges to test for overlaps
-  # @return [Boolean] were there overlaps among ranges?
-  def self.overlaps_among?(ranges)
-    result = false
-    unless ranges.empty?
-      ranges.each do |r1|
-        result = ranges.any? do |r2|
-          r1.object_id != r2.object_id && r1.overlaps?(r2)
+    # Return true if the given ranges collectively cover this range
+    # without overlaps and without gaps.
+    #
+    # @param ranges [Array<Range>]
+    # @return [Boolean]
+    def spanned_by?(ranges)
+      joined_range = nil
+      ranges.sort.each do |r|
+        unless joined_range
+          joined_range = r
+          next
         end
-        return true if result
+        joined_range = joined_range.join(r)
+        break if joined_range.nil?
+      end
+      if !joined_range.nil?
+        joined_range.min <= min && joined_range.max >= max
+      else
+        false
       end
     end
-    result
-  end
 
-  # Return true if the given ranges collectively cover this range
-  # without overlaps and without gaps.
-  #
-  # @param ranges [Array<Range>]
-  # @return [Boolean]
-  def spanned_by?(ranges)
-    joined_range = nil
-    ranges.sort.each do |r|
-      unless joined_range
-        joined_range = r
-        next
+    include Comparable
+
+    # @group Sorting
+
+    # Compare this range with other first by min values, then by max values.
+    #
+    # This causes a sort of Ranges with Comparable elements to sort from left to
+    # right on the number line, then for Ranges that start on the same number, from
+    # smallest to largest.
+    #
+    # @example
+    #   (4..8) <=> (5..7) #=> -1
+    #   (4..8) <=> (4..7) #=> 1
+    #   (4..8) <=> (4..8) #=> 0
+    #
+    # @param other [Range] range to compare self with
+    # @return [-1, 0, 1] if self is less, equal, or greater than other
+    def <=>(other)
+      [min, max] <=> [other.min, other.max]
+    end
+
     module ClassMethods
       # Return whether any of the `ranges` overlap one another
       #
