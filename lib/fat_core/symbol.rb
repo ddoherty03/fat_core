@@ -18,4 +18,8 @@ module FatCore
   end
 end
 
-Symbol.include(FatCore::Symbol)
+class Symbol
+  include FatCore::Symbol
+  # @!parse include FatCore::Symbol
+  # @!parse extend FatCore::Symbol::ClassMethods
+end

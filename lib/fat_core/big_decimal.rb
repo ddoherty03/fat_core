@@ -9,4 +9,7 @@ module FatCore
   end
 end
 
-BigDecimal.prepend(FatCore::BigDecimal)
+class BigDecimal
+  prepend(FatCore::BigDecimal)
+  # @!parse include FatCore::BigDecimal
+end

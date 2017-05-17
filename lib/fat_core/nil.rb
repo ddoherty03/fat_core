@@ -14,4 +14,8 @@ module FatCore
   end
 end
 
-NilClass.include FatCore::NilClass
+class NilClass
+  include FatCore::NilClass
+  # @!parse include FatCore::NilClass
+  # @!parse extend FatCore::NilClass::ClassMethods
+end

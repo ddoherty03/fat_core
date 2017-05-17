@@ -32,4 +32,7 @@ module FatCore
   end
 end
 
-Array.include FatCore::Array
+class Array
+  include FatCore::Array
+  # @!parse include FatCore::Array
+end

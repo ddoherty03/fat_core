@@ -98,4 +98,8 @@ module FatCore
   end
 end
 
-Numeric.include FatCore::Numeric
+class Numeric
+  include FatCore::Numeric
+  # @!parse include FatCore::Numeric
+  # @!parse extend FatCore::Numeric::ClassMethods
+end
