@@ -135,7 +135,10 @@ module FatCore
       newwords = []
       capitalize_next = false
       words = split(/\s+/)
-      words.each_with_flags do |w, first, last|
+      last_k = words.size - 1
+      words.each_with_index do |w, k|
+        first = (k == 0)
+        last = (k == last_k)
         if w =~ %r{c/o}i
           # Care of
           newwords.push('c/o')
