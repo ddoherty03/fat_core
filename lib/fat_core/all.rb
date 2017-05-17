@@ -1,5 +1,5 @@
 require 'fat_core/array'
-require 'fat_core/big_decimal'
+require 'fat_core/bigdecimal'
 require 'fat_core/date'
 require 'fat_core/enumerable'
 require 'fat_core/hash'
