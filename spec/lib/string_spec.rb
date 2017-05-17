@@ -1,4 +1,5 @@
 require 'fat_core/string'
+require 'fat_core/date'
 
 describe String do
   before do
@@ -68,6 +69,15 @@ the people, for the people, shall not perish from the earth."
   describe 'instance methods' do
     it 'should be able to clean up white space in a string' do
       expect('   string    here  '.clean).to eq 'string here'
+    end
+
+    it 'should be able to convert a numeric string to a commified form' do
+      expect('20140521'.commas).to eq '20,140,521'
+      expect('20140521.556'.commas).to eq '20,140,521.556'
+      expect('20140521.556'.commas(2)).to eq '20,140,521.56'
+      expect('-20140521.556'.commas).to eq '-20,140,521.556'
+      expect('+20140521.556'.commas).to eq '20,140,521.556'
+      expect('+20140521.556e3'.commas).to eq '20,140,521,556'
     end
 
     it 'should be able to convert a digital date to a Date' do

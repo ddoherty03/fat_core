@@ -55,27 +55,36 @@ module FatCore
       # less than 1 (to ensure that really small numbers round to 0.0)
       return to_s if abs > 1.0 && to_s =~ /e/
 
-      str = to_f.round(places).to_s
+      # Round if places given
+      str =
+        if places.nil?
+          whole? ? to_i.to_s : to_f.to_s
+        else
+          to_f.round(places).to_s
+        end
 
-      # Break the number into parts
-      str =~ /^(-)?(\d*)((\.)?(\d*))?$/
-      neg = $1 || ''
-      whole = $2
-      frac = $5
+      # Break the number into parts; underscores are possible in all components.
+      str =~ /\A([-+])?([\d_]*)((\.)?([\d_]*))?([eE][+-]?[\d_]+)?\z/
+      sig = $1 || ''
+      whole = $2 ? $2.delete('_') : ''
+      frac = $5 || ''
+      exp = $6 || ''
 
       # Pad out the fractional part with zeroes to the right
-      n_zeroes = [places - frac.length, 0].max
-      frac += '0' * n_zeroes if n_zeroes.positive?
+      unless places.nil?
+        n_zeroes = [places - frac.length, 0].max
+        frac += '0' * n_zeroes if n_zeroes.positive?
+      end
 
       # Place the commas in the whole part only
       whole = whole.reverse
       whole.gsub!(/([0-9]{3})/, "\\1#{delim}")
       whole.gsub!(/#{Regexp.escape(delim)}$/, '')
       whole.reverse!
-      if frac.nil? || places <= 0
-        neg + whole
+      if frac.blank? # || places <= 0
+        sig + whole + exp
       else
-        neg + whole + '.' + frac
+        sig + whole + '.' + frac + exp
       end
     end
 

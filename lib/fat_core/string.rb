@@ -1,3 +1,4 @@
+require 'bigdecimal'
 require 'damerau-levenshtein'
 require 'active_support/core_ext/regexp'
 
@@ -303,25 +304,40 @@ module FatCore
     end
 
     # If the string is a valid number, return a string that adds grouping commas
-    # to the whole number part.
+    # to the whole number part; otherwise, return self.
     #
     # @example
-    #   'hello'.commify #=> 'hello'
-    #   '+4654656.33e66' #=> '+4_654_656.33e66'
+    #   'hello'.commas          #=> 'hello'
+    #   '+4654656.33e66'.commas #=> '+4,654,656.33e66'
     #
-    # @return [String]
-    def commify
+    # @return [String] self if not a valid number
+    # @return [String] commified number as a String
+    def commas(places = nil)
+      numeric_re = /\A([-+])?([\d_]*)((\.)?([\d_]*))?([eE][+-]?[\d_]+)?\z/
+      return self unless clean =~ numeric_re
+
+      # Round if places given
+      num = BigDecimal(self)
+      str =
+        if places.nil?
+          num.whole? ? num.to_i.to_s : num.to_f.to_s
+        else
+          num.to_f.round(places).to_s
+        end
+
       # Break the number into parts
-      return self unless clean =~ /\A([-+])?(\d*)((\.)?(\d*))?([eE]\d+)?\z/
+      str =~ numeric_re
       sig = $1 || ''
-      whole = $2
-      frac = $5
-      exp = $6
+      whole = $2 ? $2.delete('_') : ''
+      frac = $5 || ''
+      exp = $6 || ''
+
       # Place the commas in the whole part only
       whole = whole.reverse
       whole.gsub!(/([0-9]{3})/, '\\1,')
       whole.gsub!(/,$/, '')
       whole.reverse!
+
       # Reassemble
       if frac.blank?
         sig + whole + exp

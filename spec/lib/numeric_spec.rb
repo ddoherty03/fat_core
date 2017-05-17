@@ -38,7 +38,7 @@ describe Numeric do
 
     # if places is nil, use 4 places for numbers with a fractional
     # part and 0 places for numbers without
-    expect(-123_456_789.0123456.commas).to eq '-123,456,789.0123'
+    expect(-123_456_789.0123456.commas).to eq '-123,456,789.0123456'
     expect(-123_456_789.0.commas).to eq '-123,456,789'
     expect(-123_456_789.00.commas).to eq '-123,456,789'
   end
