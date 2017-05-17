@@ -13,28 +13,40 @@ module FatCore
     end
 
     # Convert this number into a string and insert grouping commas into the
-    # whole number part and round the decimal part to +places+ decimal places,
-    # with the number of places being zero for an integer and 4 for a
-    # non-integer.
+    # whole number part and round the decimal part to `places` decimal places,
+    # with the default number of places being zero for an integer and 4 for a
+    # non-integer. The fractional part is padded with zeroes on the right to
+    # come out to `places` digits after the decimal place.
+    #
+    # @example
+    #   9324089.56.commas #=> '9,324,089.56'
+    #   88883.14159.commas #=>'88,883.1416'
+    #   88883.14159.commas(2) #=>'88,883.14'
+    #
+    # @param places [Integer] number of decimal place to round to
+    # @return [String]
     def commas(places = nil)
-      # By default, use zero places for whole numbers; four places for
-      # numbers containing a fractional part to 4 places.
-      if places.nil?
-        places =
-          if abs.modulo(1).round(4) > 0.0
-            4
-          else
-            0
-          end
-      end
       group(places, ',')
     end
 
     # Convert this number into a string and insert grouping delimiter character,
-    # +delim+ into the whole number part and round the decimal part to +places+
-    # decimal places, with the number of places being zero for an integer and 4
-    # for a non-integer.
-    def group(places = 0, delim = ',')
+    # `delim` into the whole number part and round the decimal part to `places`
+    # decimal places, with the default number of places being zero for an
+    # integer and 4 for a non-integer. The fractional part is padded with zeroes
+    # on the right to come out to `places` digits after the decimal place. This
+    # is the same as #commas, but allows the delimiter to be any string.
+    #
+    # @example
+    #   9324089.56.group          #=> '9,324,089.56'
+    #   9324089.56.group(4)       #=> '9,324,089.5600'
+    #   88883.14159.group         #=>'88,883.1416'
+    #   88883.14159.group(2)      #=>'88,883.14'
+    #   88883.14159.group(2, '_') #=>'88_883.14'
+    #
+    # @param places [Integer] number of decimal place to round to
+    # @param delim [String] use delim as group separator
+    # @return [String]
+    def group(places = nil, delim = ',')
       # Return number as a string with embedded commas
       # for nice printing; round to places places after
       # the decimal
@@ -68,18 +80,35 @@ module FatCore
     end
 
     # Return whether this is a whole number.
+    #
+    # @example
+    #   23.45.whole? #=> false
+    #   23.whole?    #=> true
+    #
+    # @return [Boolean] is self whole?
     def whole?
       floor == self
     end
 
     # Return an Integer type, but only if the fractional part of self is zero;
     # otherwise just return self.
+    #
+    # @example
+    #   45.98.int_if_whole #=> 45.98
+    #   45.000.int_if_whole #=> 45
+    #
+    # @return [Numeric, Integer]
     def int_if_whole
       whole? ? floor : self
     end
 
-    # Convert a number of seconds into a string of the form HH:MM:SS.dd, that is
-    # to hours, minutes and seconds.
+    # Convert self, regarded as a number of seconds, into a string of the form
+    # HH:MM:SS.dd, that is to hours, minutes and seconds and fractions of seconds.
+    #
+    # @example
+    #   5488.secs_to_hms #=> "01:31:28"
+    #
+    # @return [String] formatted as HH:MM:SS.dd
     def secs_to_hms
       frac = self % 1
       mins, secs = divmod(60)
@@ -91,7 +120,8 @@ module FatCore
       end
     end
 
-    # Allow erb documents to directly interpolate numbers
+    # Quote self for use in TeX documents.  Since number components are not
+    # special to TeX, this just applies `#to_s`
     def tex_quote
       to_s
     end

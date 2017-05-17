@@ -1,13 +1,23 @@
 module FatCore
   module NilClass
-    def entitle
+    # Allow nils to respond to #as_string like String and Symbol
+    #
+    # @return [String] empty string
+    def as_string
       ''
     end
+    alias entitle as_string
 
+    # Allow nils to respond to #tex_quote for use in TeX documents
+    #
+    # @return [String] empty string
     def tex_quote
       ''
     end
 
+    # Allow nils to respond to #commas like String and Numeric
+    #
+    # @return [String] empty string
     def commas(_places = nil)
       ''
     end
