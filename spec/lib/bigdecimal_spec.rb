@@ -1,4 +1,4 @@
-require 'fat_core/big_decimal'
+require 'fat_core/bigdecimal'
 
 describe BigDecimal do
   it 'should provide a human-readable inspect for BigDecimal' do
