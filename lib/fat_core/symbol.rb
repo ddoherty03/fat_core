@@ -11,9 +11,10 @@ module FatCore
     #   :joy_to_the_world #=> 'Joy to the World'
     #
     # @return [String]
+    def as_string
       to_s.tr('_', ' ').split(' ').join(' ').entitle
     end
-    alias as_string entitle
+    alias entitle as_string
 
     # Return self. This (together with String#as_sym) allows `#as_sym` to be
     # applied to a string or Symbol and get back a Symbol with out testing for

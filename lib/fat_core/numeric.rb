@@ -1,7 +1,16 @@
+require 'active_support/core_ext/object/blank'
+
 module FatCore
   module Numeric
     # Return the signum function for this number, i.e., 1 for a positive number,
     # 0 for zero, and -1 for a negative number.
+    #
+    # @example
+    #   -55.signum #=> -1
+    #   0.signum   #=> 0
+    #   55.signum  #=> 1
+    #
+    # @return [Integer] -1, 0, or 1 for negative, zero or positive self
     def signum
       if positive?
         1
