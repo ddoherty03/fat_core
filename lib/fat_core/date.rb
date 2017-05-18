@@ -773,16 +773,36 @@ module FatCore
 
     # @group Federal Holidays and Workdays
 
-    # Holidays decreed by executive order See http://www.whitehouse.gov/the-press-office/2012/12/21
+    # Holidays decreed by Presidential proclamation
     FED_DECREED_HOLIDAYS =
       [
+        # Obama decree extra day before Christmas See
+        # http://www.whitehouse.gov/the-press-office/2012/12/21
         ::Date.parse('2012-12-24')
       ].freeze
+
+    # Presidential funeral since JFK
+    PRESIDENTIAL_FUNERALS = [
+      # JKF Funeral
+      ::Date.parse('1963-11-25'),
+      # DWE Funeral
+      ::Date.parse('1969-03-31'),
+      # HST Funeral
+      ::Date.parse('1972-12-28'),
+      # LBJ Funeral
+      ::Date.parse('1973-01-25'),
+      # RMN Funeral
+      ::Date.parse('1994-04-27'),
+      # RWR Funeral
+      ::Date.parse('2004-06-11'),
+      # GTF Funeral
+      ::Date.parse('2007-01-02')
+    ]
 
     # Return whether this date is a United States federal holiday.
     #
     # Calculations for Federal holidays are based on 5 USC 6103, include all
-    # weekends, and holidays based on executive orders.
+    # weekends, Presidential funerals, and holidays decreed executive orders.
     #
     # @return [Boolean]
     def fed_holiday?
@@ -791,6 +811,9 @@ module FatCore
 
       # Some days are holidays by executive decree
       return true if FED_DECREED_HOLIDAYS.include?(self)
+
+      # Presidential funerals
+      return true if PRESIDENTIAL_FUNERALS.include?(self)
 
       # Is self a fixed holiday
       return true if fed_fixed_holiday? || fed_moveable_feast?
@@ -807,6 +830,17 @@ module FatCore
         # A Monday is a holiday if a fixed-date holiday
         # would fall on the preceding Sunday
         (self - 1).fed_fixed_holiday? || (self - 1).fed_moveable_feast?
+      elsif (year % 4 == 1) && year > 1965 && mon == 1 && mday == 20
+        # Inauguration Day after 1965 is a federal holiday, but if it falls on a
+        # Sunday, the following Monday is observed, but if it falls on a
+        # Saturday, the prior Friday is /not/ observed. So, we can't just count
+        # this as a regular fixed holiday.
+        true
+      elsif monday? && (year % 4 == 1) && year > 1965 && mon == 1 && mday == 21
+        # Inauguration Day after 1965 is a federal holiday, but if it falls on a
+        # Sunday, the following Monday is observed, but if it falls on a
+        # Saturday, the prior Friday is /not/ observed.
+        true
       else
         false
       end
@@ -963,6 +997,9 @@ module FatCore
     def nyse_holiday?
       # All Saturdays and Sundays are "holidays"
       return true if weekend?
+
+      # Presidential funerals, observed by NYSE as well.
+      return true if PRESIDENTIAL_FUNERALS.include?(self)
 
       # Is self a fixed holiday
       return true if nyse_fixed_holiday? || nyse_moveable_feast?
@@ -1166,6 +1203,7 @@ module FatCore
     # @return [Boolean]
     def nyse_special_holiday?
       return false unless self > ::Date.parse('1960-01-01')
+      return true if PRESIDENTIAL_FUNERALS.include?(self)
       case self
       when ::Date.parse('1961-05-29')
         # Day before Decoaration Day
@@ -1192,17 +1230,8 @@ module FatCore
       when ::Date.parse('1969-02-10')
         # Heavy snow
         true
-      when ::Date.parse('1969-05-31')
-        # Eisenhower Funeral
-        true
       when ::Date.parse('1969-07-21')
         # Moon landing
-        true
-      when ::Date.parse('1972-12-28')
-        # Truman Funeral
-        true
-      when ::Date.parse('1973-01-25')
-        # Johnson Funeral
         true
       when ::Date.parse('1977-07-14')
         # Electrical blackout NYC
@@ -1210,14 +1239,8 @@ module FatCore
       when ::Date.parse('1985-09-27')
         # Hurricane Gloria
         true
-      when ::Date.parse('1994-04-27')
-        # Nixon Funeral
-        true
       when (::Date.parse('2001-09-11')..::Date.parse('2001-09-14'))
         # 9-11 Attacks
-        true
-      when (::Date.parse('2004-06-11')..::Date.parse('2001-09-14'))
-        # Reagan Funeral
         true
       when ::Date.parse('2007-01-02')
         # Observance death of President Ford
