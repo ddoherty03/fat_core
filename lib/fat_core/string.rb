@@ -110,6 +110,21 @@ module FatCore
       ::Date.new($1.to_i, $2.to_i, $3.to_i) if self =~ %r{(\d\d\d\d)[-/]?(\d\d?)[-/]?(\d\d?)}
     end
 
+    UPPERS = ('A'..'Z').to_a
+
+    private
+
+    def upper?
+      UPPERS.include?(self[0])
+    end
+
+    # Return true if all the letters in self are upper case
+    def all_upper?
+      tr('^A-Za-z', '').split('').all? {|c| ('A'..'Z').to_a.include? c}
+    end
+
+    public
+
     # Return self capitalized according to the conventions for capitalizing
     # titles of books or articles. Tries to follow the rules of the University
     # of Chicago's *A Manual of Style*, Section 7.123, except to the extent that
@@ -132,6 +147,7 @@ module FatCore
     def entitle
       little_words = %w[a an the at for up and but
                         or nor in on under of from as by to]
+      preserve_acronyms = !all_upper?
       newwords = []
       capitalize_next = false
       words = split(/\s+/)
@@ -164,7 +180,7 @@ module FatCore
         elsif w =~ /^[^aeiouy]*$/i && w.size > 2
           # All consonants and at least 3 chars, probably abbr
           newwords.push(w.upcase)
-        elsif w =~ /^[A-Z0-9]+\z/
+        elsif w =~ /^[A-Z0-9]+\z/ && preserve_acronyms
           # All uppercase and numbers, keep as is
           newwords.push(w)
         elsif w =~ /^(\w+)-(\w+)$/i

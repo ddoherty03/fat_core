@@ -168,12 +168,14 @@ the people, for the people, shall not perish from the earth."
       # Don't capitalize ordinals
       expect('22nd of september'.entitle).to eq('22nd of September')
       # Capitalize common abbrevs
-      expect('US BANK'.entitle).to eq('US BANK')
+      expect('Us Bank'.entitle).to eq('US Bank')
       expect('nw territory'.entitle).to eq('NW Territory')
       # Leave word starting with numbers alone
       expect('apartment 33-B'.entitle).to eq('Apartment 33-B')
-      # Assume all consanants is an acronym
-      expect('the cbs network'.entitle).to eq('The CBS Network')
+      # Assume all uppercase is an acronym
+      expect('the ABC network'.entitle).to eq('The ABC Network')
+      # But not if the whole string is uppercase
+      expect('THE ABC NETWORK'.entitle).to eq('The Abc Network')
       # Capitalize both parts of a hyphenated word
       expect('the hitler-stalin pact'.entitle).to eq('The Hitler-Stalin Pact')
     end
