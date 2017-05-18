@@ -11,8 +11,10 @@ end
 
 YARD::Rake::YardocTask.new do |t|
   t.files   = ['lib/**/*.rb', 'README.md']
-  t.options = ['--embed-mixins', '--readme README.md',
-               '--markup=markdown', '--markup-provider=redcarpet']
+  t.options << '--no-private'
+  t.options << '--embed-mixins'
+  t.options << '--markup=markdown'
+  t.options << '--markup-provider=redcarpet'
   #t.stats_options = ['--list-undoc']
 end
 
