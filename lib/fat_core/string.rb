@@ -323,33 +323,73 @@ module FatCore
     end
 
     # If the string is a valid number, return a string that adds grouping commas
-    # to the whole number part; otherwise, return self.
+    # to the whole number part; otherwise, return self.  Round the number to the
+    # given number places after the decimal if places is positive; round to the
+    # left of the decimal if places is negative.  Pad with zeroes on the right
+    # for positive places, on the left for negative places.
     #
     # @example
-    #   'hello'.commas          #=> 'hello'
-    #   '+4654656.33e66'.commas #=> '+4,654,656.33e66'
+    #   'hello'.commas             #=> 'hello'
+    #   '+4654656.33e66'.commas    #=> '+4,654,656.33e66'
+    #   '6789345612.14'.commas(-5) #=> '6,789,350,000'
+    #   '6543.14'.commas(5)        #=> '6,543.14000'
     #
     # @return [String] self if not a valid number
     # @return [String] commified number as a String
     def commas(places = nil)
       numeric_re = /\A([-+])?([\d_]*)((\.)?([\d_]*))?([eE][+-]?[\d_]+)?\z/
       return self unless clean =~ numeric_re
-
-      # Round if places given
-      num = BigDecimal(self)
-      str =
-        if places.nil?
-          num.whole? ? num.to_i.to_s : num.to_f.to_s
-        else
-          num.to_f.round(places).to_s
-        end
-
-      # Break the number into parts
-      str =~ numeric_re
       sig = $1 || ''
       whole = $2 ? $2.delete('_') : ''
       frac = $5 || ''
       exp = $6 || ''
+
+      # Round frac or whole if places given.  For positve places, round fraction
+      # to that many places; for negative, round the whole-number part to the
+      # absolute value of places left of the decimal.
+      if places
+        new_frac = frac.dup
+        new_whole = whole.dup
+        if places.zero?
+          new_frac = ''
+        elsif places.positive? && places < frac.length
+          new_frac = frac[0...places - 1]
+          new_frac[places - 1] =
+            if frac[places].to_i >= 5
+              (frac[places - 1].to_i + 1).to_s
+            else
+              frac[places - 1]
+            end
+        elsif places >= frac.length
+          new_frac = frac + '0' * (places - frac.length)
+        else
+          # Negative places, round whole to places.abs from decimal
+          places = places.abs
+          if places > whole.length
+            lead = whole[0].to_i >= 5 ? '1' : '0'
+            new_whole[0] = places == whole.length + 1 ? lead : '0'
+            new_whole[1..-1] = '0' * (places - 1)
+            new_frac = ''
+          elsif places > 1
+            target = whole.length - places
+            new_whole[target] =
+              if whole[target + 1].to_i >= 5
+                (whole[target].to_i + 1).to_s
+              else
+                whole[target]
+              end
+            new_whole[target + 1..whole.length - 1] =
+              '0' * (whole.length - target - 1)
+            new_frac = ''
+          else
+            # Rounding to 1 place, therefore, no rounding
+            new_frac = ''
+            new_whole = whole
+          end
+        end
+        frac = new_frac
+        whole = new_whole
+      end
 
       # Place the commas in the whole part only
       whole = whole.reverse
