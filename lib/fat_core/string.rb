@@ -1,4 +1,5 @@
 require 'bigdecimal'
+require 'fat_core/patches'
 require 'damerau-levenshtein'
 require 'active_support/core_ext/regexp'
 

@@ -3,6 +3,7 @@ require 'active_support/core_ext/date'
 require 'active_support/core_ext/time'
 require 'active_support/core_ext/numeric/time'
 require 'active_support/core_ext/integer/time'
+require 'fat_core/patches'
 
 # ## FatCore Date Extensions
 #
