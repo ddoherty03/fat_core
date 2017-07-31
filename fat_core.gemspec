@@ -13,7 +13,7 @@ Gem::Specification.new do |spec|
   spec.description   = 'Write a longer description. Optional.'
   spec.homepage      = ''
   spec.license       = 'MIT'
-  spec.required_ruby_version = '>= 2.3.1'
+  spec.required_ruby_version = '>= 2.2.2'
   spec.metadata['yard.run'] = 'yri' # use "yard" to build full HTML docs.
 
   spec.files         = `git ls-files -z`.split("\x0")
