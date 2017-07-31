@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/ddoherty03/fat_core.svg?branch=master)](https://travis-ci.org/ddoherty03/fat_core)
+
 # FatCore
 
 fat-core is a simple gem to collect core extensions and a few new classes that
