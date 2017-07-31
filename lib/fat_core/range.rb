@@ -56,6 +56,7 @@ module FatCore
       elsif spanned_by?(ranges)
         []
       else
+        # TODO: does not work unless min and max respond to :succ
         ranges = ranges.sort_by(&:min)
         gaps = []
         cur_point = min
