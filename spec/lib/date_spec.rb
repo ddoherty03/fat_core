@@ -424,6 +424,7 @@ describe Date do
       end
 
       it 'should be able to print itself in eng form' do
+        expect(Date.parse('2016-01-05').eng).to eq('January 5, 2016')
         expect(Date.today.eng).to eq('July 18, 2012')
         expect((Date.today + 1.day).eng).to eq('July 19, 2012')
       end

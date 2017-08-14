@@ -92,7 +92,7 @@ module FatCore
     # Format as an English string, like `'January 12, 2016'`
     # @return [String]
     def eng
-      strftime('%B %e, %Y')
+      strftime('%B %-d, %Y')
     end
 
     # :category: Formatting
