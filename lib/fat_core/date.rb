@@ -797,7 +797,9 @@ module FatCore
       # RWR Funeral
       ::Date.parse('2004-06-11'),
       # GTF Funeral
-      ::Date.parse('2007-01-02')
+      ::Date.parse('2007-01-02'),
+      # GHWBFuneral
+      ::Date.parse('2018-12-05')
     ]
 
     # Return whether this date is a United States federal holiday.
