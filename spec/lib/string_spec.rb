@@ -112,6 +112,7 @@ the people, for the people, shall not perish from the earth."
       expect('2014-05-21'.as_date.iso).to eq '2014-05-21'
       expect('2014/05/21'.as_date.iso).to eq '2014-05-21'
       expect('2014/5/21'.as_date.iso).to eq '2014-05-21'
+      expect('201X/5/21'.as_date).to be_nil
     end
 
     it 'should wrap a short string' do
