@@ -12,6 +12,29 @@ describe Date do
   end
 
   describe 'class methods' do
+    describe 'ensure_date parsing' do
+      it 'should parse a String as a date' do
+        expect(Date.ensure_date('2018-11-12').class).to be Date
+      end
+
+      it 'should leave a Date as a date' do
+        expect(Date.ensure_date(Date.today).class).to be Date
+      end
+
+      it 'should convert Time as a date' do
+        expect(Date.ensure_date(Time.now).class).to be Date
+      end
+
+      it 'raises an error for bad date string' do
+        expect { Date.ensure_date('2012-mm-tu') }.to raise_error /invalid date/
+      end
+
+      it 'raises an error for unknown class' do
+        expect { Date.ensure_date([2011, 11, 12]) }
+          .to raise_error /needs String, Date, or Time/
+      end
+    end
+
     describe 'date arithmetic' do
       it 'should know the number of days in a month' do
         expect(Date.days_in_month(2000, 1)).to eq 31

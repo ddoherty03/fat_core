@@ -3,6 +3,7 @@ require 'active_support/core_ext/date'
 require 'active_support/core_ext/time'
 require 'active_support/core_ext/numeric/time'
 require 'active_support/core_ext/integer/time'
+require 'fat_core/string'
 require 'fat_core/patches'
 
 # ## FatCore Date Extensions
@@ -1648,9 +1649,25 @@ module FatCore
         n, p = (h + l - 7 * m + 114).divmod(31)
         ::Date.new(y, n, p + 1)
       end
-    end
 
-    public
+      # Ensure that date is of class Date based either on a string or Date
+      # object.
+      #
+      # @param dat [String|Date|Time] the object to be converted to Date
+      # @return [Date]
+      def ensure_date(dat)
+        case dat
+        when String
+          ::Date.parse(dat)
+        when Date, DateTime
+          dat
+        when Time
+          dat.to_date
+        else
+          raise ArgumentError, 'Date.ensure_date needs String, Date, or Time'
+        end
+      end
+    end
 
     # @private
     def self.included(base)
