@@ -438,7 +438,7 @@ describe Date do
       end
 
       it 'should be able to print itself in tex_quote form' do
-        expect(Date.today.tex_quote).to eq '2012-07-18'
+        expect(Date.today.tex_quote).to eq '2012--07--18'
       end
 
       it 'should be able to print itself in org form' do
