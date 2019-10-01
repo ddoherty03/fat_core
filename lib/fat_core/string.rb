@@ -273,6 +273,8 @@ module FatCore
       matched_text
     end
 
+    REGEXP_META_CHARACTERS = "\\$()*+.<>?[]^{|}".chars
+
     # Convert a string of the form '/.../Iixm' to a regular expression. However,
     # make the regular expression case-insensitive by default and extend the
     # modifier syntax to allow '/I' to indicate case-sensitive.  Without the
@@ -297,9 +299,14 @@ module FatCore
           flags |= Regexp::MULTILINE if opts.include?('m')
         end
         flags = nil if flags.zero?
+        body = Regexp.quote(body) if REGEXP_META_CHARACTERS.include?(body)
         Regexp.new(body, flags)
       else
-        Regexp.new(self)
+        if REGEXP_META_CHARACTERS.include?(self)
+          Regexp.new(Regexp.quote(self))
+        else
+          Regexp.new(self)
+        end
       end
     end
 

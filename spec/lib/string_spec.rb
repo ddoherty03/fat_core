@@ -154,17 +154,27 @@ the people, for the people, shall not perish from the earth."
       expect(re.class).to eq Regexp
       expect(re.casefold?).to be true
       expect(re.multiline?).to be false
+      expect(re.match?('Hello    WorlD')).to be true
 
       re = "/hello((\s+)(world))?/Im".to_regexp
       expect(re.class).to eq Regexp
       expect(re.casefold?).to be false
       expect(re.multiline?).to be true
+      expect(re.match?('Hello    WorlD')).to be false
 
       # Works without /../ but no options possible
       re = "hello((\s+)(world))?".to_regexp
       expect(re.class).to eq Regexp
       expect(re.casefold?).to be false
       expect(re.multiline?).to be false
+      expect(re.match?('hello    world')).to be true
+    end
+
+    it 'should be able to convert metacharacters into Regexp' do
+      "\\$()*+.<>?[]^{|}".chars.each do |c|
+        re = c.to_regexp
+        expect(re.class).to eq Regexp
+      end
     end
 
     it 'should be able to convert itself to a sym' do
