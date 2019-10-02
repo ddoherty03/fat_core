@@ -226,12 +226,12 @@ module FatCore
     # @return [String] the matched portion of self, with punctuation stripped in
     #   case of #fuzzy_match
     # @see #fuzzy_match #fuzzy_match for the specifics of string matching
-    # @see #to_regexp #to_regexp for conversion of `matcher` to regular expression
+    # @see #as_regexp #as_regexp for conversion of `matcher` to regular expression
     def matches_with(matcher)
       if matcher.nil?
         nil
       elsif matcher =~ %r{^\s*/}
-        re = matcher.to_regexp
+        re = matcher.as_regexp
         $& if to_s =~ re
       else
         to_s.fuzzy_match(matcher)
@@ -282,12 +282,12 @@ module FatCore
     # it to a Regexp with Regexp.new.
     #
     # @example
-    #   '/Hello/'.to_regexp #=> /Hello/i
-    #   '/Hello/I'.to_regexp #=> /Hello/
-    #   'Hello'.to_regexp #=> /Hello/
+    #   '/Hello/'.as_regexp #=> /Hello/i
+    #   '/Hello/I'.as_regexp #=> /Hello/
+    #   'Hello'.as_regexp #=> /Hello/
     #
     # @return [Regexp]
-    def to_regexp
+    def as_regexp
       if self =~ %r{^\s*/([^/]*)/([Iixm]*)\s*$}
         body = $1
         opts = $2
