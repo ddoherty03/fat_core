@@ -315,13 +315,13 @@ module FatCore
     # dates 2 days after date six months before and 2 days before the date six
     # months after the date `d`.
     #
-    # @param d [::Date] the middle of the six-month range
+    # @param from_date [::Date] the middle of the six-month range
     # @return [Boolean]
-    def within_6mos_of?(d)
+    def within_6mos_of?(from_date)
       # ::Date 6 calendar months before self
       start_date = self - 6.months + 2.days
       end_date = self + 6.months - 2.days
-      (start_date..end_date).cover?(d)
+      (start_date..end_date).cover?(from_date)
     end
 
     # Return whether this date is Easter Sunday for the year in which it falls
@@ -337,15 +337,15 @@ module FatCore
     # Return whether this date is the `n`th weekday `wday` of the given `month` in
     # this date's year.
     #
-    # @param n [Integer] number of wday in month, if negative count from end of
+    # @param nth [Integer] number of wday in month, if negative count from end of
     #   the month
     # @param wday [Integer] day of week, 0 is Sunday, 1 Monday, etc.
     # @param month [Integer] the month number, 1 is January, 2 is February, etc.
     # @return [Boolean]
-    def nth_wday_in_month?(n, wday, month)
+    def nth_wday_in_month?(nth, wday, month)
       # Is self the nth weekday in the given month of its year?
-      # If n is negative, count from last day of month
-      self == ::Date.nth_wday_in_year_month(n, wday, year, month)
+      # If nth is negative, count from last day of month
+      self == ::Date.nth_wday_in_year_month(nth, wday, year, month)
     end
 
     # :category: Relative ::Dates
@@ -478,61 +478,64 @@ module FatCore
     # Return the date that is +n+ calendar halves after this date, where a
     # calendar half is a period of 6 months.
     #
-    # @param n [Integer] number of halves to advance, can be negative
+    # @param num [Integer] number of halves to advance, can be negative
     # @return [::Date] new date n halves after this date
-    def next_half(n = 1)
-      n = n.floor
-      return self if n.zero?
-      next_month(n * 6)
+    def next_half(num = 1)
+      num = num.floor
+      return self if num.zero?
+
+      next_month(num * 6)
     end
 
     # Return the date that is +n+ calendar halves before this date, where a
     # calendar half is a period of 6 months.
     #
-    # @param n [Integer] number of halves to retreat, can be negative
+    # @param num [Integer] number of halves to retreat, can be negative
     # @return [::Date] new date n halves before this date
-    def prior_half(n = 1)
-      next_half(-n)
+    def prior_half(num = 1)
+      next_half(-num)
     end
 
     # Return the date that is +n+ calendar quarters after this date, where a
     # calendar quarter is a period of 3 months.
     #
-    # @param n [Integer] number of quarters to advance, can be negative
+    # @param num [Integer] number of quarters to advance, can be negative
     # @return [::Date] new date n quarters after this date
-    def next_quarter(n = 1)
-      n = n.floor
-      return self if n.zero?
-      next_month(n * 3)
+    def next_quarter(num = 1)
+      num = num.floor
+      return self if num.zero?
+
+      next_month(num * 3)
     end
 
     # Return the date that is +n+ calendar quarters before this date, where a
     # calendar quarter is a period of 3 months.
     #
-    # @param n [Integer] number of quarters to retreat, can be negative
+    # @param num [Integer] number of quarters to retreat, can be negative
     # @return [::Date] new date n quarters after this date
-    def prior_quarter(n = 1)
-      next_quarter(-n)
+    def prior_quarter(num = 1)
+      next_quarter(-num)
     end
 
     # Return the date that is +n+ calendar bimonths after this date, where a
     # calendar bimonth is a period of 2 months.
     #
-    # @param n [Integer] number of bimonths to advance, can be negative
+    # @param num [Integer] number of bimonths to advance, can be negative
     # @return [::Date] new date n bimonths after this date
-    def next_bimonth(n = 1)
-      n = n.floor
-      return self if n.zero?
-      next_month(n * 2)
+    def next_bimonth(num = 1)
+      num = num.floor
+      return self if num.zero?
+
+      next_month(num * 2)
     end
 
     # Return the date that is +n+ calendar bimonths before this date, where a
     # calendar bimonth is a period of 2 months.
     #
-    # @param n [Integer] number of bimonths to retreat, can be negative
+    # @param num [Integer] number of bimonths to retreat, can be negative
     # @return [::Date] new date n bimonths before this date
-    def prior_bimonth(n = 1)
-      next_bimonth(-n)
+    def prior_bimonth(num = 1)
+      next_bimonth(-num)
     end
 
     # Return the date that is +n+ semimonths after this date. Each semimonth begins
@@ -542,15 +545,16 @@ module FatCore
     # as far into the next month past the 1st as the current date is past the
     # 16th, but never past the 15th of the next month.
     #
-    # @param n [Integer] number of semimonths to advance, can be negative
+    # @param num [Integer] number of semimonths to advance, can be negative
     # @return [::Date] new date n semimonths after this date
-    def next_semimonth(n = 1)
-      n = n.floor
-      return self if n.zero?
-      factor = n.negative? ? -1 : 1
-      n = n.abs
-      if n.even?
-        next_month(n / 2)
+    def next_semimonth(num = 1)
+      num = num.floor
+      return self if num.zero?
+
+      factor = num.negative? ? -1 : 1
+      num = num.abs
+      if num.even?
+        next_month(num / 2)
       else
         # Advance or retreat one semimonth
         next_sm =
@@ -577,23 +581,21 @@ module FatCore
               [prior_month.beginning_of_month + 16.days + (day - 1).days,
                prior_month.end_of_month].min
             end
-          else
+          elsif factor.positive?
             # In the second half of the month (17th to the 31st), go as many
             # days into the next month as we are past the 16th. Thus, as many as
             # 15 days.  But we don't want to go past the first half of the next
             # month, so we only go so far as the 15th of the next month.
             # ::Date.parse('2015-02-18').next_semimonth should be the 3rd of the
             # following month.
-            if factor.positive?
-              next_month.beginning_of_month + [(day - 16), 15].min
-            else
-              beginning_of_month + [(day - 16), 15].min
-            end
+            next_month.beginning_of_month + [(day - 16), 15].min
+          else
+            beginning_of_month + [(day - 16), 15].min
           end
-        n -= 1
+        num -= 1
         # Now that n is even, advance (or retreat) n / 2 months unless we're done.
-        if n >= 2
-          next_sm.next_month(factor * n / 2)
+        if num >= 2
+          next_sm.next_month(factor * num / 2)
         else
           next_sm
         end
@@ -608,30 +610,31 @@ module FatCore
     # as the current date is past the 15th, but never past the 14th of the the
     # current month.
     #
-    # @param n [Integer] number of semimonths to retreat, can be negative
+    # @param num [Integer] number of semimonths to retreat, can be negative
     # @return [::Date] new date n semimonths before this date
-    def prior_semimonth(n = 1)
-      next_semimonth(-n)
+    def prior_semimonth(num = 1)
+      next_semimonth(-num)
     end
 
     # Return the date that is +n+ biweeks after this date where each biweek is 14
     # days.
     #
-    # @param n [Integer] number of biweeks to advance, can be negative
+    # @param num [Integer] number of biweeks to advance, can be negative
     # @return [::Date] new date n biweeks after this date
-    def next_biweek(n = 1)
-      n = n.floor
-      return self if n.zero?
-      self + (14 * n)
+    def next_biweek(num = 1)
+      num = num.floor
+      return self if num.zero?
+
+      self + (14 * num)
     end
 
     # Return the date that is +n+ biweeks before this date where each biweek is 14
     # days.
     #
-    # @param n [Integer] number of biweeks to retreat, can be negative
+    # @param num [Integer] number of biweeks to retreat, can be negative
     # @return [::Date] new date n biweeks before this date
-    def prior_biweek(n = 1)
-      next_biweek(-n)
+    def prior_biweek(num = 1)
+      next_biweek(-num)
     end
 
     # Return the date that is +n+ weeks after this date where each week is 7 days.
@@ -639,21 +642,22 @@ module FatCore
     # goes to the first day of the week in the next week and does not take an
     # argument +n+ to go multiple weeks.
     #
-    # @param n [Integer] number of weeks to advance
+    # @param num [Integer] number of weeks to advance
     # @return [::Date] new date n weeks after this date
-    def next_week(n = 1)
-      n = n.floor
-      return self if n.zero?
-      self + (7 * n)
+    def next_week(num = 1)
+      num = num.floor
+      return self if num.zero?
+
+      self + (7 * num)
     end
 
     # Return the date that is +n+ weeks before this date where each week is 7
     # days.
     #
-    # @param n [Integer] number of weeks to retreat
+    # @param num [Integer] number of weeks to retreat
     # @return [::Date] new date n weeks from this date
-    def prior_week(n)
-      next_week(-n)
+    def prior_week(num)
+      next_week(-num)
     end
 
     # NOTE: #next_day is defined in active_support.
@@ -661,10 +665,10 @@ module FatCore
     # Return the date that is +n+ weeks before this date where each week is 7
     # days.
     #
-    # @param n [Integer] number of days to retreat
+    # @param num [Integer] number of days to retreat
     # @return [::Date] new date n days before this date
-    def prior_day(n)
-      next_day(-n)
+    def prior_day(num)
+      next_day(-num)
     end
 
     # :category: Relative ::Dates
@@ -673,28 +677,28 @@ module FatCore
     #
     # @param chunk [Symbol] one of +:year+, +:half+, +:quarter+, +:bimonth+,
     #   +:month+, +:semimonth+, +:biweek+, +:week+, or +:day+.
-    # @param n [Integer] the number of chunks to add, can be negative
+    # @param num [Integer] the number of chunks to add, can be negative
     # @return [::Date] the date n chunks from this date
-    def add_chunk(chunk, n = 1)
+    def add_chunk(chunk, num = 1)
       case chunk
       when :year
-        next_year(n)
+        next_year(num)
       when :half
-        next_month(6)
+        next_month(6 * num)
       when :quarter
-        next_month(3)
+        next_month(3 * num)
       when :bimonth
-        next_month(2)
+        next_month(2 * num)
       when :month
-        next_month(n)
+        next_month(num)
       when :semimonth
-        next_semimonth(n)
+        next_semimonth(num)
       when :biweek
-        next_biweek(n)
+        next_biweek(num)
       when :week
-        next_week(n)
+        next_week(num)
       when :day
-        next_day(n)
+        next_day(num)
       else
         raise ArgumentError, "add_chunk unknown chunk: '#{chunk}'"
       end
@@ -803,7 +807,7 @@ module FatCore
       ::Date.parse('2007-01-02'),
       # GHWBFuneral
       ::Date.parse('2018-12-05')
-    ]
+    ].freeze
 
     # Return whether this date is a United States federal holiday.
     #
@@ -865,16 +869,17 @@ module FatCore
     # Return the date that is n federal workdays after or before (if n < 0) this
     # date.
     #
-    # @param n [Integer] number of federal workdays to add to this date
+    # @param num [Integer] number of federal workdays to add to this date
     # @return [::Date]
-    def add_fed_workdays(n)
+    def add_fed_workdays(num)
       d = dup
-      return d if n.zero?
-      incr = n.negative? ? -1 : 1
-      n = n.abs
-      while n.positive?
+      return d if num.zero?
+
+      incr = num.negative? ? -1 : 1
+      num = num.abs
+      while num.positive?
         d += incr
-        n -= 1 if d.fed_workday?
+        num -= 1 if d.fed_workday?
       end
       d
     end
@@ -1042,16 +1047,17 @@ module FatCore
     # Return the date that is n NYSE trading days after or before (if n < 0) this
     # date.
     #
-    # @param n [Integer] number of NYSE trading days to add to this date
+    # @param num [Integer] number of NYSE trading days to add to this date
     # @return [::Date]
-    def add_nyse_workdays(n)
+    def add_nyse_workdays(num)
       d = dup
-      return d if n.zero?
-      incr = n.negative? ? -1 : 1
-      n = n.abs
-      while n.positive?
+      return d if num.zero?
+
+      incr = num.negative? ? -1 : 1
+      num = num.abs
+      while num.positive?
         d += incr
-        n -= 1 if d.nyse_workday?
+        num -= 1 if d.nyse_workday?
       end
       d
     end
@@ -1209,7 +1215,9 @@ module FatCore
     # @return [Boolean]
     def nyse_special_holiday?
       return false unless self > ::Date.parse('1960-01-01')
+
       return true if PRESIDENTIAL_FUNERALS.include?(self)
+
       case self
       when ::Date.parse('1961-05-29')
         # Day before Decoaration Day
@@ -1284,6 +1292,7 @@ module FatCore
         unless str.to_s =~ %r{\A\s*(\d\d?)\s*/\s*(\d\d?)\s*/\s*((\d\d)?\d\d)\s*\z}
           raise ArgumentError, "date string must be of form 'MM?/DD?/YY(YY)?'"
         end
+
         year = $3.to_i
         month = $1.to_i
         day = $2.to_i
@@ -1345,13 +1354,13 @@ module FatCore
       #   designated by spec
       def parse_spec(spec, spec_type = :from)
         spec = spec.to_s.strip
-        unless [:from, :to].include?(spec_type)
+        unless %i[from to].include?(spec_type)
           raise ArgumentError, "invalid date spec type: '#{spec_type}'"
         end
 
         today = ::Date.current
         case spec.clean
-        when /\A(\d\d\d\d)[-\/](\d\d?)[-\/](\d\d?)\z/
+        when %r{\A(\d\d\d\d)[-/](\d\d?)[-/](\d\d?)\z}
           # A specified date
           ::Date.new($1.to_i, $2.to_i, $3.to_i)
         when /\AW(\d\d?)\z/, /\A(\d\d?)W\z/
@@ -1359,29 +1368,32 @@ module FatCore
           if week_num < 1 || week_num > 53
             raise ArgumentError, "invalid week number (1-53): '#{spec}'"
           end
+
           if spec_type == :from
             ::Date.commercial(today.year, week_num).beginning_of_week
           else
             ::Date.commercial(today.year, week_num).end_of_week
           end
-        when /\A(\d\d\d\d)[-\/]W(\d\d?)\z/, /\A(\d\d\d\d)[-\/](\d\d?)W\z/
+        when %r{\A(\d\d\d\d)[-/]W(\d\d?)\z}, %r{\A(\d\d\d\d)[-/](\d\d?)W\z}
           year = $1.to_i
           week_num = $2.to_i
           if week_num < 1 || week_num > 53
             raise ArgumentError, "invalid week number (1-53): '#{spec}'"
           end
+
           if spec_type == :from
             ::Date.commercial(year, week_num).beginning_of_week
           else
             ::Date.commercial(year, week_num).end_of_week
           end
-        when /^(\d\d\d\d)[-\/](\d)[Qq]$/, /^(\d\d\d\d)[-\/][Qq](\d)$/
+        when %r{^(\d\d\d\d)[-/](\d)[Qq]$}, %r{^(\d\d\d\d)[-/][Qq](\d)$}
           # Year-Quarter
           year = $1.to_i
           quarter = $2.to_i
           unless [1, 2, 3, 4].include?(quarter)
             raise ArgumentError, "invalid quarter number (1-4): '#{spec}'"
           end
+
           month = quarter * 3
           if spec_type == :from
             ::Date.new(year, month, 1).beginning_of_quarter
@@ -1395,19 +1407,21 @@ module FatCore
           unless [1, 2, 3, 4].include?(quarter)
             raise ArgumentError, "invalid quarter number (1-4): '#{spec}'"
           end
+
           date = ::Date.new(this_year, quarter * 3, 15)
           if spec_type == :from
             date.beginning_of_quarter
           else
             date.end_of_quarter
           end
-        when /^(\d\d\d\d)[-\/](\d)[Hh]$/, /^(\d\d\d\d)[-\/][Hh](\d)$/
+        when %r{^(\d\d\d\d)[-/](\d)[Hh]$}, %r{^(\d\d\d\d)[-/][Hh](\d)$}
           # Year-Half
           year = $1.to_i
           half = $2.to_i
           unless [1, 2].include?(half)
             raise ArgumentError, "invalid half number: '#{spec}'"
           end
+
           month = half * 6
           if spec_type == :from
             ::Date.new(year, month, 15).beginning_of_half
@@ -1421,31 +1435,34 @@ module FatCore
           unless [1, 2].include?(half)
             raise ArgumentError, "invalid half number: '#{spec}'"
           end
+
           date = ::Date.new(this_year, half * 6, 15)
           if spec_type == :from
             date.beginning_of_half
           else
             date.end_of_half
           end
-        when /^(\d\d\d\d)[-\/](\d\d?)*$/
+        when %r{^(\d\d\d\d)[-/](\d\d?)*$}
           # Year-Month only
           year = $1.to_i
           month = $2.to_i
           unless [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].include?(month)
             raise ArgumentError, "invalid month number (1-12): '#{spec}'"
           end
+
           if spec_type == :from
             ::Date.new(year, month, 1)
           else
             ::Date.new(year, month, 1).end_of_month
           end
-        when /^(\d\d?)[-\/](\d\d?)*$/
+        when %r{^(\d\d?)[-/](\d\d?)*$}
           # Month-Day only
           month = $1.to_i
           day = $2.to_i
           unless [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].include?(month)
             raise ArgumentError, "invalid month number (1-12): '#{spec}'"
           end
+
           if spec_type == :from
             ::Date.new(today.year, month, day)
           else
@@ -1457,6 +1474,7 @@ module FatCore
           unless [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].include?(month)
             raise ArgumentError, "invalid month number (1-12): '#{spec}'"
           end
+
           if spec_type == :from
             ::Date.new(today.year, month, 1)
           else
@@ -1580,11 +1598,12 @@ module FatCore
       # starting with January = 1, etc.
       COMMON_YEAR_DAYS_IN_MONTH = [31, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31,
                                    30, 31].freeze
-      def days_in_month(y, m)
-        raise ArgumentError, 'illegal month number' if m < 1 || m > 12
-        days = COMMON_YEAR_DAYS_IN_MONTH[m]
-        if m == 2
-          ::Date.new(y, m, 1).leap? ? 29 : 28
+      def days_in_month(year, month)
+        raise ArgumentError, 'illegal month number' if month < 1 || month > 12
+
+        days = COMMON_YEAR_DAYS_IN_MONTH[month]
+        if month == 2
+          ::Date.new(year, month, 1).leap? ? 29 : 28
         else
           days
         end
@@ -1593,41 +1612,43 @@ module FatCore
       # Return the nth weekday in the given month. If n is negative, count from
       # last day of month.
       #
-      # @param n [Integer] the ordinal number for the weekday
+      # @param nth [Integer] the ordinal number for the weekday
       # @param wday [Integer] the weekday of interest with Monday 0 to Sunday 6
       # @param year [Integer] the year of interest
       # @param month [Integer] the month of interest with January 1 to December 12
-      def nth_wday_in_year_month(n, wday, year, month)
+      def nth_wday_in_year_month(nth, wday, year, month)
         wday = wday.to_i
-        raise ArgumentError, 'illegal weekday number' if wday < 0 || wday > 6
+        raise ArgumentError, 'illegal weekday number' if wday.negative? || wday > 6
+
         month = month.to_i
         raise ArgumentError, 'illegal month number' if month < 1 || month > 12
-        n = n.to_i
-        if n.positive?
+
+        nth = nth.to_i
+        if nth.positive?
           # Set d to the 1st wday in month
           d = ::Date.new(year, month, 1)
           d += 1 while d.wday != wday
           # Set d to the nth wday in month
           nd = 1
-          while nd != n
+          while nd != nth
             d += 7
             nd += 1
           end
           d
-        elsif n.negative?
-          n = -n
+        elsif nth.negative?
+          nth = -nth
           # Set d to the last wday in month
           d = ::Date.new(year, month, 1).end_of_month
           d -= 1 while d.wday != wday
           # Set d to the nth wday in month
           nd = 1
-          while nd != n
+          while nd != nth
             d -= 7
             nd += 1
           end
           d
         else
-          raise ArgumentError, 'Argument n cannot be zero'
+          raise ArgumentError, 'Argument nth cannot be zero'
         end
       end
 

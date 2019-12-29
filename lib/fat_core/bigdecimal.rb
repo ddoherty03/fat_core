@@ -1,6 +1,7 @@
 require 'bigdecimal'
 
 module FatCore
+  # Extensions to BigDecimal class
   module BigDecimal
     # Provide a human-readable display for BigDecimal. e.g., while debugging.
     # The inspect method in BigDecimal is unreadable, as it exposes the
@@ -13,6 +14,7 @@ module FatCore
   end
 end
 
+# Override the core inspect method.
 class BigDecimal
   prepend(FatCore::BigDecimal)
   # @!parse include FatCore::BigDecimal

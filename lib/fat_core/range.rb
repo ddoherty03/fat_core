@@ -62,6 +62,7 @@ module FatCore
         cur_point = min
         ranges.each do |rr|
           break if rr.min > max
+
           if rr.min > cur_point
             start_point = cur_point
             end_point = rr.min.pred
@@ -96,6 +97,7 @@ module FatCore
         ranges.each do |rr|
           # Skip ranges outside of self
           next if rr.max < min || rr.min > max
+
           # Initialize cur_point to max of first range
           if cur_point.nil?
             cur_point = rr.max
@@ -125,6 +127,7 @@ module FatCore
     # @return [Range, nil] a Range representing the intersection
     def intersection(other)
       return nil unless overlaps?(other)
+
       ([min, other.min].max..[max, other.max].min)
     end
     alias & intersection
@@ -142,6 +145,7 @@ module FatCore
     # @return [Range, nil] a Range representing the union
     def union(other)
       return nil unless overlaps?(other) || contiguous?(other)
+
       ([min, other.min].min..[max, other.max].max)
     end
     alias + union
@@ -156,6 +160,7 @@ module FatCore
              other.max.respond_to?(:succ) && other.min.respond_to?(:pred)
         raise 'Range difference requires objects have pred and succ methods'
       end
+
       if subset_of?(other)
         # (4..7) - (0..10)
         []
@@ -365,7 +370,7 @@ module FatCore
     # @param other [Range] range to compare self with
     # @return [-1, 0, 1] if self is less, equal, or greater than other
     def <=>(other)
-      [min, max] <=> [other.min, other.max]
+      [min, max] <=> other.minmax
     end
 
     module ClassMethods

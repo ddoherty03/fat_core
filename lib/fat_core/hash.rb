@@ -46,8 +46,8 @@ module FatCore
       last_k = size - 1
       k = 0
       each_pair do |key, val|
-        first = (k == 0 ? true : false)
-        last  = (k == last_k ? true : false)
+        first = k.zero?
+        last  = (k == last_k)
         yield(key, val, first, last)
         k += 1
       end
@@ -64,10 +64,10 @@ module FatCore
     #   h.delete_with_value(2) #=> { a: 1, c: 3, e: 1 }
     #   h.delete_with_value([1, 3]) #=> { b: 2, d: 2 }
     #
-    # @param v [Object, Enumerable<Object>] value to test for
+    # @param val [Object, Enumerable<Object>] value to test for
     # @return [Hash] hash having entries === v or including v deleted
-    def delete_with_value(v)
-      keys_with_value(v).each do |k|
+    def delete_with_value(val)
+      keys_with_value(val).each do |k|
         delete(k)
       end
       self
@@ -86,13 +86,11 @@ module FatCore
     # @param val [Object, Enumerable<Object>] value to test for
     # @return [Array<Object>] the keys with value or values v
     def keys_with_value(val)
-      result = []
+      keys = []
       each_pair do |k, v|
-        if self[k] == val || (v.respond_to?(:include?) && v.include?(val))
-          result << k
-        end
+        keys << k if self[k] == val || (v.respond_to?(:include?) && v.include?(val))
       end
-      result
+      keys
     end
 
     # Change each key of this Hash to its value in `key_map`. Keys not appearing in
@@ -132,6 +130,7 @@ module FatCore
       unless keys.size == new_keys.size
         raise ArgumentError, 'replace_keys: new keys size differs from key size'
       end
+
       to_a.each_with_index.map { |(_k, v), i| [new_keys[i], v] }.to_h
     end
   end

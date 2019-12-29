@@ -1,5 +1,6 @@
 # Provide #positive? and #negative? for older versions of Ruby.
 unless 2.respond_to?(:positive?)
+  # Patch Numeric
   class Numeric
     def positive?
       self > 0
@@ -8,6 +9,7 @@ unless 2.respond_to?(:positive?)
 end
 
 unless 2.respond_to?(:negative?)
+  # Patch Numeric
   class Numeric
     def negative?
       self < 0

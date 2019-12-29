@@ -55,21 +55,17 @@ module FatCore
       line_width_so_far = 0
       words = split(' ')
       words.each do |w|
-        if !first_line && first_word_on_line
-          w = ' ' * hang + w
-        end
-        unless first_word_on_line
-          w = ' ' + w
-        end
+        w = ' ' * hang + w if !first_line && first_word_on_line
+        w = ' ' + w unless first_word_on_line
         result << w
         first_word_on_line = false
         line_width_so_far += 1 + w.length
-        if line_width_so_far >= width
-          result << "\n"
-          line_width_so_far = 0
-          first_line = false
-          first_word_on_line = true
-        end
+        next unless line_width_so_far >= width
+
+        result << "\n"
+        line_width_so_far = 0
+        first_line = false
+        first_word_on_line = true
       end
       result.strip
     end
@@ -108,7 +104,9 @@ module FatCore
     #
     # @return [Date] the translated Date
     def as_date
-      ::Date.new($1.to_i, $2.to_i, $3.to_i) if self =~ %r{(\d\d\d\d)[-/]?(\d\d?)[-/]?(\d\d?)}
+      if self =~ %r{(\d\d\d\d)[-/]?(\d\d?)[-/]?(\d\d?)}
+        ::Date.new($1.to_i, $2.to_i, $3.to_i)
+      end
     end
 
     UPPERS = ('A'..'Z').to_a
@@ -121,7 +119,7 @@ module FatCore
 
     # Return true if all the letters in self are upper case
     def all_upper?
-      tr('^A-Za-z', '').split('').all? {|c| ('A'..'Z').to_a.include? c}
+      tr('^A-Za-z', '').split('').all? { |c| ('A'..'Z').to_a.include? c }
     end
 
     public
@@ -154,7 +152,7 @@ module FatCore
       words = split(/\s+/)
       last_k = words.size - 1
       words.each_with_index do |w, k|
-        first = (k == 0)
+        first = k.zero?
         last = (k == last_k)
         if w =~ %r{c/o}i
           # Care of
@@ -273,7 +271,7 @@ module FatCore
       matched_text
     end
 
-    REGEXP_META_CHARACTERS = "\\$()*+.<>?[]^{|}".chars
+    REGEXP_META_CHARACTERS = "\\$()*+.<>?[]^{|}".chars.freeze
 
     # Convert a string of the form '/.../Iixm' to a regular expression. However,
     # make the regular expression case-insensitive by default and extend the
@@ -301,12 +299,10 @@ module FatCore
         flags = nil if flags.zero?
         body = Regexp.quote(body) if REGEXP_META_CHARACTERS.include?(body)
         Regexp.new(body, flags)
+      elsif REGEXP_META_CHARACTERS.include?(self)
+        Regexp.new(Regexp.quote(self))
       else
-        if REGEXP_META_CHARACTERS.include?(self)
-          Regexp.new(Regexp.quote(self))
-        else
-          Regexp.new(self)
-        end
+        Regexp.new(self)
       end
     end
 
@@ -327,7 +323,7 @@ module FatCore
       Float(self)
       true
     rescue ArgumentError
-      return false
+      false
     end
 
     # If the string is a valid number, return a string that adds grouping commas
@@ -347,6 +343,7 @@ module FatCore
     def commas(places = nil)
       numeric_re = /\A([-+])?([\d_]*)((\.)?([\d_]*))?([eE][+-]?[\d_]+)?\z/
       return self unless clean =~ numeric_re
+
       sig = $1 || ''
       whole = $2 ? $2.delete('_') : ''
       frac = $5 || ''

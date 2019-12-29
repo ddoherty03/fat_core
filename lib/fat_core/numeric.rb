@@ -133,9 +133,12 @@ module FatCore
       mins, secs = divmod(60)
       hrs, mins = mins.divmod(60)
       if frac.round(5) > 0.0
-        '%02d:%02d:%02d.%d' % [hrs, mins, secs, frac.round(5) * 100]
+        '%02<hrs>d:%02<mins>d:%02<secs>d.%<frac>d' % { hrs: hrs,
+                                                       mins: mins, secs: secs,
+                                                       frac: frac.round(5) * 100 }
       else
-        '%02d:%02d:%02d' % [hrs, mins, secs]
+        '%02<hrs>d:%02<mins>d:%02<secs>d' % { hrs: hrs, mins: mins,
+                                              secs: secs }
       end
     end
 

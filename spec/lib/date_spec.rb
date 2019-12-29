@@ -610,7 +610,7 @@ describe Date do
         }.to raise_error(ArgumentError)
       end
 
-      it 'should be able to add a chuck sym to itself' do
+      it 'should be able to add a chunk sym to itself' do
         # Date.today is '2012-07-18'
         expect(Date.today.add_chunk(:year)).to eq(Date.parse('2013-07-18'))
         expect(Date.today.add_chunk(:half)).to eq(Date.parse('2013-01-18'))
@@ -621,6 +621,22 @@ describe Date do
         expect(Date.today.add_chunk(:biweek)).to eq(Date.parse('2012-08-01'))
         expect(Date.today.add_chunk(:week)).to eq(Date.parse('2012-07-25'))
         expect(Date.today.add_chunk(:day)).to eq(Date.parse('2012-07-19'))
+        expect {
+          Date.today.add_chunk(:hour)
+        }.to raise_error(ArgumentError)
+      end
+
+      it 'should be able to add n chunks sym to itself' do
+        # Date.today is '2012-07-18'
+        expect(Date.today.add_chunk(:year, 5)).to eq(Date.parse('2017-07-18'))
+        expect(Date.today.add_chunk(:half, 5)).to eq(Date.parse('2015-01-18'))
+        expect(Date.today.add_chunk(:quarter, 5)).to eq(Date.parse('2013-10-18'))
+        expect(Date.today.add_chunk(:bimonth, 5)).to eq(Date.parse('2013-05-18'))
+        expect(Date.today.add_chunk(:month, 5)).to eq(Date.parse('2012-12-18'))
+        expect(Date.today.add_chunk(:semimonth, 5)).to eq(Date.parse('2012-10-03'))
+        expect(Date.today.add_chunk(:biweek, 5)).to eq(Date.parse('2012-09-26'))
+        expect(Date.today.add_chunk(:week, 5)).to eq(Date.parse('2012-08-22'))
+        expect(Date.today.add_chunk(:day, 5)).to eq(Date.parse('2012-07-23'))
         expect {
           Date.today.add_chunk(:hour)
         }.to raise_error(ArgumentError)

@@ -6,9 +6,9 @@ module Enumerable
   #      # On each iteration, grp is an Array of the next 5 items except the
   #      # last group, which contains only ['z'].
   #    end
-  def groups_of(n)
+  def groups_of(num)
     k = -1
-    group_by { k += 1; k.div(n) }
+    group_by { k += 1; k.div(num) }
   end
 
   # Yield each item together with two booleans that indicate whether the item is
@@ -16,9 +16,9 @@ module Enumerable
   #
   #    ('a'..'z').to_a.each with_flags do |letter, first, last|
   #      if first
-  #        # do something special for the first item
+  #        # do something special for 'a'
   #      elsif last
-  #        # do something special for the last item
+  #        # do something special for 'z'
   #      else
   #        # a middling item
   #      end
@@ -26,8 +26,8 @@ module Enumerable
   def each_with_flags
     last_k = size - 1
     each_with_index do |v, k|
-      first = (k == 0 ? true : false)
-      last  = (k == last_k ? true : false)
+      first = k.zero?
+      last  = (k == last_k)
       yield(v, first, last)
     end
   end
