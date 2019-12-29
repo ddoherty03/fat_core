@@ -10,8 +10,8 @@ Gem::Specification.new do |spec|
   spec.authors       = ['Daniel E. Doherty']
   spec.email         = ['ded@ddoherty.net']
   spec.summary       = 'fat_core provides some useful core extensions'
-  spec.description   = 'Write a longer description. Optional.'
-  spec.homepage      = ''
+  spec.description   = 'Useful extensions to Date, String, Range and other classes'
+  spec.homepage      = 'https://github.com/ddoherty03/fat_core.git'
   spec.license       = 'MIT'
   spec.required_ruby_version = '>= 2.2.2'
   spec.metadata['yard.run'] = 'yri' # use "yard" to build full HTML docs.
