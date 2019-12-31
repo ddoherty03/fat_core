@@ -112,20 +112,6 @@ module FatCore
     # :category: Queries
     # @group Queries
 
-    # Does self fall on a weekend?
-    # @return [Boolean]
-    def weekend?
-      saturday? || sunday?
-    end
-
-    # :category: Queries
-
-    # Does self fall on a weekday?
-    # @return [Boolean]
-    def weekday?
-      !weekend?
-    end
-
     # :category: Queries
 
     # Self's calendar "half" by analogy to calendar quarters: 1 or 2, depending
@@ -816,6 +802,22 @@ module FatCore
       end
     end
 
+    # @group Holidays and Workdays
+
+    # Does self fall on a weekend?
+    # @return [Boolean]
+    def weekend?
+      saturday? || sunday?
+    end
+
+    # :category: Queries
+
+    # Does self fall on a weekday?
+    # @return [Boolean]
+    def weekday?
+      !weekend?
+    end
+
     # Return the date for Easter in the Western Church for the year in which this
     # date falls.
     #
@@ -824,8 +826,6 @@ module FatCore
       # Return the date of Easter in self's year
       ::Date.easter(year)
     end
-
-    # @group Federal Holidays and Workdays
 
     # Holidays decreed by Presidential proclamation
     FED_DECREED_HOLIDAYS =
