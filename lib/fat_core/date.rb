@@ -1337,7 +1337,8 @@ module FatCore
       # @param str [String, #to_s] a stringling of the form MM/DD/YYYY
       # @return [::Date] the date represented by the str paramenter.
       def parse_american(str)
-        unless str.to_s =~ %r{\A\s*(\d\d?)\s*/\s*(\d\d?)\s*/\s*((\d\d)?\d\d)\s*\z}
+        re = %r{\A\s*(\d\d?)\s*[-/]\s*(\d\d?)\s*[-/]\s*((\d\d)?\d\d)\s*\z}
+        unless str.to_s =~ re
           raise ArgumentError, "date string must be of form 'MM?/DD?/YY(YY)?'"
         end
 

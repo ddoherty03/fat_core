@@ -219,6 +219,7 @@ describe Date do
         expect(Date.parse_american('2 / 1 / 2011').iso).to eq('2011-02-01')
         expect(Date.parse_american('  2 / 1 / 2011  ').iso).to eq('2011-02-01')
         expect(Date.parse_american('  2 / 1 / 15  ').iso).to eq('2015-02-01')
+        expect(Date.parse_american('  2-1-15  ').iso).to eq('2015-02-01')
         expect {
           Date.parse_american('xx/1/15')
         }.to raise_error(ArgumentError)
