@@ -84,8 +84,12 @@ module FatCore
     # Format as an inactive Org date timestamp of the form `[YYYY-MM-DD <dow>]`
     # (see Emacs org-mode)
     # @return [String]
-    def org
-      strftime('[%Y-%m-%d %a]')
+    def org(active = false)
+      if active
+        strftime('<%Y-%m-%d %a>')
+      else
+        strftime('[%Y-%m-%d %a]')
+      end
     end
 
     # :category: Formatting

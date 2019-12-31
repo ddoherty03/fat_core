@@ -444,6 +444,7 @@ describe Date do
       it 'should be able to print itself in org form' do
         expect(Date.today.org).to eq('[2012-07-18 Wed]')
         expect((Date.today + 1.day).org).to eq('[2012-07-19 Thu]')
+        expect((Date.today + 1.day).org(true)).to eq('<2012-07-19 Thu>')
       end
 
       it 'should be able to print itself in eng form' do
