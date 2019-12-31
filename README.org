@@ -171,27 +171,30 @@ From 2017-04-21 the end of week is  2017-04-23	(#end_of_week)
 
 You can query which numerical half, quarter, etc. that a given date falls in:
 
-#+begin_SRC ruby :results output :wrap example :exports both
+#+begin_SRC ruby :exports both :wrap example
   require 'fat_core/date'
 
+  tab = []
   %i(year half quarter bimonth month semimonth biweek week ).each do |chunk|
     d = Date.parse('2017-04-21') + rand(100)
     meth = "#{chunk}".to_sym
-    puts "The date #{d.iso} is in #{chunk} number #{d.send(meth)}\t(d.#{meth})"
+    tab << ["d.#{meth}", "#{d.iso} is in #{chunk} number #{d.send(meth)}"]
   end
+  tab
 #+end_SRC
 
 #+RESULTS:
 #+begin_example
-The date 2017-05-24 is in year number 2017	(d.year)
-The date 2017-05-08 is in half number 1	(d.half)
-The date 2017-06-11 is in quarter number 2	(d.quarter)
-The date 2017-06-03 is in bimonth number 3	(d.bimonth)
-The date 2017-06-23 is in month number 6	(d.month)
-The date 2017-06-18 is in semimonth number 12	(d.semimonth)
-The date 2017-05-17 is in biweek number 10	(d.biweek)
-The date 2017-06-12 is in week number 24	(d.week)
+| d.year      | 2017-07-12 is in year number 2017   |
+| d.half      | 2017-05-21 is in half number 1      |
+| d.quarter   | 2017-05-16 is in quarter number 2   |
+| d.bimonth   | 2017-07-05 is in bimonth number 4   |
+| d.month     | 2017-04-27 is in month number 4     |
+| d.semimonth | 2017-05-01 is in semimonth number 9 |
+| d.biweek    | 2017-06-04 is in biweek number 11   |
+| d.week      | 2017-07-10 is in week number 28     |
 #+end_example
+
 
 **** Parsing
 
