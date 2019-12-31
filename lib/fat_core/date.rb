@@ -159,6 +159,50 @@ module FatCore
       end
     end
 
+    # Self's calendar bimonth: 1, 2, 3, 4, 5, or 6 depending on which calendar
+    # bimonth the date falls in.
+    # @return [1, 2, 3, 4, 5, 6]
+    def bimonth
+      case month
+      when (1..2)
+        1
+      when (3..4)
+        2
+      when (5..6)
+        3
+      when (7..8)
+        4
+      when (9..10)
+        5
+      when (11..12)
+        6
+      end
+    end
+
+    # Self's calendar semimonth: 1, through 24 depending on which calendar
+    # semimonth the date falls in.
+    # @return [Integer]
+    def semimonth
+      (month - 1) * 2 + (day <= 15 ? 1 : 2)
+    end
+
+    # Self's calendar biweek: 1, through 24 depending on which calendar
+    # semimonth the date falls in.
+    # @return [Integer]
+    def biweek
+      if cweek.odd?
+        (cweek + 1) / 2
+      else
+        cweek / 2
+      end
+    end
+
+    # Self's calendar week: just calls cweek.
+    # @return [Integer]
+    def week
+      cweek
+    end
+
     # :category: Queries
 
     # Return whether the date falls on the first day of a year.
