@@ -35,6 +35,180 @@ goodies.
 
 *** Date
 
+**** Constants
+
+~FatCore~ adds two constants to the ~Date~ class, Date::BOT and Date::EOT.
+These represent the earliest and latest dates of practical commercial
+interest.  The exact values are rather arbitrary, but they prove useful in
+date ranges, for example.  They are defined as:
+
+- ~Date::BOT~ January 1, 1900
+- ~Date::EOT~ December 31, 3000
+
+**** Formatting
+
+~FatCore~ provides some concise methods for printing string versions of dates
+that are often useful:
+
+#+begin_SRC ruby :results output :wrap example
+  require 'fat_core/date'
+  d = Date.parse('1957-09-22')
+  puts "ISO: #{d.iso}"
+  puts "All Numbers: #{d.num}"
+  puts "Emacs Org Mode Inactive: #{d.org}"
+  puts "Emacs Org Mode Active: #{d.org(true)}"
+  puts "LaTeX: #{d.tex_quote}"
+  puts "English: #{d.eng}"
+  puts "American: #{d.american}"
+#+end_SRC
+
+#+RESULTS:
+#+begin_example
+ISO: 1957-09-22
+All Numbers: 19570922
+Emacs Org Mode Inactive: [1957-09-22 Sun]
+Emacs Org Mode Active: <1957-09-22 Sun>
+LaTeX: 1957--09--22
+English: September 22, 1957
+American: 9/22/1957
+#+end_example
+
+Most of these are self-explanatory, but a couple are not.  The ~#org~ method
+formats a date as an Emacs org-mode timestamp, by default an inactive
+timestamp that does not show up in the org agenda, but can be made active with
+the optional parameter set to a truthy value.  See
+[[https://orgmode.org/manual/Timestamps.html#Timestamps]].
+
+The ~#tex_quote~ method formats the date in iso form but using TeX's
+convention of using en-dashes to separate the components.
+
+**** Chunks
+
+Many of the methods provided by ~FatCore~ deal with various calendar periods
+that are less common than those provided by the Ruby Standard Library or gems
+such as ~active_suupor~.  This documentation refers to these calendar periods
+as "chunks", and they are the following:
+
+- year,
+- half,
+- quarter,
+- bimonth,
+- month,
+- semimonth,
+- biweek,
+- week, and
+- day
+
+~FatCore~ provides methods that query whether the date falls on the beginning
+or end of each of these chunks:
+
+#+begin_SRC ruby :results output :wrap example
+  require 'fat_core/date'
+
+  d = Date.parse('2017-06-30')
+  %i[beginning end].each do |side|
+    %i(year half quarter bimonth month semimonth biweek week ).each do |chunk|
+      meth = "#{side}_of_#{chunk}?".to_sym
+      puts "Is #{d.iso} at the #{side} of #{chunk}? #{d.send(meth)}\t(\##{meth})"
+    end
+  end
+#+end_SRC
+
+#+RESULTS:
+#+begin_example
+Is 2017-06-30 at the beginning of year? false	(#beginning_of_year?)
+Is 2017-06-30 at the beginning of half? false	(#beginning_of_half?)
+Is 2017-06-30 at the beginning of quarter? false	(#beginning_of_quarter?)
+Is 2017-06-30 at the beginning of bimonth? false	(#beginning_of_bimonth?)
+Is 2017-06-30 at the beginning of month? false	(#beginning_of_month?)
+Is 2017-06-30 at the beginning of semimonth? false	(#beginning_of_semimonth?)
+Is 2017-06-30 at the beginning of biweek? false	(#beginning_of_biweek?)
+Is 2017-06-30 at the beginning of week? false	(#beginning_of_week?)
+Is 2017-06-30 at the end of year? false	(#end_of_year?)
+Is 2017-06-30 at the end of half? true	(#end_of_half?)
+Is 2017-06-30 at the end of quarter? true	(#end_of_quarter?)
+Is 2017-06-30 at the end of bimonth? true	(#end_of_bimonth?)
+Is 2017-06-30 at the end of month? true	(#end_of_month?)
+Is 2017-06-30 at the end of semimonth? true	(#end_of_semimonth?)
+Is 2017-06-30 at the end of biweek? false	(#end_of_biweek?)
+Is 2017-06-30 at the end of week? false	(#end_of_week?)
+#+end_example
+
+It also provides corresponding methods that return the date at the beginning
+or end of the calendar chunk, starting at the given date:
+
+#+begin_SRC ruby :results output :wrap example
+  require 'fat_core/date'
+
+  d = Date.parse('2017-04-21')
+  %i[beginning end].each do |side|
+    %i(year half quarter bimonth month semimonth biweek week ).each do |chunk|
+      meth = "#{side}_of_#{chunk}".to_sym
+      puts "From #{d.iso} the #{side} of #{chunk} is  #{d.send(meth)}\t(\##{meth})"
+    end
+  end
+#+end_SRC
+
+#+RESULTS:
+#+begin_example
+From 2017-04-21 the beginning of year is  2017-01-01	(#beginning_of_year)
+From 2017-04-21 the beginning of half is  2017-01-01	(#beginning_of_half)
+From 2017-04-21 the beginning of quarter is  2017-04-01	(#beginning_of_quarter)
+From 2017-04-21 the beginning of bimonth is  2017-03-01	(#beginning_of_bimonth)
+From 2017-04-21 the beginning of month is  2017-04-01	(#beginning_of_month)
+From 2017-04-21 the beginning of semimonth is  2017-04-16	(#beginning_of_semimonth)
+From 2017-04-21 the beginning of biweek is  2017-04-10	(#beginning_of_biweek)
+From 2017-04-21 the beginning of week is  2017-04-17	(#beginning_of_week)
+From 2017-04-21 the end of year is  2017-12-31	(#end_of_year)
+From 2017-04-21 the end of half is  2017-06-30	(#end_of_half)
+From 2017-04-21 the end of quarter is  2017-06-30	(#end_of_quarter)
+From 2017-04-21 the end of bimonth is  2017-04-30	(#end_of_bimonth)
+From 2017-04-21 the end of month is  2017-04-30	(#end_of_month)
+From 2017-04-21 the end of semimonth is  2017-04-30	(#end_of_semimonth)
+From 2017-04-21 the end of biweek is  2017-04-23	(#end_of_biweek)
+From 2017-04-21 the end of week is  2017-04-23	(#end_of_week)
+#+end_example
+
+You can query which numerical half, quarter, etc. that a given date falls in:
+
+#+begin_SRC ruby :results output :wrap example
+  require 'fat_core/date'
+
+  %i(year half quarter bimonth month semimonth biweek week ).each do |chunk|
+    d = Date.parse('2017-04-21') + rand(100)
+    meth = "#{chunk}".to_sym
+    puts "The date #{d.iso} is in #{chunk} number #{d.send(meth)}\t(d.#{meth})"
+  end
+#+end_SRC
+
+#+RESULTS:
+#+begin_example
+The date 2017-05-24 is in year number 2017	(d.year)
+The date 2017-05-08 is in half number 1	(d.half)
+The date 2017-06-11 is in quarter number 2	(d.quarter)
+The date 2017-06-03 is in bimonth number 3	(d.bimonth)
+The date 2017-06-23 is in month number 6	(d.month)
+The date 2017-06-18 is in semimonth number 12	(d.semimonth)
+The date 2017-05-17 is in biweek number 10	(d.biweek)
+The date 2017-06-12 is in week number 24	(d.week)
+#+end_example
+
+**** Parsing
+
+***** American Dates
+
+***** Date Specs
+
+**** Holidays and Workdays
+
+- weekend?
+- weekday?
+
+**** Weekdays in Month
+
+**** Easter
+
+
 The ~Date~ class extension adds two methods for determining whether a given
 date is a US federal holiday as defined by federal law, including such things
 as federal holidays established by executive decree:
