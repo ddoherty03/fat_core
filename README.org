@@ -50,7 +50,7 @@ date ranges, for example.  They are defined as:
 ~FatCore~ provides some concise methods for printing string versions of dates
 that are often useful:
 
-#+begin_SRC ruby :results output :wrap example
+#+begin_SRC ruby :results output :wrap example  :exports both
   require 'fat_core/date'
   d = Date.parse('1957-09-22')
   puts "ISO: #{d.iso}"
@@ -102,7 +102,7 @@ as "chunks", and they are the following:
 ~FatCore~ provides methods that query whether the date falls on the beginning
 or end of each of these chunks:
 
-#+begin_SRC ruby :results output :wrap example
+#+begin_SRC ruby :results output :wrap example :exports both
   require 'fat_core/date'
 
   d = Date.parse('2017-06-30')
@@ -137,7 +137,7 @@ Is 2017-06-30 at the end of week? false	(#end_of_week?)
 It also provides corresponding methods that return the date at the beginning
 or end of the calendar chunk, starting at the given date:
 
-#+begin_SRC ruby :results output :wrap example
+#+begin_SRC ruby :results output :wrap example :exports both
   require 'fat_core/date'
 
   d = Date.parse('2017-04-21')
@@ -171,7 +171,7 @@ From 2017-04-21 the end of week is  2017-04-23	(#end_of_week)
 
 You can query which numerical half, quarter, etc. that a given date falls in:
 
-#+begin_SRC ruby :results output :wrap example
+#+begin_SRC ruby :results output :wrap example :exports both
   require 'fat_core/date'
 
   %i(year half quarter bimonth month semimonth biweek week ).each do |chunk|
