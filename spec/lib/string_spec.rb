@@ -150,30 +150,37 @@ the people, for the people, shall not perish from the earth."
     end
 
     it 'should be able to convert a string to a regular expression' do
+      # Ignores case by default
       re = "/hello((\s+)(world))?/".as_regexp
       expect(re.class).to eq Regexp
       expect(re.casefold?).to be true
       expect(re.multiline?).to be false
       expect(re.match?('Hello    WorlD')).to be true
 
+      # Countermand ignore case with /.../I modifier
       re = "/hello((\s+)(world))?/Im".as_regexp
       expect(re.class).to eq Regexp
       expect(re.casefold?).to be false
       expect(re.multiline?).to be true
       expect(re.match?('Hello    WorlD')).to be false
 
-      # Works without /../ but no options possible
-      re = "hello((\s+)(world))?".as_regexp
+      # Works without /../ but takes meta-characters literally
+      str = "hello((\s+)(world))?"
+      re = str.as_regexp
       expect(re.class).to eq Regexp
       expect(re.casefold?).to be false
       expect(re.multiline?).to be false
-      expect(re.match?('hello    world')).to be true
+      expect(re.match?('hello    world')).to be false
+      expect(re.match?(str)).to be true
+      expect('Hello\b'.as_regexp).to eq %r{Hello\\b}
+      expect('Hello'.as_regexp).to eq %r{Hello}
     end
 
     it 'should be able to convert metacharacters into Regexp' do
       "\\$()*+.<>?[]^{|}".chars.each do |c|
         re = c.as_regexp
         expect(re.class).to eq Regexp
+        expect(re.match?(c)).to be true
       end
     end
 

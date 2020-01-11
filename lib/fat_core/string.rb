@@ -273,16 +273,18 @@ module FatCore
 
     REGEXP_META_CHARACTERS = "\\$()*+.<>?[]^{|}".chars.freeze
 
-    # Convert a string of the form '/.../Iixm' to a regular expression. However,
-    # make the regular expression case-insensitive by default and extend the
-    # modifier syntax to allow '/I' to indicate case-sensitive.  Without the
-    # surrounding '/', do not make the Regexp case insensitive, just translate
-    # it to a Regexp with Regexp.new.
+    # Convert a string of the form '/.../Iixm' to a regular
+    # expression. However, make the regular expression case-insensitive by
+    # default and extend the modifier syntax to allow '/I' to indicate
+    # case-sensitive.  Without the surrounding '/', quote any Regexp
+    # metacharacters in the string and return a Regexp that matches the string
+    # literally.
     #
     # @example
     #   '/Hello/'.as_regexp #=> /Hello/i
     #   '/Hello/I'.as_regexp #=> /Hello/
     #   'Hello'.as_regexp #=> /Hello/
+    #   'Hello\b'.as_regexp #=> /Hello\\b/
     #
     # @return [Regexp]
     def as_regexp
@@ -297,12 +299,10 @@ module FatCore
           flags |= Regexp::MULTILINE if opts.include?('m')
         end
         flags = nil if flags.zero?
-        body = Regexp.quote(body) if REGEXP_META_CHARACTERS.include?(body)
+        # body = Regexp.quote(body) if REGEXP_META_CHARACTERS.include?(body)
         Regexp.new(body, flags)
-      elsif REGEXP_META_CHARACTERS.include?(self)
-        Regexp.new(Regexp.quote(self))
       else
-        Regexp.new(self)
+        Regexp.new(Regexp.quote(self))
       end
     end
 
