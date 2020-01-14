@@ -1029,8 +1029,10 @@ module FatCore
     # Calculations for NYSE holidays are from Rule 51 and supplementary materials
     # for the Rules of the New York Stock Exchange, Inc.
     #
-    # * General Rule 1: if a regular holiday falls on Saturday, observe it on the preceding Friday.
-    # * General Rule 2: if a regular holiday falls on Sunday, observe it on the following Monday.
+    # * General Rule 1: if a regular holiday falls on Saturday, observe it on
+    #   the preceding Friday.
+    # * General Rule 2: if a regular holiday falls on Sunday, observe it on
+    #   the following Monday.
     #
     # These are the regular holidays:
     #
@@ -1149,8 +1151,6 @@ module FatCore
       date -= 1 until date.trading_day?
       date
     end
-
-    protected
 
     # Return whether this date is a fixed holiday for the NYSE, that is, a holiday
     # that falls on the same date each year.
@@ -1468,9 +1468,8 @@ module FatCore
           # Year-Half
           year = $1.to_i
           half = $2.to_i
-          unless [1, 2].include?(half)
-            raise ArgumentError, "invalid half number: '#{spec}'"
-          end
+          msg = "invalid half number: '#{spec}'"
+          raise ArgumentError,  msg unless [1, 2].include?(half)
 
           month = half * 6
           if spec_type == :from
@@ -1482,9 +1481,8 @@ module FatCore
           # Half only
           this_year = today.year
           half = $1.to_i
-          unless [1, 2].include?(half)
-            raise ArgumentError, "invalid half number: '#{spec}'"
-          end
+          msg = "invalid half number: '#{spec}'"
+          raise ArgumentError, msg unless [1, 2].include?(half)
 
           date = ::Date.new(this_year, half * 6, 15)
           if spec_type == :from
@@ -1740,7 +1738,6 @@ module FatCore
       end
     end
 
-    # @private
     def self.included(base)
       base.extend(ClassMethods)
     end
