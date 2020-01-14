@@ -834,7 +834,8 @@ module FatCore
         # http://www.whitehouse.gov/the-press-office/2012/12/21
         ::Date.parse('2012-12-24'),
         # And Trump
-        ::Date.parse('2018-12-24')
+        ::Date.parse('2018-12-24'),
+        ::Date.parse('2019-12-24')
       ].freeze
 
     # Presidential funeral since JFK
