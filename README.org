@@ -6,6 +6,26 @@ fat-core is a simple gem to collect core extensions and a few new classes that
 I find useful in multiple projects.  The emphasis is on extending the Date
 class to make it more useful in financial applications.
 
+** Installation
+
+Add this line to your application's Gemfile:
+
+#+begin_SRC ruby
+  gem 'fat_core', :git => 'https://github.com/ddoherty03/fat_core.git'
+#+end_SRC
+
+And then execute:
+
+#+begin_src shell
+  $ bundle
+#+end_src
+
+Or install it yourself as:
+
+#+begin_src shell
+  $ gem install fat_core
+#+end_src
+
 ** Usage
 
 You can extend classes individually by requiring the corresponding file:
@@ -42,8 +62,14 @@ These represent the earliest and latest dates of practical commercial
 interest.  The exact values are rather arbitrary, but they prove useful in
 date ranges, for example.  They are defined as:
 
-- ~Date::BOT~ January 1, 1900
-- ~Date::EOT~ December 31, 3000
+- ~Date::BOT~ :: January 1, 1900
+- ~Date::EOT~ :: December 31, 3000
+- ~Date::FEDERAL_DECREED_HOLIDAYS~ :: an Array of dates declared as non-work
+  days for federal employees by presidential proclamation
+- ~Date::PRESIDENTIAL_FUNERALS~ :: an Array of dates of presidential funerals,
+  which are observed with a closing of most federal agencies
+
+
 
 **** Formatting
 
@@ -102,71 +128,75 @@ as "chunks", and they are the following:
 ~FatCore~ provides methods that query whether the date falls on the beginning
 or end of each of these chunks:
 
-#+begin_SRC ruby :results output :wrap example :exports both
+#+begin_SRC ruby :wrap example :exports both
   require 'fat_core/date'
 
+  tab = []
   d = Date.parse('2017-06-30')
   %i[beginning end].each do |side|
     %i(year half quarter bimonth month semimonth biweek week ).each do |chunk|
       meth = "#{side}_of_#{chunk}?".to_sym
-      puts "Is #{d.iso} at the #{side} of #{chunk}? #{d.send(meth)}\t(\##{meth})"
+      tab << [d.iso, meth.to_s, "#{d.send(meth)}"]
     end
   end
+  tab
 #+end_SRC
 
 #+RESULTS:
 #+begin_example
-Is 2017-06-30 at the beginning of year? false	(#beginning_of_year?)
-Is 2017-06-30 at the beginning of half? false	(#beginning_of_half?)
-Is 2017-06-30 at the beginning of quarter? false	(#beginning_of_quarter?)
-Is 2017-06-30 at the beginning of bimonth? false	(#beginning_of_bimonth?)
-Is 2017-06-30 at the beginning of month? false	(#beginning_of_month?)
-Is 2017-06-30 at the beginning of semimonth? false	(#beginning_of_semimonth?)
-Is 2017-06-30 at the beginning of biweek? false	(#beginning_of_biweek?)
-Is 2017-06-30 at the beginning of week? false	(#beginning_of_week?)
-Is 2017-06-30 at the end of year? false	(#end_of_year?)
-Is 2017-06-30 at the end of half? true	(#end_of_half?)
-Is 2017-06-30 at the end of quarter? true	(#end_of_quarter?)
-Is 2017-06-30 at the end of bimonth? true	(#end_of_bimonth?)
-Is 2017-06-30 at the end of month? true	(#end_of_month?)
-Is 2017-06-30 at the end of semimonth? true	(#end_of_semimonth?)
-Is 2017-06-30 at the end of biweek? false	(#end_of_biweek?)
-Is 2017-06-30 at the end of week? false	(#end_of_week?)
+| 2017-06-30 | beginning_of_year?      | false |
+| 2017-06-30 | beginning_of_half?      | false |
+| 2017-06-30 | beginning_of_quarter?   | false |
+| 2017-06-30 | beginning_of_bimonth?   | false |
+| 2017-06-30 | beginning_of_month?     | false |
+| 2017-06-30 | beginning_of_semimonth? | false |
+| 2017-06-30 | beginning_of_biweek?    | false |
+| 2017-06-30 | beginning_of_week?      | false |
+| 2017-06-30 | end_of_year?            | false |
+| 2017-06-30 | end_of_half?            | true  |
+| 2017-06-30 | end_of_quarter?         | true  |
+| 2017-06-30 | end_of_bimonth?         | true  |
+| 2017-06-30 | end_of_month?           | true  |
+| 2017-06-30 | end_of_semimonth?       | true  |
+| 2017-06-30 | end_of_biweek?          | false |
+| 2017-06-30 | end_of_week?            | false |
 #+end_example
 
 It also provides corresponding methods that return the date at the beginning
 or end of the calendar chunk, starting at the given date:
 
-#+begin_SRC ruby :results output :wrap example :exports both
+#+begin_SRC ruby :wrap example :exports both
   require 'fat_core/date'
 
+  tab = []
   d = Date.parse('2017-04-21')
   %i[beginning end].each do |side|
     %i(year half quarter bimonth month semimonth biweek week ).each do |chunk|
       meth = "#{side}_of_#{chunk}".to_sym
-      puts "From #{d.iso} the #{side} of #{chunk} is  #{d.send(meth)}\t(\##{meth})"
+      tab << [d.iso, "d.#{meth}", "#{d.send(meth)}"]
     end
   end
+  tab
 #+end_SRC
 
 #+RESULTS:
 #+begin_example
-From 2017-04-21 the beginning of year is  2017-01-01	(#beginning_of_year)
-From 2017-04-21 the beginning of half is  2017-01-01	(#beginning_of_half)
-From 2017-04-21 the beginning of quarter is  2017-04-01	(#beginning_of_quarter)
-From 2017-04-21 the beginning of bimonth is  2017-03-01	(#beginning_of_bimonth)
-From 2017-04-21 the beginning of month is  2017-04-01	(#beginning_of_month)
-From 2017-04-21 the beginning of semimonth is  2017-04-16	(#beginning_of_semimonth)
-From 2017-04-21 the beginning of biweek is  2017-04-10	(#beginning_of_biweek)
-From 2017-04-21 the beginning of week is  2017-04-17	(#beginning_of_week)
-From 2017-04-21 the end of year is  2017-12-31	(#end_of_year)
-From 2017-04-21 the end of half is  2017-06-30	(#end_of_half)
-From 2017-04-21 the end of quarter is  2017-06-30	(#end_of_quarter)
-From 2017-04-21 the end of bimonth is  2017-04-30	(#end_of_bimonth)
-From 2017-04-21 the end of month is  2017-04-30	(#end_of_month)
-From 2017-04-21 the end of semimonth is  2017-04-30	(#end_of_semimonth)
-From 2017-04-21 the end of biweek is  2017-04-23	(#end_of_biweek)
-From 2017-04-21 the end of week is  2017-04-23	(#end_of_week)
+| 2017-04-21 | d.beginning_of_year      | 2017-01-01 |
+| 2017-04-21 | d.beginning_of_half      | 2017-01-01 |
+| 2017-04-21 | d.beginning_of_quarter   | 2017-04-01 |
+| 2017-04-21 | d.beginning_of_bimonth   | 2017-03-01 |
+| 2017-04-21 | d.beginning_of_month     | 2017-04-01 |
+| 2017-04-21 | d.beginning_of_semimonth | 2017-04-16 |
+| 2017-04-21 | d.beginning_of_biweek    | 2017-04-10 |
+| 2017-04-21 | d.beginning_of_week      | 2017-04-17 |
+| 2017-04-21 | d.end_of_year            | 2017-12-31 |
+| 2017-04-21 | d.end_of_half            | 2017-06-30 |
+| 2017-04-21 | d.end_of_quarter         | 2017-06-30 |
+| 2017-04-21 | d.end_of_bimonth         | 2017-04-30 |
+| 2017-04-21 | d.end_of_month           | 2017-04-30 |
+| 2017-04-21 | d.end_of_semimonth       | 2017-04-30 |
+| 2017-04-21 | d.end_of_biweek          | 2017-04-23 |
+| 2017-04-21 | d.end_of_week            | 2017-04-23 |
 #+end_example
 
 You can query which numerical half, quarter, etc. that a given date falls in:
@@ -178,29 +208,56 @@ You can query which numerical half, quarter, etc. that a given date falls in:
   %i(year half quarter bimonth month semimonth biweek week ).each do |chunk|
     d = Date.parse('2017-04-21') + rand(100)
     meth = "#{chunk}".to_sym
-    tab << ["d.#{meth}", "#{d.iso} is in #{chunk} number #{d.send(meth)}"]
+    tab << [d.iso, "d.#{meth}", "in #{chunk} number #{d.send(meth)}"]
   end
   tab
 #+end_SRC
 
 #+RESULTS:
 #+begin_example
-| d.year      | 2017-07-12 is in year number 2017   |
-| d.half      | 2017-05-21 is in half number 1      |
-| d.quarter   | 2017-05-16 is in quarter number 2   |
-| d.bimonth   | 2017-07-05 is in bimonth number 4   |
-| d.month     | 2017-04-27 is in month number 4     |
-| d.semimonth | 2017-05-01 is in semimonth number 9 |
-| d.biweek    | 2017-06-04 is in biweek number 11   |
-| d.week      | 2017-07-10 is in week number 28     |
+| 2017-07-05 | d.year      | in year number 2017   |
+| 2017-06-03 | d.half      | in half number 1      |
+| 2017-05-30 | d.quarter   | in quarter number 2   |
+| 2017-07-08 | d.bimonth   | in bimonth number 4   |
+| 2017-06-28 | d.month     | in month number 6     |
+| 2017-05-14 | d.semimonth | in semimonth number 9 |
+| 2017-07-25 | d.biweek    | in biweek number 15   |
+| 2017-06-19 | d.week      | in week number 25     |
 #+end_example
-
 
 **** Parsing
 
+~FatCore~ also adds some convenience methods for parsing strings as ~Date~
+objects.
+
 ***** American Dates
 
+Americans often write dates in the form M/d/Y, and the normal parse method
+will parse such a string as d/M/Y, often resulting in invalid date errors.
+~FatCore~ adds the specialty parsing method, ~Date.parse_american~ to handle
+such strings.
+
+#+begin_SRC ruby :results output :exports both :wrap example
+  require 'fat_core/date'
+
+  begin
+    ss = '9/22/1957'
+    Date.parse(ss)
+  rescue Date::Error => ex
+    puts "Date.parse('#{ss}') raises #{ex.class} (#{ex}), but"
+    puts "Date.parse_american('#{ss}') => #{Date.parse_american(ss)}"
+  end
+#+end_SRC
+
+#+RESULTS:
+#+begin_example
+Date.parse('9/22/1957') raises Date::Error (invalid date), but
+Date.parse_american('9/22/1957') => 1957-09-22
+#+end_example
+
 ***** Date Specs
+
+
 
 **** Holidays and Workdays
 
@@ -270,7 +327,8 @@ coverage on one Range by an Array of other Ranges:
   (0..12).gaps([(0..2), (5..7), (10..12)])  => [(3..4), (8..9)]
 #+end_SRC
 
-*** Enumerable
+**
+* Enumerable
 
 FatCore::Enumerable extends Enumerable with the ~#each_with_flags~ method that
 yields the elements of the Enumerable but also yields two booleans, ~first~ and
@@ -286,13 +344,6 @@ deletion (~#delete_with_value~) and for manipulating the keys
 provides ~#each_pair_with_flags~ as an analog to Enumerable's
 ~#each_with_flags~.
 
-*** TeX Quoting
-
-Several of the extension, most notably 'fat_core/string', provides a
-~#tex_quote~ method for quoting the string version of an object so as to allow
-its inclusion in a TeX document and quote characters such as '$' or '%' that
-have a special meaning for TeX.
-
 *** String
 
 FatCore::String has methods for performing matching of one string with another
@@ -303,32 +354,19 @@ a useable Symbol (~#as_sym~) and vice-versa (~#as_string~ also
 cleaning up errant spaces (~#clean~), and computing the Damerau-Levenshtein
 distance between strings (~#distance~). And several others.
 
+*** TeX Quoting
+
+Several of the extension, most notably 'fat_core/string', provides a
+~#tex_quote~ method for quoting the string version of an object so as to allow
+its inclusion in a TeX document and quote characters such as '$' or '%' that
+have a special meaning for TeX.
+
 *** Numbers
 
 FatCore::Numeric has methods for inserting grouping commas into a number
 (~#commas~ and ~#group~), for converting seconds to HH:MM:SS.dd format
 (~#secs_to_hms~), for testing for integrality (~#whole?~ and ~#int_if_whole~), and
 testing for sign (~#signum~).
-
-** Installation
-
-Add this line to your application's Gemfile:
-
-#+begin_SRC ruby
-  gem 'fat_core', :git => 'https://github.com/ddoherty03/fat_core.git'
-#+end_SRC
-
-And then execute:
-
-#+begin_src shell
-  $ bundle
-#+end_src
-
-Or install it yourself as:
-
-#+begin_src shell
-  $ gem install fat_core
-#+end_src
 
 ** Contributing
 
