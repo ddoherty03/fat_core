@@ -1733,7 +1733,7 @@ module FatCore
         when Time
           dat.to_date
         else
-          raise ArgumentError, 'Date.ensure_date needs String, Date, or Time'
+          raise ArgumentError, 'requires String, Date, DateTime, or Time'
         end
       end
     end
