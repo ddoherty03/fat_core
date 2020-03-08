@@ -802,6 +802,24 @@ module FatCore
       end
     end
 
+    # Return whether the date that is the beginning of the +chunk+
+    #
+    # @param chunk [Symbol] one of +:year+, +:half+, +:quarter+, +:bimonth+,
+    #   +:month+, +:semimonth+, +:biweek+, +:week+, or +:day+.
+    # @return [::Boolean] whether this date begins a chunk
+    def beginning_of_chunk?(chunk)
+      self == beginning_of_chunk(chunk)
+    end
+
+    # Return whether the date that is the end of the +chunk+
+    #
+    # @param chunk [Symbol] one of +:year+, +:half+, +:quarter+, +:bimonth+,
+    #   +:month+, +:semimonth+, +:biweek+, +:week+, or +:day+.
+    # @return [::Boolean] whether this date ends a chunk
+    def end_of_chunk?(chunk)
+      self == end_of_chunk(chunk)
+    end
+
     # @group Holidays and Workdays
 
     # Does self fall on a weekend?

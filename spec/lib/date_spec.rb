@@ -31,7 +31,7 @@ describe Date do
 
       it 'raises an error for unknown class' do
         expect { Date.ensure_date([2011, 11, 12]) }
-          .to raise_error /needs String, Date, or Time/
+          .to raise_error /requires String, Date, DateTime, or Time/
       end
     end
 
@@ -609,6 +609,114 @@ describe Date do
           .to eq Date.parse('2013-11-04')
         expect {
           Date.parse('2013-11-04').beginning_of_chunk(:wek)
+        }.to raise_error(ArgumentError)
+      end
+
+      it 'should be able to test the beginning of chunks' do
+        expect(Date.parse('2013-11-04').beginning_of_chunk?(:year))
+          .to be false
+        expect(Date.parse('2013-01-01').beginning_of_chunk?(:year))
+          .to be true
+        expect(Date.parse('2013-11-04').beginning_of_chunk?(:half))
+          .to be false
+        expect(Date.parse('2013-01-01').beginning_of_chunk?(:half))
+          .to be true
+        expect(Date.parse('2013-07-01').beginning_of_chunk?(:half))
+          .to be true
+        expect(Date.parse('2013-11-04').beginning_of_chunk?(:quarter))
+          .to be false
+        expect(Date.parse('2013-01-01').beginning_of_chunk?(:quarter))
+          .to be true
+        expect(Date.parse('2013-07-01').beginning_of_chunk?(:quarter))
+          .to be true
+        expect(Date.parse('2013-10-01').beginning_of_chunk?(:quarter))
+          .to be true
+        expect(Date.parse('2013-11-04').beginning_of_chunk?(:bimonth))
+          .to be false
+        expect(Date.parse('2013-01-01').beginning_of_chunk?(:bimonth))
+          .to be true
+        expect(Date.parse('2013-02-01').beginning_of_chunk?(:bimonth))
+          .to be false
+        expect(Date.parse('2013-11-04').beginning_of_chunk?(:month))
+          .to be false
+        expect(Date.parse('2013-01-01').beginning_of_chunk?(:month))
+          .to be true
+        expect(Date.parse('2013-11-04').beginning_of_chunk?(:semimonth))
+          .to be false
+        expect(Date.parse('2013-01-01').beginning_of_chunk?(:semimonth))
+          .to be true
+        expect(Date.parse('2013-01-16').beginning_of_chunk?(:semimonth))
+          .to be true
+        expect(Date.parse('2013-11-01').beginning_of_chunk?(:week))
+          .to be false
+        expect(Date.parse('2013-11-04').beginning_of_chunk?(:week))
+          .to be true
+        # Sunday is not beginning of commercial week
+        expect(Date.parse('2013-11-03').beginning_of_chunk?(:week))
+          .to be false
+        expect(Date.parse('2013-11-01').beginning_of_chunk?(:day))
+          .to be true
+        expect(Date.parse('2013-11-04').beginning_of_chunk?(:day))
+          .to be true
+        expect(Date.parse('2013-11-03').beginning_of_chunk?(:day))
+          .to be true
+
+        expect {
+          Date.parse('2013-11-04').beginning_of_chunk?(:wek)
+        }.to raise_error(ArgumentError)
+      end
+
+      it 'should be able to test the end of chunks' do
+        expect(Date.parse('2013-11-04').end_of_chunk?(:year))
+          .to be false
+        expect(Date.parse('2013-12-31').end_of_chunk?(:year))
+          .to be true
+        expect(Date.parse('2013-11-04').end_of_chunk?(:half))
+          .to be false
+        expect(Date.parse('2013-12-31').end_of_chunk?(:half))
+          .to be true
+        expect(Date.parse('2013-06-30').end_of_chunk?(:half))
+          .to be true
+        expect(Date.parse('2013-11-04').end_of_chunk?(:quarter))
+          .to be false
+        expect(Date.parse('2013-12-31').end_of_chunk?(:quarter))
+          .to be true
+        expect(Date.parse('2013-06-30').end_of_chunk?(:quarter))
+          .to be true
+        expect(Date.parse('2013-09-30').end_of_chunk?(:quarter))
+          .to be true
+        expect(Date.parse('2013-11-04').end_of_chunk?(:bimonth))
+          .to be false
+        expect(Date.parse('2013-12-31').end_of_chunk?(:bimonth))
+          .to be true
+        expect(Date.parse('2013-02-01').end_of_chunk?(:bimonth))
+          .to be false
+        expect(Date.parse('2013-11-04').end_of_chunk?(:month))
+          .to be false
+        expect(Date.parse('2013-12-31').end_of_chunk?(:month))
+          .to be true
+        expect(Date.parse('2013-11-04').end_of_chunk?(:semimonth))
+          .to be false
+        expect(Date.parse('2013-12-31').end_of_chunk?(:semimonth))
+          .to be true
+        expect(Date.parse('2013-01-15').end_of_chunk?(:semimonth))
+          .to be true
+        expect(Date.parse('2013-11-01').end_of_chunk?(:week))
+          .to be false
+        expect(Date.parse('2013-11-04').end_of_chunk?(:week))
+          .to be false
+        # Sunday is not end of commercial week
+        expect(Date.parse('2013-11-03').end_of_chunk?(:week))
+          .to be true
+        expect(Date.parse('2013-11-01').end_of_chunk?(:day))
+          .to be true
+        expect(Date.parse('2013-11-04').end_of_chunk?(:day))
+          .to be true
+        expect(Date.parse('2013-11-03').end_of_chunk?(:day))
+          .to be true
+
+        expect {
+          Date.parse('2013-11-04').end_of_chunk?(:wek)
         }.to raise_error(ArgumentError)
       end
 
