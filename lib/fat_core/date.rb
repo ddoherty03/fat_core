@@ -497,12 +497,16 @@ module FatCore
     # :category: Relative ::Dates
 
     # Return the date that is the last day of the commercial biweek in which
-    # self falls. A biweek is a period of two commercial weeks starting with an
-    # odd-numbered week and with each week starting in Monday and ending on
+    # self falls. A biweek is a period of two commercial weeks starting with
+    # an odd-numbered week and with each week starting in Monday and ending on
     # Sunday. So this will always return a Sunday in an even-numbered week.
-    # @return [::Date]
+    # In the last week of the year (if it is not part of next year's first
+    # week) the end of the biweek will not extend beyond self's week, so that
+    # week 1 of the following year will start a new biweek.  @return [::Date]
     def end_of_biweek
-      if cweek.odd?
+      if cweek >= 52 && end_of_week(:monday).year > year
+        end_of_week(:monday)
+      elsif cweek.odd?
         (self + 1.week).end_of_week(:monday)
       else
         end_of_week(:monday)

@@ -577,6 +577,10 @@ describe Date do
           .to eq Date.parse('2013-11-17')
         expect(Date.parse('2013-03-11')).to be_beginning_of_biweek
         expect(Date.parse('2013-03-24')).to be_end_of_biweek
+        expect(Date.parse('2013-12-30').end_of_biweek)
+          .to eq Date.parse('2014-01-12')
+        expect(Date.parse('2009-12-30').end_of_biweek)
+          .to eq Date.parse('2010-01-03')
       end
 
       it 'should know about weeks' do
