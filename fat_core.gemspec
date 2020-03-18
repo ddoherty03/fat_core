@@ -4,6 +4,8 @@ lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'fat_core/version'
 
+gem 'damerau-levenshtein', git: 'https://github.com/ddoherty03/damerau-levenshtein'
+
 Gem::Specification.new do |spec|
   spec.name          = 'fat_core'
   spec.version       = FatCore::VERSION
