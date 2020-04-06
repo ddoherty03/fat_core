@@ -20,3 +20,4 @@ tmp
 /GTAGS
 /.rubocop_todo.yml
 /gtags.files
+/.ruby-version
