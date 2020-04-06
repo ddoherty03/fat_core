@@ -36,8 +36,8 @@ describe Range do
 
     it 'should know if it is a proper superset of another range' do
       expect((4..8)).to be_proper_superset_of((5..7))
-      expect((4..8)).not_to be_proper_superset_of((6..8))
-      expect((4..8)).not_to be_proper_superset_of((4..7))
+      expect((4..8)).to be_proper_superset_of((6..8))
+      expect((4..8)).to be_proper_superset_of((4..7))
       expect((4..8)).not_to be_proper_superset_of((4..8))
       expect((4..8)).not_to be_proper_superset_of((2..9))
       expect((4..8)).not_to be_proper_superset_of((2..8))

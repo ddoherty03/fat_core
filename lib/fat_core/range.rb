@@ -285,13 +285,14 @@ module FatCore
       min >= other.min && max <= other.max
     end
 
-    # Return whether self is contained within `other` range, without their
-    # boundaries touching.
+    # Return whether self is contained within `other` range, with at most one
+    # boundary touching.
     #
     # @param other [Range] the containing range
     # @return [Boolean] is self wholly within other
     def proper_subset_of?(other)
-      min > other.min && max < other.max
+      subset_of?(other) &&
+      (min > other.min || max < other.max)
     end
 
     # Return whether self contains `other` range, even if their
@@ -303,13 +304,14 @@ module FatCore
       min <= other.min && max >= other.max
     end
 
-    # Return whether self contains `other` range, without their
-    # boundaries touching.
+    # Return whether self contains `other` range, with at most one
+    # boundary touching.
     #
     # @param other [Range] the contained range
     # @return [Boolean] does self wholly contain other
     def proper_superset_of?(other)
-      min < other.min && max > other.max
+      superset_of?(other) &&
+        (min < other.min || max > other.max)
     end
 
     # Return whether self overlaps with other Range.
