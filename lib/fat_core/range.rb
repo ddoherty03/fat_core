@@ -161,20 +161,25 @@ module FatCore
         raise 'Range difference requires objects have pred and succ methods'
       end
 
-      if subset_of?(other)
-        # (4..7) - (0..10)
-        []
-      elsif proper_superset_of?(other)
-        # (4..7) - (5..5) -> [(4..4), (6..7)]
-        [(min..other.min.pred), (other.max.succ..max)]
-      elsif overlaps?(other) && other.min <= min
-        # (4..7) - (2..5) -> (6..7)
-        [(other.max.succ..max)]
-      elsif overlaps?(other) && other.max >= max
-        # (4..7) - (6..10) -> (4..5)
-        [(min..other.min.pred)]
+      # Remove the intersection of self and other from self.  The intersection
+      # is either (a) empty, so return self, (b) coincides with self, so
+      # return nothing,
+      isec = self & other
+      return [self] if isec.nil?
+      return [] if isec == self
+
+      # (c) touches self on the right, (d) touches self on the left, or (e)
+      # touches on neither the left or right, in which case the difference is
+      # two ranges.
+      if isec.max == max && isec.min > min
+        # Return the part to the left of isec
+        [(min..isec.min.pred)]
+      elsif isec.min == min && isec.max < max
+        # Return the part to the right of isec
+        [(isec.max.succ..max)]
       else
-        [self]
+        # Return the parts to the left and right of isec
+        [(min..isec.min.pred), (isec.max.succ..max)]
       end
     end
     alias - difference
