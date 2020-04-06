@@ -1,3 +1,4 @@
+require 'spec_helper'
 require 'fat_core/bigdecimal'
 
 describe BigDecimal do

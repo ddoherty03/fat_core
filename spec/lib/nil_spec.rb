@@ -1,5 +1,4 @@
 require 'spec_helper'
-
 require 'fat_core/nil'
 
 describe NilClass do
