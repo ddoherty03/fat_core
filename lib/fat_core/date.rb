@@ -1214,11 +1214,15 @@ module FatCore
         # MLK's Birthday (Third Monday in Jan) since 1998
         year >= 1998 && nth_wday_in_month?(3, 1, 1)
       when 2
-        # Lincoln's birthday until 1953
-        # Washington's Birthday (Third Monday in Feb)
-        (year <= 1953 && month == 2 && day == 12) ||
-          (year <= 1970 ? (month == 2 && day == 22)
-           : nth_wday_in_month?(3, 1, 2))
+        # Washington's Birthday was celebrated on February 22 until 1970. In
+        # 1971 and later, it was moved to the third Monday in February.  Note:
+        # Lincoln's birthday is not an official holiday, but is sometimes
+        # included with Washington's and called "Presidents' Day."
+        if year <= 1970
+          month == 2 && day == 22
+        else
+          nth_wday_in_month?(3, 1, 2)
+        end
       when 3, 4
         # Good Friday
         if !friday?
