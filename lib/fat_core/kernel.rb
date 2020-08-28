@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'fat_core/numeric'
 
 module Kernel

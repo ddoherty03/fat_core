@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'bigdecimal'
 require 'fat_core/patches'
 require 'damerau-levenshtein'
@@ -49,14 +51,14 @@ module FatCore
     #
     # @return [String] self wrapped
     def wrap(width = 70, hang = 0)
-      result = ''
+      result = ::String.new
       first_line = true
       first_word_on_line = true
       line_width_so_far = 0
       words = split(' ')
       words.each do |w|
-        w = ' ' * hang + w if !first_line && first_word_on_line
-        w = ' ' + w unless first_word_on_line
+        w = ::String.new(' ') * hang + w if !first_line && first_word_on_line
+        w = ::String.new(' ') + w unless first_word_on_line
         result << w
         first_word_on_line = false
         line_width_so_far += 1 + w.length
@@ -104,8 +106,10 @@ module FatCore
     #
     # @return [Date] the translated Date
     def as_date
-      if self =~ %r{(\d\d\d\d)[-/]?(\d\d?)[-/]?(\d\d?)}
-        ::Date.new($1.to_i, $2.to_i, $3.to_i)
+      if self =~ %r{(?<yr>\d\d\d\d)[-/]?(?<mo>\d\d?)[-/]?(?<dy>\d\d?)}
+        ::Date.new(Regexp.last_match[:yr].to_i,
+                   Regexp.last_match[:mo].to_i,
+                   Regexp.last_match[:dy].to_i)
       end
     end
 

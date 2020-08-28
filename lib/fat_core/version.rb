@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FatCore
   MAJOR = 4
   MINOR = 8

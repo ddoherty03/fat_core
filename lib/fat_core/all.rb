@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'fat_core/array'
 require 'fat_core/bigdecimal'
 require 'fat_core/date'

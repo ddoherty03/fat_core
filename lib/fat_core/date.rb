@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'date'
 require 'active_support/core_ext/date'
 require 'active_support/core_ext/time'
@@ -106,7 +108,7 @@ module FatCore
     # form.
     # @return [String]
     def american
-      strftime '%-m/%-d/%Y'
+      strftime('%-m/%-d/%Y')
     end
 
     # :category: Queries
@@ -857,7 +859,7 @@ module FatCore
         ::Date.parse('2012-12-24'),
         # And Trump
         ::Date.parse('2018-12-24'),
-        ::Date.parse('2019-12-24')
+        ::Date.parse('2019-12-24'),
       ].freeze
 
     # Presidential funeral since JFK
@@ -877,7 +879,7 @@ module FatCore
       # GTF Funeral
       ::Date.parse('2007-01-02'),
       # GHWBFuneral
-      ::Date.parse('2018-12-05')
+      ::Date.parse('2018-12-05'),
     ].freeze
 
     # Return whether this date is a United States federal holiday.
@@ -1115,7 +1117,7 @@ module FatCore
     def nyse_workday?
       !nyse_holiday?
     end
-    alias trading_day? nyse_workday?
+    alias_method :trading_day?, :nyse_workday?
 
     # Return the date that is n NYSE trading days after or before (if n < 0) this
     # date.
@@ -1134,7 +1136,7 @@ module FatCore
       end
       d
     end
-    alias add_trading_days add_nyse_workdays
+    alias_method :add_trading_days, :add_nyse_workdays
 
     # Return the next NYSE trading day after this date. The date returned is always
     # a date at least one day after this date, never this date.
@@ -1143,7 +1145,7 @@ module FatCore
     def next_nyse_workday
       add_nyse_workdays(1)
     end
-    alias next_trading_day next_nyse_workday
+    alias_method :next_trading_day, :next_nyse_workday
 
     # Return the last NYSE trading day before this date. The date returned is always
     # a date at least one day before this date, never this date.
@@ -1152,7 +1154,7 @@ module FatCore
     def prior_nyse_workday
       add_nyse_workdays(-1)
     end
-    alias prior_trading_day prior_nyse_workday
+    alias_method :prior_trading_day, :prior_nyse_workday
 
     # Return this date if its a trading day, otherwise skip forward to the first
     # later trading day.
@@ -1432,11 +1434,12 @@ module FatCore
 
         today = ::Date.current
         case spec.clean
-        when %r{\A(\d\d\d\d)[-/](\d\d?)[-/](\d\d?)\z}
+        when %r{\A(?<yr>\d\d\d\d)[-/](?<mo>\d\d?)[-/](?<dy>\d\d?)\z}
           # A specified date
-          ::Date.new($1.to_i, $2.to_i, $3.to_i)
-        when /\AW(\d\d?)\z/, /\A(\d\d?)W\z/
-          week_num = $1.to_i
+          ::Date.new(Regexp.last_match[:yr].to_i, Regexp.last_match[:mo].to_i,
+                     Regexp.last_match[:dy].to_i)
+        when /\AW(?<wk>\d\d?)\z/, /\A(?<wk>\d\d?)W\z/
+          week_num = Regexp.last_match[:wk].to_i
           if week_num < 1 || week_num > 53
             raise ArgumentError, "invalid week number (1-53): '#{spec}'"
           end
@@ -1446,9 +1449,9 @@ module FatCore
           else
             ::Date.commercial(today.year, week_num).end_of_week
           end
-        when %r{\A(\d\d\d\d)[-/]W(\d\d?)\z}, %r{\A(\d\d\d\d)[-/](\d\d?)W\z}
-          year = $1.to_i
-          week_num = $2.to_i
+        when %r{\A(?<yr>\d\d\d\d)[-/]W(?<wk>\d\d?)\z}, %r{\A(?<yr>\d\d\d\d)[-/](?<wk>\d\d?)W\z}
+          year = Regexp.last_match[:yr].to_i
+          week_num = Regexp.last_match[:wk].to_i
           if week_num < 1 || week_num > 53
             raise ArgumentError, "invalid week number (1-53): '#{spec}'"
           end
@@ -1458,10 +1461,10 @@ module FatCore
           else
             ::Date.commercial(year, week_num).end_of_week
           end
-        when %r{^(\d\d\d\d)[-/](\d)[Qq]$}, %r{^(\d\d\d\d)[-/][Qq](\d)$}
+        when %r{^(?<yr>\d\d\d\d)[-/](?<qt>\d)[Qq]$}, %r{^(?<yr>\d\d\d\d)[-/][Qq](?<qt>\d)$}
           # Year-Quarter
-          year = $1.to_i
-          quarter = $2.to_i
+          year = Regexp.last_match[:yr].to_i
+          quarter = Regexp.last_match[:qt].to_i
           unless [1, 2, 3, 4].include?(quarter)
             raise ArgumentError, "invalid quarter number (1-4): '#{spec}'"
           end
@@ -1472,10 +1475,10 @@ module FatCore
           else
             ::Date.new(year, month, 1).end_of_quarter
           end
-        when /^([1234])[qQ]$/, /^[qQ]([1234])$/
+        when /^(?<qt>[1234])[qQ]$/, /^[qQ](?<qt>[1234])$/
           # Quarter only
           this_year = today.year
-          quarter = $1.to_i
+          quarter = Regexp.last_match[:qt].to_i
           unless [1, 2, 3, 4].include?(quarter)
             raise ArgumentError, "invalid quarter number (1-4): '#{spec}'"
           end
@@ -1486,10 +1489,10 @@ module FatCore
           else
             date.end_of_quarter
           end
-        when %r{^(\d\d\d\d)[-/](\d)[Hh]$}, %r{^(\d\d\d\d)[-/][Hh](\d)$}
+        when %r{^(?<yr>\d\d\d\d)[-/](?<hf>\d)[Hh]$}, %r{^(?<yr>\d\d\d\d)[-/][Hh](?<hf>\d)$}
           # Year-Half
-          year = $1.to_i
-          half = $2.to_i
+          year = Regexp.last_match[:yr].to_i
+          half = Regexp.last_match[:hf].to_i
           msg = "invalid half number: '#{spec}'"
           raise ArgumentError,  msg unless [1, 2].include?(half)
 
@@ -1499,10 +1502,10 @@ module FatCore
           else
             ::Date.new(year, month, 1).end_of_half
           end
-        when /^([12])[hH]$/, /^[hH]([12])$/
+        when /^(?<hf>[12])[hH]$/, /^[hH](?<hf>[12])$/
           # Half only
           this_year = today.year
-          half = $1.to_i
+          half = Regexp.last_match[:hf].to_i
           msg = "invalid half number: '#{spec}'"
           raise ArgumentError, msg unless [1, 2].include?(half)
 
@@ -1512,10 +1515,10 @@ module FatCore
           else
             date.end_of_half
           end
-        when %r{^(\d\d\d\d)[-/](\d\d?)*$}
+        when %r{^(?<yr>\d\d\d\d)[-/](?<mo>\d\d?)*$}
           # Year-Month only
-          year = $1.to_i
-          month = $2.to_i
+          year = Regexp.last_match[:yr].to_i
+          month = Regexp.last_match[:mo].to_i
           unless [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].include?(month)
             raise ArgumentError, "invalid month number (1-12): '#{spec}'"
           end
@@ -1525,10 +1528,10 @@ module FatCore
           else
             ::Date.new(year, month, 1).end_of_month
           end
-        when %r{^(\d\d?)[-/](\d\d?)*$}
+        when %r{^(?<mo>\d\d?)[-/](?<dy>\d\d?)*$}
           # Month-Day only
-          month = $1.to_i
-          day = $2.to_i
+          month = Regexp.last_match[:mo].to_i
+          day = Regexp.last_match[:dy].to_i
           unless [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].include?(month)
             raise ArgumentError, "invalid month number (1-12): '#{spec}'"
           end
@@ -1538,9 +1541,9 @@ module FatCore
           else
             ::Date.new(today.year, month, day).end_of_month
           end
-        when /\A(\d\d?)\z/
+        when /\A(?<mo>\d\d?)\z/
           # Month only
-          month = $1.to_i
+          month = Regexp.last_match[:mo].to_i
           unless [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].include?(month)
             raise ArgumentError, "invalid month number (1-12): '#{spec}'"
           end
@@ -1550,12 +1553,13 @@ module FatCore
           else
             ::Date.new(today.year, month, 1).end_of_month
           end
-        when /^(\d\d\d\d)$/
+        when /^(?<yr>\d\d\d\d)$/
           # Year only
+          year = Regexp.last_match[:yr].to_i
           if spec_type == :from
-            ::Date.new($1.to_i, 1, 1)
+            ::Date.new(year, 1, 1)
           else
-            ::Date.new($1.to_i, 12, 31)
+            ::Date.new(year, 12, 31)
           end
         when /^(to|this_?)?day/
           today

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Provide #positive? and #negative? for older versions of Ruby.
 unless 2.respond_to?(:positive?)
   # Patch Numeric

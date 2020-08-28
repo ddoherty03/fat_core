@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'fat_core/patches'
 require 'active_support/core_ext/object/blank'
 
@@ -74,11 +76,11 @@ module FatCore
         end
 
       # Break the number into parts; underscores are possible in all components.
-      str =~ /\A([-+])?([\d_]*)((\.)?([\d_]*))?([eE][+-]?[\d_]+)?\z/
-      sig = $1 || ''
-      whole = $2 ? $2.delete('_') : ''
-      frac = $5 || ''
-      exp = $6 || ''
+      str =~ /\A(?<sg>[-+])?(?<wh>[\d_]*)((\.)?(?<fr>[\d_]*))?(?<ex>x[eE][+-]?[\d_]+)?\z/
+      sig = Regexp.last_match[:sg] || ''
+      whole = Regexp.last_match[:wh] ? Regexp.last_match[:wh].delete('_') : ''
+      frac = Regexp.last_match[:fr] || ''
+      exp = Regexp.last_match[:ex] || ''
 
       # Pad out the fractional part with zeroes to the right
       unless places.nil?
@@ -133,12 +135,13 @@ module FatCore
       mins, secs = divmod(60)
       hrs, mins = mins.divmod(60)
       if frac.round(5) > 0.0
-        '%02<hrs>d:%02<mins>d:%02<secs>d.%<frac>d' % { hrs: hrs,
-                                                       mins: mins, secs: secs,
-                                                       frac: frac.round(5) * 100 }
+        format('%02<hrs>d:%02<mins>d:%02<secs>d.%<frac>d',
+               { hrs: hrs,
+                 mins: mins, secs: secs,
+                 frac: frac.round(5) * 100 })
       else
-        '%02<hrs>d:%02<mins>d:%02<secs>d' % { hrs: hrs, mins: mins,
-                                              secs: secs }
+        format('%02<hrs>d:%02<mins>d:%02<secs>d',
+               { hrs: hrs, mins: mins, secs: secs })
       end
     end
 

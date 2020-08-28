@@ -1,9 +1,11 @@
+# frozen_string_literal: true
+
 module FatCore
   module Array
     # Return the index of the last element of this Array.  This is just a
     # convenience for an oft-needed Array attribute.
     def last_i
-      self.size - 1
+      size - 1
     end
 
     # Return a new Array that is the intersection of this Array with +other+,

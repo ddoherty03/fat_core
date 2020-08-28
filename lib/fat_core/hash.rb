@@ -1,3 +1,6 @@
+# frozen_string_literal: true
+
+#
 # The FatCore extensions to Hash provide a handful of generally useful methods
 # on Ruby Hash objects.
 #
