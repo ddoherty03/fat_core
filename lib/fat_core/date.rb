@@ -119,7 +119,7 @@ module FatCore
     # Self's calendar "half" by analogy to calendar quarters: 1 or 2, depending
     # on whether the date falls in the first or second half of the calendar
     # year.
-    # @return [1, 2]
+    # @return [Integer]
     def half
       case month
       when (1..6)
@@ -133,7 +133,7 @@ module FatCore
 
     # Self's calendar quarter: 1, 2, 3, or 4, depending on which calendar quarter
     # the date falls in.
-    # @return [1, 2, 3, 4]
+    # @return [Integer]
     def quarter
       case month
       when (1..3)
@@ -149,7 +149,7 @@ module FatCore
 
     # Self's calendar bimonth: 1, 2, 3, 4, 5, or 6 depending on which calendar
     # bimonth the date falls in.
-    # @return [1, 2, 3, 4, 5, 6]
+    # @return [Integer]
     def bimonth
       case month
       when (1..2)
@@ -1425,7 +1425,7 @@ module FatCore
       #
       # @param spec [String, #to_s] the spec to be interpreted as a calendar period
       #
-      # @param spec_type [:from, :to] return the first (:from) or last (:to)
+      # @param spec_type [Symbol, :from, :to] return the first (:from) or last (:to)
       #   date in the spec's period respectively
       #
       # @return [::Date] date that is the first (:from) or last (:to) in the period
@@ -1752,8 +1752,8 @@ module FatCore
       # Ensure that date is of class Date based either on a string or Date
       # object.
       #
-      # @param dat [String|Date|Time] the object to be converted to Date
-      # @return [Date]
+      # @param dat [String, Date, Time] the object to be converted to Date
+      # @return [Date, DateTime]
       def ensure_date(dat)
         case dat
         when String

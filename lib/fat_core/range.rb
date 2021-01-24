@@ -157,6 +157,9 @@ module FatCore
     # other range, this will result in the difference being two non-contiguous
     # ranges, this returns an array of ranges.  If there is no overlap or if
     # self is a subset of the other range, return an array of self
+    #
+    # @param other [Range] the Range whose overlap is removed from self
+    # @return [Array<Range>] the Ranges representing self with other removed
     def difference(other)
       unless max.respond_to?(:succ) && min.respond_to?(:pred) &&
              other.max.respond_to?(:succ) && other.min.respond_to?(:pred)
@@ -377,7 +380,7 @@ module FatCore
     #   (4..8) <=> (4..8) #=> 0
     #
     # @param other [Range] range to compare self with
-    # @return [-1, 0, 1] if self is less, equal, or greater than other
+    # @return [Integer, -1, 0, 1] if self is less, equal, or greater than other
     def <=>(other)
       [min, max] <=> other.minmax
     end
