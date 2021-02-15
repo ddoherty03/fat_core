@@ -1687,6 +1687,43 @@ module FatCore
         end
       end
 
+      # Return the 1-indexed integer that corresponds to a month name.
+      #
+      # @param name [String] a name of a month
+      #
+      # @return [Integer] the integer integer that corresponds to a month
+      #   name, or nil of no month recognized.
+      def mo_name_to_num(name)
+        case name.clean
+        when /\Ajan/i
+          1
+        when /\Afeb/i
+          2
+        when /\Amar/i
+          3
+        when /\Aapr/i
+          4
+        when /\Amay/i
+          5
+        when /\Ajun/i
+          6
+        when /\Ajul/i
+          7
+        when /\Aaug/i
+          8
+        when /\Asep/i
+          9
+        when /\Aoct/i
+          10
+        when /\Anov/i
+          11
+        when /\Adec/i
+          12
+        else
+          nil
+        end
+      end
+
       # Return the nth weekday in the given month. If n is negative, count from
       # last day of month.
       #

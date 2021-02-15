@@ -425,6 +425,22 @@ describe Date do
         expect(Date.parse_spec('forever', :to)).to eq Date::EOT
         expect(Date.parse_spec('never')).to be_nil
       end
+
+      it 'should be able to convert a month name into its sequential number' do
+        expect(Date.mo_name_to_num(' January')).to eq 1
+        expect(Date.mo_name_to_num(' feb  ')).to eq 2
+        expect(Date.mo_name_to_num(' mAr  ')).to eq 3
+        expect(Date.mo_name_to_num(' Aprol  ')).to eq 4
+        expect(Date.mo_name_to_num("\t  \tmaybe")).to eq 5
+        expect(Date.mo_name_to_num("\t  \tjunta\t  \t")).to eq 6
+        expect(Date.mo_name_to_num("\t  \tjulia\t  \t")).to eq 7
+        expect(Date.mo_name_to_num("\t  \tAugustus\t  \t")).to eq 8
+        expect(Date.mo_name_to_num("September")).to eq 9
+        expect(Date.mo_name_to_num("octagon")).to eq 10
+        expect(Date.mo_name_to_num("   novena   this month")).to eq 11
+        expect(Date.mo_name_to_num("decimal")).to eq 12
+        expect(Date.mo_name_to_num("  dewey decimal")).to be nil
+      end
     end
   end
 
