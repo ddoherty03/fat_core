@@ -860,6 +860,7 @@ module FatCore
         # And Trump
         ::Date.parse('2018-12-24'),
         ::Date.parse('2019-12-24'),
+        ::Date.parse('2020-12-24'),
       ].freeze
 
     # Presidential funeral since JFK
