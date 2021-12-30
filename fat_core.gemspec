@@ -31,7 +31,8 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'pry-doc'
   spec.add_development_dependency 'pry-byebug'
   spec.add_development_dependency 'redcarpet'
+  spec.add_development_dependency 'solargraph'
 
-  spec.add_runtime_dependency 'activesupport'
+  spec.add_runtime_dependency 'activesupport', '~>6.0'
   spec.add_runtime_dependency 'damerau-levenshtein'
 end
