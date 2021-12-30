@@ -14,3 +14,6 @@ Style/MethodCallWithArgsParentheses:
 Style/ClassAndModuleChildren:
   Exclude:
     - 'test/**/*'
+
+Style/StringLiterals:
+  Enabled: false
