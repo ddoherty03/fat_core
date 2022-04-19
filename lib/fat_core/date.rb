@@ -48,6 +48,9 @@ require 'fat_core/patches'
 # the NYSE was closed for special reasons, such as the 9-11 attacks in 2001.
 module FatCore
   module Date
+    # Set the default beginning of week to Monday for commercial weeks.
+    ::Date.beginning_of_week = :monday
+
     # Constant for Beginning of Time (BOT) outside the range of what we would ever
     # want to find in commercial situations.
     BOT = ::Date.parse('1900-01-01')

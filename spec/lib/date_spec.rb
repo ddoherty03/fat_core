@@ -586,7 +586,7 @@ describe Date do
           .to be_end_of_semimonth
       end
 
-      it 'should know about biweeks' do
+      it 'knows about biweeks' do
         expect(Date.parse('2013-11-07').beginning_of_biweek)
           .to eq Date.parse('2013-11-04')
         expect(Date.parse('2013-11-07').end_of_biweek)
@@ -599,16 +599,23 @@ describe Date do
           .to eq Date.parse('2010-01-03')
       end
 
-      it 'should know about weeks' do
+      it 'knows that a Monday is the beginning of the week' do
+        # A Monday
         expect(Date.parse('2013-11-04')).to be_beginning_of_week
-        expect(Date.parse('2013-11-10')).to be_end_of_week
         expect(Date.parse('2013-12-02')).to be_beginning_of_week
-        expect(Date.parse('2013-12-08')).to be_end_of_week
+        # A Sunday
         expect(Date.parse('2013-10-13')).to_not be_beginning_of_week
+      end
+
+      it 'knows that a Sunday is the end of the week' do
+        # A Sunday
+        expect(Date.parse('2013-11-10')).to be_end_of_week
+        expect(Date.parse('2013-12-08')).to be_end_of_week
+        # A Saturday
         expect(Date.parse('2013-10-19')).to_not be_end_of_week
       end
 
-      it 'should know the beginning of chunks' do
+      it 'should know the beginning of non-week chunks' do
         expect(Date.parse('2013-11-04').beginning_of_chunk(:year))
           .to eq Date.parse('2013-01-01')
         expect(Date.parse('2013-11-04').beginning_of_chunk(:half))
@@ -623,10 +630,30 @@ describe Date do
           .to eq Date.parse('2013-11-01')
         expect(Date.parse('2013-11-24').beginning_of_chunk(:semimonth))
           .to eq Date.parse('2013-11-16')
+      end
+
+      it 'knows the beginning and end of bi-week-based chunks' do
+        # First Friday to prior Monday
         expect(Date.parse('2013-11-08').beginning_of_chunk(:biweek))
           .to eq Date.parse('2013-11-04')
+        # Second Wednesday to 2 prior Monday
+        expect(Date.parse('2013-11-13').beginning_of_chunk(:biweek))
+          .to eq Date.parse('2013-11-04')
+      end
+
+      it 'knows the beginning and end of week-based chunks' do
+        # A Friday to prior Monday
         expect(Date.parse('2013-11-08').beginning_of_chunk(:week))
           .to eq Date.parse('2013-11-04')
+        # A Friday to following Sunday
+        expect(Date.parse('2013-11-08').end_of_chunk(:week))
+          .to eq Date.parse('2013-11-10')
+        # A Sunday to prior Monday
+        expect(Date.parse('2013-11-10').beginning_of_chunk(:week))
+          .to eq Date.parse('2013-11-04')
+        # A Sunday to itself
+        expect(Date.parse('2013-11-10').end_of_chunk(:week))
+          .to eq Date.parse('2013-11-10')
         expect {
           Date.parse('2013-11-04').beginning_of_chunk(:wek)
         }.to raise_error(ArgumentError)
