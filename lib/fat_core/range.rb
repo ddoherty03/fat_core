@@ -193,7 +193,7 @@ module FatCore
     #
     # @return [String]
     def tex_quote
-      to_s
+      to_s.tex_quote
     end
 
     # @group Queries

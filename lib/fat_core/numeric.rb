@@ -148,7 +148,7 @@ module FatCore
     # Quote self for use in TeX documents.  Since number components are not
     # special to TeX, this just applies `#to_s`
     def tex_quote
-      to_s
+      to_s.tex_quote
     end
   end
 end

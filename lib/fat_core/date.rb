@@ -70,7 +70,7 @@ module FatCore
     # Format date to TeX documents as ISO strings but with en-dashes
     # @return [String]
     def tex_quote
-      strftime('%Y--%m--%d')
+      strftime('%Y--%m--%d').tex_quote
     end
 
     # :category: Formatting
