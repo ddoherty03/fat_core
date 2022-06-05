@@ -245,28 +245,44 @@ module FatCore
     #
     # 1. Remove all periods, commas, apostrophes, and asterisks (the punctuation
     #    characters) from both self and `matcher`,
-    # 2. Treat ':' in the matcher as the equivalent of '.*' in a regular
-    #    expression, that is, match anything in self,
-    # 3. Require each component to match the beginning of a word boundary
-    # 4. Ignore case in the match
+    # 2. Treat internal ':' in the matcher as the equivalent of '.*' in a
+    #    regular expression, that is, match anything in self,
+    # 3. Treat leading ':' in the matcher as anchoring the match to the
+    #    beginning of the target string,
+    # 4. Treat ending ':' in the matcher as anchoring the match to the
+    #    end of the target string,
+    # 5. Require each component to match the beginning of a word boundary
+    # 6. Ignore case in the match
     #
     # @example
     #   "St. Luke's Hospital".fuzzy_match('st lukes') #=> 'St Lukes'
     #   "St. Luke's Hospital".fuzzy_match('luk:hosp') #=> 'Lukes Hosp'
     #   "St. Luke's Hospital".fuzzy_match('st:spital') #=> 'St Lukes Hospital'
     #   "St. Luke's Hospital".fuzzy_match('st:laks') #=> nil
+    #   "St. Luke's Hospital".fuzzy_match(':lukes') #=> nil
+    #   "St. Luke's Hospital".fuzzy_match('lukes:hospital:') #=> 'Lukes Hospital'
     #
     # @param matcher [String] pattern to test against where ':' is wildcard
     # @return [String] the unpunctuated part of self that matched
     # @return [nil] if self did not match matcher
     def fuzzy_match(matcher)
       # Remove periods, asterisks, commas, and apostrophes
-      matcher = matcher.gsub(/[\*.,']/, '')
+      matcher = matcher.strip.gsub(/[\*.,']/, '')
+      if matcher.start_with?(':')
+        begin_anchor = true
+        matcher.sub!(/\A:/, '')
+      end
+      if matcher.end_with?(':')
+        end_anchor = true
+        matcher.sub!(/:\z/, '')
+      end
       target = gsub(/[\*.,']/, '')
       matchers = matcher.split(/[: ]+/)
       regexp_string = matchers.map { |m| ".*?\\b#{Regexp.escape(m)}.*?" }.join('[: ]')
       regexp_string.sub!(/^\.\*\?/, '')
       regexp_string.sub!(/\.\*\?$/, '')
+      regexp_string.sub!(/\A/, '\\A') if begin_anchor
+      regexp_string.sub!(/\z/, '\\z') if end_anchor
       regexp = /#{regexp_string}/i
       matched_text =
         if (match = regexp.match(target))

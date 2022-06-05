@@ -269,6 +269,21 @@ the people, for the people, shall not perish from the earth."
         expect('Hello:world'.fuzzy_match('hel:ox')).to be_falsy
       end
 
+      it 'requires end-anchor for ending colon' do
+        expect('Hello, to the world'.fuzzy_match('hel:world:')).to eq('Hello to the world')
+        expect('Hello, to the world today'.fuzzy_match('to:world:')).to be_nil
+      end
+
+      it 'requires start-anchor for leading colon' do
+        expect('Hello, to the world'.fuzzy_match(':hel:the')).to eq('Hello to the')
+        expect('Hello, to the world today'.fuzzy_match(':world:today')).to be_nil
+      end
+
+      it 'requires start-anchor and end-anchor for leading and ending colon' do
+        expect('Hello, to the world'.fuzzy_match(':hel:world:')).to eq('Hello to the world')
+        expect('Hello, to the world today'.fuzzy_match('hel:world:')).to be_falsy
+      end
+
       it 'should return the matched text' do
         expect('Hello:world'.fuzzy_match('hel')).to eq('Hel')
         expect('Hello:world'.fuzzy_match('hel:wor')).to eq('Hello:wor')
@@ -280,6 +295,9 @@ the people, for the people, shall not perish from the earth."
         expect('St Lukes'.fuzzy_match('st. luke\'s')).to eq('St Lukes')
         expect('St Lukes, Inc.'.fuzzy_match('st luke inc')).to eq('St Lukes Inc')
         expect('E*TRADE'.fuzzy_match('etrade')).to eq('ETRADE')
+        # Does not recognize non-alphanumerics as start of string.
+        expect('The 1 Dollar Store'.fuzzy_match('1 stor')).to be_truthy
+        expect('The $1 Dollar Store'.fuzzy_match('$1 stor')).to be_falsy
       end
     end
   end
