@@ -245,7 +245,7 @@ the people, for the people, shall not perish from the earth."
 
     describe 'Matching' do
       it 'should be able to fuzzy match with another string' do
-        expect('Hello, world'.fuzzy_match('or')).to be_truthy
+        expect('Hello, world'.fuzzy_match('wor')).to be_truthy
         expect('Hello, world'.fuzzy_match('ox')).to be_falsy
       end
 
@@ -255,23 +255,23 @@ the people, for the people, shall not perish from the earth."
       end
 
       it 'should be able to fuzzy match space-separated parts' do
-        expect('Hello world'.fuzzy_match('hel or')).to be_truthy
+        expect('Hello world'.fuzzy_match('hel wor')).to be_truthy
         expect('Hello, world'.fuzzy_match('hel ox')).to be_falsy
       end
 
       it 'should be able to fuzzy match colon-separated parts' do
-        expect('Hello:world'.fuzzy_match('hel:or')).to be_truthy
+        expect('Hello:world'.fuzzy_match('hel:wor')).to be_truthy
         expect('Hello:world'.fuzzy_match('hel:ox')).to be_falsy
       end
 
       it 'should be able to fuzzy match colon-separated parts' do
-        expect('Hello:world'.fuzzy_match('hel:or')).to be_truthy
+        expect('Hello:world'.fuzzy_match('hel:wor')).to be_truthy
         expect('Hello:world'.fuzzy_match('hel:ox')).to be_falsy
       end
 
       it 'should return the matched text' do
         expect('Hello:world'.fuzzy_match('hel')).to eq('Hel')
-        expect('Hello:world'.fuzzy_match('hel:or')).to eq('Hello:wor')
+        expect('Hello:world'.fuzzy_match('hel:wor')).to eq('Hello:wor')
         expect('Hello:world'.matches_with('/^h.*r/')).to eq('Hello:wor')
       end
 

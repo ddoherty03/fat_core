@@ -247,8 +247,8 @@ module FatCore
     #    characters) from both self and `matcher`,
     # 2. Treat ':' in the matcher as the equivalent of '.*' in a regular
     #    expression, that is, match anything in self,
-    # 3. Ignore case in the match
-    # 4. Match if any part of self matches `matcher`
+    # 3. Require each component to match the beginning of a word boundary
+    # 4. Ignore case in the match
     #
     # @example
     #   "St. Luke's Hospital".fuzzy_match('st lukes') #=> 'St Lukes'
@@ -264,7 +264,7 @@ module FatCore
       matcher = matcher.gsub(/[\*.,']/, '')
       target = gsub(/[\*.,']/, '')
       matchers = matcher.split(/[: ]+/)
-      regexp_string = matchers.map { |m| ".*?#{Regexp.escape(m)}.*?" }.join('[: ]')
+      regexp_string = matchers.map { |m| ".*?\\b#{Regexp.escape(m)}.*?" }.join('[: ]')
       regexp_string.sub!(/^\.\*\?/, '')
       regexp_string.sub!(/\.\*\?$/, '')
       regexp = /#{regexp_string}/i
