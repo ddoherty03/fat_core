@@ -1007,6 +1007,18 @@ describe Date do
         expect(Date.parse('2014-11-23')).to be_fed_holiday
       end
 
+      it 'knows that Juneteenth is a federal holiday from 2021' do
+        expect(Date.parse('2020-06-19')).not_to be_fed_holiday
+        # Saturday
+        expect(Date.parse('2021-06-19')).to be_fed_holiday
+        # Observed Friday
+        expect(Date.parse('2021-06-18')).to be_fed_holiday
+        # Sunday
+        expect(Date.parse('2022-06-19')).to be_fed_holiday
+        # Observed Monday
+        expect(Date.parse('2022-06-20')).to be_fed_holiday
+      end
+
       it 'should know if its an NYSE holiday' do
         #################  2014         2015       2016
         # New Year's Day  January 1   January 1   January 1

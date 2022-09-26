@@ -1033,6 +1033,9 @@ module FatCore
       if mon == 1 && mday == 1
         # New Years (January 1),
         true
+      elsif mon == 6 && mday == 19 && year >= 2021
+        # Juneteenth,
+        true
       elsif mon == 7 && mday == 4
         # Independence Day (July 4),
         true
