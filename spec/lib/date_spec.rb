@@ -837,6 +837,65 @@ describe Date do
         expect(Date.parse('2014-01-12'))
           .to be_within_6mos_of(Date.parse('2014-07-10'))
       end
+
+      it "knows if it's within 6 months of another date if it's near end of month" do
+        # This tests for the Jammies Interntional twist where there is no
+        # corresponding day in the sixth month before or after the given date.
+
+        # Looking backward to Feb
+        expect(Date.parse('2014-02-28'))
+          .not_to be_within_6mos_of(Date.parse('2014-08-31'))
+        expect(Date.parse('2014-03-01'))
+          .not_to be_within_6mos_of(Date.parse('2014-08-31'))
+        expect(Date.parse('2014-03-02'))
+          .to be_within_6mos_of(Date.parse('2014-08-31'))
+        # Looking forward to Feb
+        expect(Date.parse('2015-02-28'))
+          .not_to be_within_6mos_of(Date.parse('2014-08-31'))
+        expect(Date.parse('2015-02-27'))
+          .not_to be_within_6mos_of(Date.parse('2014-08-31'))
+        expect(Date.parse('2015-02-26'))
+          .to be_within_6mos_of(Date.parse('2014-08-31'))
+        # Same in a leap year, backward
+        expect(Date.parse('2012-02-29'))
+          .not_to be_within_6mos_of(Date.parse('2012-08-31'))
+        expect(Date.parse('2012-03-01'))
+          .not_to be_within_6mos_of(Date.parse('2012-08-31'))
+        expect(Date.parse('2012-03-02'))
+          .to be_within_6mos_of(Date.parse('2012-08-31'))
+        # Same in a leap year, forward
+        expect(Date.parse('2012-02-29'))
+          .not_to be_within_6mos_of(Date.parse('2011-08-31'))
+        expect(Date.parse('2012-02-28'))
+          .not_to be_within_6mos_of(Date.parse('2011-08-31'))
+        expect(Date.parse('2012-02-27'))
+          .to be_within_6mos_of(Date.parse('2011-08-31'))
+
+        # Now try from October to April, as 31->30 test.
+        expect(Date.parse('2012-04-30'))
+          .not_to be_within_6mos_of(Date.parse('2012-10-31'))
+        expect(Date.parse('2012-05-01'))
+          .not_to be_within_6mos_of(Date.parse('2012-10-31'))
+        expect(Date.parse('2012-05-02'))
+          .to be_within_6mos_of(Date.parse('2012-10-31'))
+        # And forward
+        expect(Date.parse('2013-04-30'))
+          .not_to be_within_6mos_of(Date.parse('2012-10-31'))
+        expect(Date.parse('2013-04-29'))
+          .not_to be_within_6mos_of(Date.parse('2012-10-31'))
+        expect(Date.parse('2013-04-28'))
+          .to be_within_6mos_of(Date.parse('2012-10-31'))
+
+        # It's not symmetrical: notice the second example here is within six
+        # months if measured from April, but not if measured from October.
+        expect(Date.parse('2012-10-31'))
+          .not_to be_within_6mos_of(Date.parse('2013-04-30'))
+        expect(Date.parse('2012-10-31'))
+          .to be_within_6mos_of(Date.parse('2013-04-29'))
+        expect(Date.parse('2012-10-31'))
+          .to be_within_6mos_of(Date.parse('2013-04-28'))
+
+      end
     end
 
     describe 'holidays' do

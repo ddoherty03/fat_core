@@ -119,6 +119,17 @@ module FatCore
 
     # :category: Queries
 
+    # Number of days in self's month
+    # @return [Integer]
+    def days_in_month
+      self.class.days_in_month(year, month)
+    end
+
+    # :category: Queries
+    # @group Queries
+
+    # :category: Queries
+
     # Self's calendar "half" by analogy to calendar quarters: 1 or 2, depending
     # on whether the date falls in the first or second half of the calendar
     # year.
@@ -357,10 +368,30 @@ module FatCore
     # @param from_date [::Date] the middle of the six-month range
     # @return [Boolean]
     def within_6mos_of?(from_date)
-      # ::Date 6 calendar months before self
-      start_date = self - 6.months + 2.days
-      end_date = self + 6.months - 2.days
-      (start_date..end_date).cover?(from_date)
+      from_date = Date.parse(from_date) unless from_date.is_a?(Date)
+      from_day = from_date.day
+      if [28, 29, 30, 31].include?(from_day)
+        # Near the end of the month, we need to make sure that when we go
+        # forward or backwards 6 months, we do not go past the end of the
+        # destination month when finding the "corresponding" day in that
+        # month, per Stella v. Graham Page Motors.  This refinement was
+        # endorsed in the Jammies International case.  After we find the
+        # corresponding day in the target month, then add two days (for the
+        # month six months before the from_date) or subtract two days (for the
+        # month six months after the from_date) to get the first and last days
+        # of the "within a period of less than six months" date range.
+        start_month = from_date.beginning_of_month - 6.months
+        start_days = start_month.days_in_month
+        start_date = ::Date.new(start_month.year, start_month.month, [start_days, from_day].min) + 2.days
+        end_month = from_date.beginning_of_month + 6.months
+        end_days = end_month.days_in_month
+        end_date = ::Date.new(end_month.year, end_month.month, [end_days, from_day].min) - 2.days
+      else
+        # ::Date 6 calendar months before self
+        start_date = from_date - 6.months + 2.days
+        end_date = from_date + 6.months - 2.days
+      end
+      (start_date..end_date).cover?(self)
     end
 
     # Return whether this date is Easter Sunday for the year in which it falls
