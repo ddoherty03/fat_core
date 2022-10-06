@@ -1,16 +1,20 @@
 # coding: utf-8
 
-lib = File.expand_path('../lib', __FILE__)
-$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'fat_core/version'
+require_relative 'lib/fat_core/version'
 
 Gem::Specification.new do |spec|
   spec.name          = 'fat_core'
   spec.version       = FatCore::VERSION
   spec.authors       = ['Daniel E. Doherty']
   spec.email         = ['ded@ddoherty.net']
-  spec.summary       = 'fat_core provides some useful core extensions'
-  spec.description   = 'Useful extensions to Date, String, Range and other classes'
+  spec.summary       = 'some useful core extensions'
+  spec.description   = <<~DESC
+     Useful extensions to Date, String, Range and other classes
+     including useful Date extensions for dealing with US Federal
+     and New York Stock Exchange holidays and working days, a useful
+     Enumerable#each_with_flags for flagging first and last items in the
+     iteration, (also for Hash), set operations on Ranges
+  DESC
   spec.homepage      = 'https://github.com/ddoherty03/fat_core.git'
   spec.license       = 'MIT'
   spec.required_ruby_version = '>= 2.2.2'
