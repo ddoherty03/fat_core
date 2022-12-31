@@ -3,7 +3,7 @@ require 'fat_core/range'
 
 describe Range do
   describe 'set operations' do
-    it 'should know if it is a subset of another range' do
+    it 'knows if it is a subset of another range' do
       expect((4..8)).to be_subset_of((2..9))
       expect((4..8)).to be_subset_of((4..8))
       expect((4..8)).not_to be_subset_of((2..7))
@@ -11,7 +11,7 @@ describe Range do
       expect((4..8)).not_to be_subset_of((11..20))
     end
 
-    it 'should know if it is a proper subset of another range' do
+    it 'knows if it is a proper subset of another range' do
       expect((4..8)).to be_proper_subset_of((2..9))
       expect((4..8)).to be_proper_subset_of((4..9))
       expect((4..8)).not_to be_proper_subset_of((4..8))
@@ -20,7 +20,7 @@ describe Range do
       expect((4..8)).not_to be_proper_subset_of((11..20))
     end
 
-    it 'should know if it is a superset of another range' do
+    it 'knows if it is a superset of another range' do
       expect((4..8)).to be_superset_of((5..7))
       expect((4..8)).to be_superset_of((6..8))
       expect((4..8)).to be_superset_of((4..7))
@@ -34,7 +34,7 @@ describe Range do
       expect((4..8)).not_to be_superset_of((9..20))
     end
 
-    it 'should know if it is a proper superset of another range' do
+    it 'knows if it is a proper superset of another range' do
       expect((4..8)).to be_proper_superset_of((5..7))
       expect((4..8)).to be_proper_superset_of((6..8))
       expect((4..8)).to be_proper_superset_of((4..7))
@@ -48,7 +48,7 @@ describe Range do
       expect((4..8)).not_to be_proper_superset_of((9..20))
     end
 
-    it 'should know its intersection with another range' do
+    it 'knows its intersection with another range' do
       expect(((0..10) & (5..20))).to eq((5..10))
       expect(((0..10) & (5..20))).to eq((5..20) & (0..10))
       expect(((0..10) & (10..20))).to eq((10..10))
@@ -58,7 +58,7 @@ describe Range do
       expect(((0..10) & (15..20))).to be_nil
     end
 
-    it 'should know its union with another range' do
+    it 'knows its union with another range' do
       expect(((0..10) + (5..20))).to eq((0..20))
       expect(((0..10) + (5..20))).to eq((5..20) + (0..10))
       expect(((0..10) + (10..20))).to eq((0..20))
@@ -72,7 +72,7 @@ describe Range do
       expect(((15..20) & (0..10))).to be_nil
     end
 
-    it 'should know the difference with another range' do
+    it 'knows the difference with another range' do
       # Other is same as self
       expect(((4..10) - (4..10)).size).to eq(0)
       expect(((4..10) - (4..10))).to be_empty
@@ -104,12 +104,12 @@ describe Range do
   end
 
   describe 'joining' do
-    it 'should be able to join contiguous ranges' do
+    it 'can join contiguous ranges' do
       expect((0..3).join(4..8)).to eq((0..8))
       expect((4..8).join(0..3)).to eq((0..8))
     end
 
-    it 'should return nil on join of non-contiguous ranges' do
+    it 'returns nil on join of non-contiguous ranges' do
       expect((0..3).join(5..8)).to be_nil
       expect((0...3).join(4..8)).to be_nil
 
@@ -117,22 +117,22 @@ describe Range do
       expect((4..8).join(0...3)).to be_nil
     end
 
-    it 'should work with Floats, allowing single-point overlap' do
+    it 'works with Floats, allowing single-point overlap' do
       expect((0.0..3.0).join(3.0..8.2)).to eq((0.0..8.2))
       expect((3.0..8.2).join(0.0..3.0)).to eq((0.0..8.2))
     end
   end
 
   describe 'spanning' do
-    it 'should be able to determine whether it is spanned by a set of ranges' do
+    it 'can determine whether it is spanned by a set of ranges' do
       expect((0..10)).to be_spanned_by([(0..3), (4..6), (7..10)])
     end
 
-    it 'should be determine that overlapping ranges do not span' do
+    it 'can determine that overlapping ranges do not span' do
       expect((0..10)).to_not be_spanned_by([(0..3), (3..6), (7..10)])
     end
 
-    it 'should allow spanning ranges to be any Enumerable' do
+    it 'allows spanning ranges to be any Enumerable' do
       require 'set'
       set = [(0..3), (4..6), (7..10)].to_set
       expect((0..10)).to be_spanned_by(set)
@@ -140,7 +140,7 @@ describe Range do
       expect((0..10)).to_not be_spanned_by(set)
     end
 
-    it 'should allow the spanning set to be wider than itself' do
+    it 'allows the spanning set to be wider than itself' do
       set = [(0..3), (4..6), (7..10)].to_set
       expect((2..8)).to be_spanned_by(set)
       expect((5..6)).to be_spanned_by(set)
@@ -148,7 +148,7 @@ describe Range do
   end
 
   describe 'overlapping a single range' do
-    it 'should know if another range overlaps it' do
+    it 'knows if another range overlaps it' do
       expect((0..10).overlaps?(-3..5)).to be_truthy
       expect((0..10).overlaps?(3..5)).to be_truthy
       expect((0..10).overlaps?(8..15)).to be_truthy
@@ -165,116 +165,116 @@ describe Range do
       expect((-11..-1).overlaps?(0..10)).to be_falsy
     end
 
-    it 'should be able to determine whether a set contains covered overlaps' do
+    it 'can determine whether a set contains covered overlaps' do
       expect(Range.overlaps_among?([(0..3), (2..6), (7..10)])).to be true
       expect((0..10).overlaps_among?([(0..3), (2..6), (7..10)])).to be true
     end
 
-    it 'should not care about overlaps outside self' do
+    it 'does not care about overlaps outside self' do
       expect(Range.overlaps_among?([(0..3), (2..6), (7..10)])).to be true
       expect((11..15).overlaps_among?([(0..3), (2..6), (7..10)])).to be false
     end
 
-    it 'should not count contiguous ranges as overlapping' do
+    it 'does not consider contiguous ranges as overlapping' do
       expect(Range.overlaps_among?([(0..3), (4..6), (7..10)])).to be false
     end
 
-    it 'should not count non-contiguous ranges as overlapping' do
+    it 'does not consider non-contiguous ranges as overlapping' do
       expect(Range.overlaps_among?([(0..3), (4..6), (8..10)])).to be false
     end
 
-    it 'should not count an empty set as overlapping' do
+    it 'does not consider an empty set as overlapping' do
       expect(Range.overlaps_among?([])).to be false
     end
   end
 
-  describe 'coverage gaps' do
-    it 'should return an empty array if ranges completely cover' do
+  describe '#gaps' do
+    it 'returns an empty array if ranges completely cover' do
       expect((0..10).gaps([(-1..3), (4..8), (9..11)])).to be_empty
     end
 
-    it 'should return array for itself if ranges are empty' do
+    it 'returns array for itself if ranges are empty' do
       expect((0..10).gaps([])).to eq([(0..10)])
     end
 
-    it 'should return an array of gaps' do
+    it 'returns an array of gaps' do
       gaps = (0..10).gaps([(0..3), (5..6), (9..10)])
       expect(gaps[0]).to eq((4..4))
       expect(gaps[1]).to eq((7..8))
     end
 
-    it 'should allow ranges to extend before and after self' do
+    it 'allows ranges to extend before and after self' do
       gaps = (0..10).gaps([(-3..3), (4..6), (7..13)])
       expect(gaps).to be_empty
     end
 
-    it 'should not include parts before or after in gaps' do
+    it 'does not include parts before or after in gaps' do
       gaps = (0..10).gaps([(-10..-8), (-3..3), (7..13), (30..40)])
       expect(gaps.size).to eq(1)
       expect(gaps[0]).to eq((4..6))
     end
 
-    it 'should return gaps at beginning and end' do
+    it 'includes gaps at beginning and end' do
       gaps = (0..10).gaps([(2..3), (4..6), (7..8)])
       expect(gaps[0]).to eq((0..1))
       expect(gaps[1]).to eq((9..10))
     end
 
-    it 'should work even if ranges are out of order' do
+    it 'works even if ranges are out of order' do
       gaps = (0..10).gaps([(2..3), (30..40), (7..8), (-10..-8), (4..6)])
       expect(gaps[0]).to eq((0..1))
       expect(gaps[1]).to eq((9..10))
     end
 
-    it 'should notice single point coverage' do
+    it 'notices single point coverage' do
       gaps = (0..10).gaps([(4..4), (5..5), (6..6)])
       expect(gaps[0]).to eq((0..3))
       expect(gaps[1]).to eq((7..10))
     end
 
-    it 'should work for a single-point range' do
+    it 'works for a single-point range' do
       gaps = (3..3).gaps([(0..2), (4..4), (5..5), (6..6)])
       expect(gaps[0]).to eq((3..3))
     end
 
-    it 'should work even if ranges overlap' do
+    it 'works even if ranges overlap' do
       gaps = (0..10).gaps([(-2..3), (2..8), (4..10)])
       expect(gaps).to be_empty
     end
   end
 
-  describe 'coverage overlaps' do
-    it 'should return an empty array if ranges are empty' do
+  describe '#overlaps' do
+    it 'returns an empty array if ranges are empty' do
       expect((0..10).overlaps([])).to be_empty
     end
 
-    it 'should return an empty array if ranges is same as self' do
+    it 'returns an empty array if ranges is same as self' do
       expect((0..10).overlaps([(0..10)])).to be_empty
     end
 
-    it 'should return an empty array if ranges is wider than self' do
+    it 'returns an empty array if ranges is wider than self' do
       expect((0..10).overlaps([(-5..15)])).to be_empty
     end
 
-    it 'should return an empty array if ranges is narrower than self' do
+    it 'returns an empty array if ranges is narrower than self' do
       expect((0..10).overlaps([(5..8)])).to be_empty
     end
 
-    it 'should return an array of overlaps' do
+    it 'returns an array of overlaps' do
       overlaps = (0..10).overlaps([(0..3), (2..6), (4..10)])
       expect(overlaps.size).to eq(2)
       expect(overlaps[0]).to eq((2..3))
       expect(overlaps[1]).to eq((4..6))
     end
 
-    it 'should not return any overlaps before self' do
+    it 'does not return any overlaps before self' do
       overlaps = (0..10).overlaps([(-5..-3), (-4..-1), (0..3), (2..6), (4..10)])
       expect(overlaps.size).to eq(2)
       expect(overlaps[0]).to eq((2..3))
       expect(overlaps[1]).to eq((4..6))
     end
 
-    it 'should not return any overlaps after self' do
+    it 'does not return any overlaps after self' do
       overlaps = (0..10).overlaps([(0..3), (2..6), (4..15), (11..20)])
       expect(overlaps.size).to eq(2)
       expect(overlaps[0]).to eq((2..3))

@@ -2,7 +2,7 @@ require 'spec_helper'
 require 'fat_core/enumerable'
 
 describe Enumerable do
-  it 'should be able to emit in groups of size k' do
+  it 'enumerates groups of size k' do
     letters = ('a'..'z').to_a
     letters.groups_of(3).each do |k, grp|
       expect(grp.class).to eq Array
@@ -16,18 +16,18 @@ describe Enumerable do
     end
   end
 
-  it 'should be able to yield each with flags' do
+  it 'enumerates each with first and last flags' do
     letters = ('a'..'z').to_a
     letters.each_with_flags do |l, first, last|
       if l == 'a'
-        expect(first).to eq true
-        expect(last).to eq false
+        expect(first).to be true
+        expect(last).to be false
       elsif l == 'z'
-        expect(first).to eq false
-        expect(last).to eq true
+        expect(first).to be false
+        expect(last).to be true
       else
-        expect(first).to eq false
-        expect(last).to eq false
+        expect(first).to be false
+        expect(last).to be false
       end
     end
   end
