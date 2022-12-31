@@ -1,19 +1,25 @@
-inherit_gem:
-    rubocop-shopify: rubocop.yml
+inherit_from:
+  - ~/.rubocop.yml
 
-AllCops:
-  TargetRubyVersion: 2.7
-  Exclude:
-    - 'test/tmp/**/*'
-    - 'vendor/bundle/**/*'
+# inherit_gem:
+#     rubocop-shopify: rubocop.yml
 
-Style/MethodCallWithArgsParentheses:
-  Exclude:
-    - '**/Gemfile'
+# require:
+#   - rubocop-rspec
 
-Style/ClassAndModuleChildren:
-  Exclude:
-    - 'test/**/*'
+# AllCops:
+#   TargetRubyVersion: 2.7
+#   Exclude:
+#     - 'test/tmp/**/*'
+#     - 'vendor/bundle/**/*'
 
-Style/StringLiterals:
-  Enabled: false
+# Style/MethodCallWithArgsParentheses:
+#   Exclude:
+#     - '**/Gemfile'
+
+# Style/ClassAndModuleChildren:
+#   Exclude:
+#     - 'test/**/*'
+
+# Style/StringLiterals:
+#   Enabled: false
