@@ -245,8 +245,9 @@ module FatCore
     #
     # 1. Remove all periods, commas, apostrophes, and asterisks (the punctuation
     #    characters) from both self and `matcher`,
-    # 2. Treat internal ':' in the matcher as the equivalent of '.*' in a
-    #    regular expression, that is, match anything in self,
+    # 2. Treat internal ':stuff' in the matcher as the equivalent of
+    #    '\bstuff.*?\b' in a regular expression, that is, match any word
+    #    starting with stuff in self,
     # 3. Treat leading ':' in the matcher as anchoring the match to the
     #    beginning of the target string,
     # 4. Treat ending ':' in the matcher as anchoring the match to the
@@ -278,7 +279,7 @@ module FatCore
       end
       target = gsub(/[\*.,']/, '')
       matchers = matcher.split(/[: ]+/)
-      regexp_string = matchers.map { |m| ".*?\\b#{Regexp.escape(m)}.*?" }.join('[: ]')
+      regexp_string = matchers.map { |m| ".*?\\b#{Regexp.escape(m)}.*?" }.join('\\b')
       regexp_string.sub!(/^\.\*\?/, '')
       regexp_string.sub!(/\.\*\?$/, '')
       regexp_string.sub!(/\A/, '\\A') if begin_anchor

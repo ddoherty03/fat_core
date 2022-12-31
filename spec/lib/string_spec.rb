@@ -270,6 +270,12 @@ the people, for the people, shall not perish from the earth."
         expect('Hello:world'.fuzzy_match('hel:ox')).to be_falsy
       end
 
+      it 'treats an internal `:stuff in the matcher as \bstuff.*?\b' do
+        expect('Hello, what is with the world?'.fuzzy_match('wha:wi:wor')).to be_truthy
+        expect('Hello:world'.fuzzy_match('what:or')).to be_falsy
+        expect('Hello, what=+&is (with) the world?'.fuzzy_match('wha:wi:wor')).to be_truthy
+      end
+
       it 'requires end-anchor for ending colon' do
         expect('Hello, to the world'.fuzzy_match('hel:world:')).to eq('Hello to the world')
         expect('Hello, to the world today'.fuzzy_match('to:world:')).to be_nil
