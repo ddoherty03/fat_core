@@ -4,6 +4,7 @@ require 'bigdecimal'
 require 'fat_core/patches'
 require 'damerau-levenshtein'
 require 'active_support/core_ext/regexp'
+require_relative 'numeric'
 
 module FatCore
   module String
