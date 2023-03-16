@@ -1157,8 +1157,8 @@ module FatCore
     end
     alias_method :trading_day?, :nyse_workday?
 
-    # Return the date that is n NYSE trading days after or before (if n < 0) this
-    # date.
+    # Return a new date that is n NYSE trading days after or before (if n < 0)
+    # this date.
     #
     # @param num [Integer] number of NYSE trading days to add to this date
     # @return [::Date]
