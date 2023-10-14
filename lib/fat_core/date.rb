@@ -50,7 +50,7 @@ require 'fat_core/patches'
 module FatCore
   module Date
     # Set the default beginning of week to Monday for commercial weeks.
-    ::Date.beginning_of_week = :monday
+    # ::Date.beginning_of_week = :monday
 
     # Constant for Beginning of Time (BOT) outside the range of what we would ever
     # want to find in commercial situations.
@@ -525,9 +525,9 @@ module FatCore
     # @return [::Date]
     def beginning_of_biweek
       if cweek.odd?
-        beginning_of_week(:monday)
+        beginning_of_week(::Date.beginning_of_week)
       else
-        (self - 1.week).beginning_of_week(:monday)
+        (self - 1.week).beginning_of_week(::Date.beginning_of_week)
       end
     end
 
@@ -535,18 +535,18 @@ module FatCore
 
     # Return the date that is the last day of the commercial biweek in which
     # self falls. A biweek is a period of two commercial weeks starting with
-    # an odd-numbered week and with each week starting in Monday and ending on
+    # an odd-numbered week and with each week starting on Monday and ending on
     # Sunday. So this will always return a Sunday in an even-numbered week.
     # In the last week of the year (if it is not part of next year's first
     # week) the end of the biweek will not extend beyond self's week, so that
     # week 1 of the following year will start a new biweek.  @return [::Date]
     def end_of_biweek
-      if cweek >= 52 && end_of_week(:monday).year > year
-        end_of_week(:monday)
+      if cweek >= 52 && end_of_week(::Date.beginning_of_week).year > year
+        end_of_week(::Date.beginning_of_week)
       elsif cweek.odd?
-        (self + 1.week).end_of_week(:monday)
+        (self + 1.week).end_of_week(::Date.beginning_of_week)
       else
-        end_of_week(:monday)
+        end_of_week(::Date.beginning_of_week)
       end
     end
 
