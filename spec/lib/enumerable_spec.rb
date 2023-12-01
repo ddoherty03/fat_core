@@ -31,4 +31,18 @@ describe Enumerable do
       end
     end
   end
+
+  it 'returns nil enumerating a beginless Range' do
+    bless = (..100)
+    result = bless.each_with_flags { |l, first, last| 44 }
+    expect(result).to be nil
+  end
+
+  it 'enumerates an endless Range' do
+    eless = (1..)
+    num = 0
+    eless.each_with_flags { |i, first, last| num += i; break if i >= 100 }
+    # Look at me, I'm Gauss
+    expect(num).to eq(5050)
+  end
 end
