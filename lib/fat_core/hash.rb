@@ -136,6 +136,10 @@ module FatCore
 
       to_a.each_with_index.map { |(_k, v), i| [new_keys[i], v] }.to_h
     end
+
+    def <<(other)
+      self.merge(other)
+    end
   end
 end
 

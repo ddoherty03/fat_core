@@ -22,4 +22,11 @@ describe Hash do
     remap = { :a => :d }
     expect(hh.remap_keys(remap)).to eq({ :d => 1, :b => 2, :c => 1 })
   end
+
+  it 'make << an alias for Hash#merge' do
+    h1 = { a: 'A', b: 'B', c: 'C' }
+    h2 = { b: 'BB', d: 'DD' }
+    h3 = { e: 'EEE' }
+    expect(h1 << h2 << h3).to eq({ a: 'A', b: 'BB', c: 'C', d: 'DD', e: 'EEE' })
+  end
 end

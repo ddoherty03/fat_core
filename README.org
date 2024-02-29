@@ -2,9 +2,9 @@
 
 * FatCore
 
-fat-core is a simple gem to collect core extensions and a few new classes that
-I find useful in multiple projects.  The emphasis is on extending the Date
-class to make it more useful in financial applications.
+~fat-core~ is a simple gem to collect core extensions and a few new classes
+that I find useful in multiple projects.  The emphasis is on extending the
+Date class to make it more useful in financial applications.
 
 ** Installation
 
@@ -267,8 +267,6 @@ Date.parse_american('9/22/1957') => 1957-09-22
 **** Weekdays in Month
 
 **** Easter
-
-
 The ~Date~ class extension adds two methods for determining whether a given
 date is a US federal holiday as defined by federal law, including such things
 as federal holidays established by executive decree:
@@ -329,7 +327,6 @@ coverage on one Range by an Array of other Ranges:
 
 **
 * Enumerable
-
 FatCore::Enumerable extends Enumerable with the ~#each_with_flags~ method that
 yields the elements of the Enumerable but also yields two booleans, ~first~ and
 ~last~ that are set to true on respectively, the first and last element of the
@@ -343,6 +340,13 @@ deletion (~#delete_with_value~) and for manipulating the keys
 (~#keys_with_value~, ~#remap_keys~ and ~#replace_keys~) of a Hash. It also
 provides ~#each_pair_with_flags~ as an analog to Enumerable's
 ~#each_with_flags~.
+
+It also provides the shovel operator as a convenient alias for ~Hash#merge~,
+so that
+
+#+begin_src ruby :tangle no
+{a: 'A', b: 'B', c: 'C'} << {c: 'CC', d: 'DD'} << {e: 'EEE'} => {a: 'A', b: 'B', c: 'CC', d: 'DD', e: 'EEE'}
+#+end_src
 
 *** String
 
