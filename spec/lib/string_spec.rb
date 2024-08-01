@@ -167,16 +167,16 @@ the people, for the people, shall not perish from the earth."}
       expect(re.multiline?).to be true
       expect(re.match?('Hello    WorlD')).to be false
 
-      # Works without /../ but takes meta-characters literally
+      # Works without /../ but takes meta-characters literally, but still case insensitive
       str = "hello((\s+)(world))?"
       re = str.as_regexp
       expect(re.class).to eq Regexp
-      expect(re.casefold?).to be false
+      expect(re.casefold?).to be true
       expect(re.multiline?).to be false
       expect(re.match?('hello    world')).to be false
       expect(re.match?(str)).to be true
-      expect('Hello\b'.as_regexp).to eq(/Hello\\b/)
-      expect('Hello'.as_regexp).to eq(/Hello/)
+      expect('Hello\b'.as_regexp).to eq(/Hello\\b/i)
+      expect('Hello'.as_regexp).to eq(/Hello/i)
     end
 
     it 'converts metacharacters into Regexp' do

@@ -300,13 +300,13 @@ module FatCore
     # default and extend the modifier syntax to allow '/I' to indicate
     # case-sensitive.  Without the surrounding '/', quote any Regexp
     # metacharacters in the string and return a Regexp that matches the string
-    # literally.
+    # literally, but still make the Regexp case insensitive.
     #
     # @example
     #   '/Hello/'.as_regexp #=> /Hello/i
     #   '/Hello/I'.as_regexp #=> /Hello/
-    #   'Hello'.as_regexp #=> /Hello/
-    #   'Hello\b'.as_regexp #=> /Hello\\b/
+    #   'Hello'.as_regexp #=> /Hello/i
+    #   'Hello\b'.as_regexp #=> /Hello\\b/i
     #
     # @return [Regexp]
     def as_regexp
@@ -324,7 +324,7 @@ module FatCore
         # body = Regexp.quote(body) if REGEXP_META_CHARACTERS.include?(body)
         Regexp.new(body, flags)
       else
-        Regexp.new(Regexp.quote(self))
+        Regexp.new(Regexp.quote(self), Regexp::IGNORECASE)
       end
     end
 
