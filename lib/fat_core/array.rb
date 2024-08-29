@@ -8,14 +8,14 @@ module FatCore
       size - 1
     end
 
-    # Return a new Array that is the intersection of this Array with +other+,
-    # but without removing duplicates as the Array#& method does. All items of
-    # this Array are included in the result but only if they also appear in the
-    # +other+ Array.
-    def intersect(other)
+    # Return a new Array that is the intersection of this Array with all
+    # +others+, but without removing duplicates as the Array#& method
+    # does. All items of this Array are included in the result but only if
+    # they also appear in all of the other Arrays.
+    def intersect_with_dups(*others)
       result = []
       each do |itm|
-        result << itm if other.include?(itm)
+        result << itm if others.all? { |oth| oth.include?(itm) }
       end
       result
     end
@@ -24,10 +24,13 @@ module FatCore
     # without removing duplicates as the Array#- method does. All items of this
     # Array are included in the result unless they also appear in the +other+
     # Array.
-    def difference(other)
+    def diff_with_dups(*others)
       result = []
       each do |itm|
-        result << itm unless other.include?(itm)
+        result << itm if others.none? { |oth| oth.include?(itm) }
+      end
+      result
+    end
 
     # Convert this array into a single string by (1) applying #to_s to each
     # element and (2) joining the elements with the string given by the sep:
