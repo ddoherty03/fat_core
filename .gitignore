@@ -21,3 +21,6 @@ tmp
 /.rubocop_todo.yml
 /gtags.files
 /.ruby-version
+/.idea/
+/README.md
+/TAGS
