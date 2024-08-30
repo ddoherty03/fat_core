@@ -132,7 +132,7 @@ module FatCore
 
       ([min, other.min].max..[max, other.max].min)
     end
-    alias_method :&, :intersection
+    alias & intersection
 
     # Return a Range that represents the union between this range and the
     # `other` range.  If there is no overlap and self is not contiguous with
@@ -150,7 +150,7 @@ module FatCore
 
       ([min, other.min].min..[max, other.max].max)
     end
-    alias_method :+, :union
+    alias + union
 
     # The difference method, -, removes the overlapping part of the other
     # argument from self.  Because in the case where self is a superset of the
@@ -187,7 +187,7 @@ module FatCore
         [(min..isec.min.pred), (isec.max.succ..max)]
       end
     end
-    alias_method :-, :difference
+    alias - difference
 
     # Allow erb or erubis documents to directly interpolate a Range.
     #
@@ -297,7 +297,7 @@ module FatCore
     # @return [Boolean] is self wholly within other
     def proper_subset_of?(other)
       subset_of?(other) &&
-      (min > other.min || max < other.max)
+        (min > other.min || max < other.max)
     end
 
     # Return whether self contains `other` range, even if their
@@ -324,8 +324,8 @@ module FatCore
     # @param other [Range] range to test for overlap with self
     # @return [Boolean] is there an overlap?
     def overlaps?(other)
-      (cover?(other.min) || cover?(other.max) ||
-       other.cover?(min) || other.cover?(max))
+      cover?(other.min) || cover?(other.max) ||
+        other.cover?(min) || other.cover?(max)
     end
 
     # Return whether any of the `ranges` that overlap self have overlaps among one
@@ -357,10 +357,10 @@ module FatCore
         joined_range = joined_range.join(r)
         break if joined_range.nil?
       end
-      if !joined_range.nil?
-        joined_range.min <= min && joined_range.max >= max
-      else
+      if joined_range.nil?
         false
+      else
+        joined_range.min <= min && joined_range.max >= max
       end
     end
 

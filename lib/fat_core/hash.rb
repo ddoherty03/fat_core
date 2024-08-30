@@ -10,20 +10,20 @@
 # require 'fat_core/hash'
 # ```
 #
-# It provides a couple of methods for manipulating the keys of a Hash:
-# `#remap_keys` for translating the current set of keys to a new set provided by
-# a Hash of old to new keys, and `#replace_keys` for doing a similar operation
-# with an Array of new keys. Along the same line, the method `#keys_with_value`
-# will return the keys in a Hash equal to the given value of any of an Array of
-# values.
-#
-# It also provides a method for deleting all entries in a Hash whose value match
-# a single value or any one of an Array of values in `#delete_with_value`
-#
-# Finally, it provides an `#each_pair`-like method, `#each_pair_with_flags`,
-# that yields each key-value pair of the Hash along with two boolean flags that
-# indicate whether the element is the first or last in the Hash.
 module FatCore
+  # It provides a couple of methods for manipulating the keys of a Hash:
+  # `#remap_keys` for translating the current set of keys to a new set provided by
+  # a Hash of old to new keys, and `#replace_keys` for doing a similar operation
+  # with an Array of new keys. Along the same line, the method `#keys_with_value`
+  # will return the keys in a Hash equal to the given value of any of an Array of
+  # values.
+  #
+  # It also provides a method for deleting all entries in a Hash whose value match
+  # a single value or any one of an Array of values in `#delete_with_value`
+  #
+  # Finally, it provides an `#each_pair`-like method, `#each_pair_with_flags`,
+  # that yields each key-value pair of the Hash along with two boolean flags that
+  # indicate whether the element is the first or last in the Hash.
   module Hash
     # @group Enumerable Extensions
     #
@@ -130,15 +130,13 @@ module FatCore
     # @param new_keys [Array<Object>] replacement keys
     # @return [Hash]
     def replace_keys(new_keys)
-      unless keys.size == new_keys.size
-        raise ArgumentError, 'replace_keys: new keys size differs from key size'
-      end
+      raise ArgumentError, 'replace_keys: new keys size differs from key size' unless keys.size == new_keys.size
 
-      to_a.each_with_index.map { |(_k, v), i| [new_keys[i], v] }.to_h
+      to_a.each_with_index.to_h { |(_k, v), i| [new_keys[i], v] }
     end
 
     def <<(other)
-      self.merge(other)
+      merge(other)
     end
   end
 end

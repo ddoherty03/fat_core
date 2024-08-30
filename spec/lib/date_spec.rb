@@ -461,7 +461,7 @@ describe Date do
       it 'prints itself in org form' do
         expect(described_class.today.org).to eq('[2012-07-18 Wed]')
         expect((described_class.today + 1.day).org).to eq('[2012-07-19 Thu]')
-        expect((described_class.today + 1.day).org(true)).to eq('<2012-07-19 Thu>')
+        expect((described_class.today + 1.day).org(active: true)).to eq('<2012-07-19 Thu>')
       end
 
       it 'prints itself in eng form' do

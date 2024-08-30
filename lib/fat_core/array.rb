@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module FatCore
+  # Useful extensions to the core Array class.
   module Array
     # Return the index of the last element of this Array.  This is just a
     # convenience for an oft-needed Array attribute.
@@ -66,7 +67,7 @@ module FatCore
             if k == second_last
               "#{itm}#{last_sep}"
             elsif k == last
-              "#{itm}"
+              itm.to_s
             else
               "#{itm}#{sep}"
             end

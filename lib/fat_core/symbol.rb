@@ -14,9 +14,9 @@ module FatCore
     #
     # @return [String]
     def as_string
-      to_s.tr('_', ' ').split(' ').join(' ').entitle
+      to_s.tr('_', ' ').split.join(' ').entitle
     end
-    alias_method :entitle, :as_string
+    alias entitle as_string
 
     # Return self. This (together with String#as_sym) allows `#as_sym` to be
     # applied to a string or Symbol and get back a Symbol with out testing for

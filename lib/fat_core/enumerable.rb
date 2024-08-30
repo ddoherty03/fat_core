@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# Useful extensions to the core Enumerable module.
 module Enumerable
   # Yield items in groups of n, for each group yield the group number, starting
   # with zero and an Array of n items, or all remaining items if less than n.

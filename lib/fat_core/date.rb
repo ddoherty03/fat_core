@@ -90,7 +90,7 @@ module FatCore
     # Format as an inactive Org date timestamp of the form `[YYYY-MM-DD <dow>]`
     # (see Emacs org-mode)
     # @return [String]
-    def org(active = false)
+    def org(active: false)
       if active
         strftime('<%Y-%m-%d %a>')
       else
@@ -186,7 +186,7 @@ module FatCore
     # semimonth the date falls in.
     # @return [Integer]
     def semimonth
-      (month - 1) * 2 + (day <= 15 ? 1 : 2)
+      ((month - 1) * 2) + (day <= 15 ? 1 : 2)
     end
 
     # Self's calendar biweek: 1, through 24 depending on which calendar
@@ -428,7 +428,7 @@ module FatCore
       self - 1.day
     end
 
-    # Note: the ::Date class already has a #succ method.
+    # NOTE: the ::Date class already has a #succ method.
 
     # The date that is the first day of the half-year in which self falls.
     # @return [::Date]

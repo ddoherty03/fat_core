@@ -58,7 +58,7 @@ module FatCore
       line_width_so_far = 0
       words = split(' ')
       words.each do |w|
-        w = ::String.new(' ') * hang + w if !first_line && first_word_on_line
+        w = (::String.new(' ') * hang) + w if !first_line && first_word_on_line
         w = ::String.new(' ') + w unless first_word_on_line
         result << w
         first_word_on_line = false
@@ -85,13 +85,13 @@ module FatCore
       r = dup
       r = r.gsub(/[{]/, 'XzXzXobXzXzX')
       r = r.gsub(/[}]/, 'XzXzXcbXzXzX')
-      r = r.gsub(/\\/, '\textbackslash{}')
-      r = r.gsub(/\^/, '\textasciicircum{}')
-      r = r.gsub(/~/, '\textasciitilde{}')
-      r = r.gsub(/\|/, '\textbar{}')
-      r = r.gsub(/\</, '\textless{}')
-      r = r.gsub(/\>/, '\textgreater{}')
-      r = r.gsub(/([_$&%#])/) { |m| '\\' + m }
+      r = r.gsub("\\", '\textbackslash{}')
+      r = r.gsub("^", '\textasciicircum{}')
+      r = r.gsub("~", '\textasciitilde{}')
+      r = r.gsub("|", '\textbar{}')
+      r = r.gsub("<", '\textless{}')
+      r = r.gsub(">", '\textgreater{}')
+      r = r.gsub(/([_$&%#])/) { |m| "\\#{m}" }
       r = r.gsub('XzXzXobXzXzX', '\\{')
       r.gsub('XzXzXcbXzXzX', '\\}')
     end
