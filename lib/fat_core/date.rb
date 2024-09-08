@@ -1842,6 +1842,7 @@ module FatCore
           raise ArgumentError, 'requires String, Date, DateTime, or Time'
         end
       end
+      alias ensure ensure_date
     end
 
     def self.included(base)

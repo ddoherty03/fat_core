@@ -15,22 +15,28 @@ describe Date do
     describe 'ensure_date parsing' do
       it 'parses a String as a date' do
         expect(described_class.ensure_date('2018-11-12').class).to be described_class
+        expect(described_class.ensure('2018-11-12').class).to be described_class
       end
 
       it 'leaves a Date as a date' do
         expect(described_class.ensure_date(described_class.today).class).to be described_class
+        expect(described_class.ensure(described_class.today).class).to be described_class
       end
 
       it 'converts Time as a date' do
         expect(described_class.ensure_date(Time.now).class).to be described_class
+        expect(described_class.ensure(Time.now).class).to be described_class
       end
 
       it 'raises an error for bad date string' do
         expect { described_class.ensure_date('2012-mm-tu') }.to raise_error(/invalid date/)
+        expect { described_class.ensure('2012-mm-tu') }.to raise_error(/invalid date/)
       end
 
       it 'raises an error for unknown class' do
         expect { described_class.ensure_date([2011, 11, 12]) }
+          .to raise_error(/requires String, Date, DateTime, or Time/)
+        expect { described_class.ensure([2011, 11, 12]) }
           .to raise_error(/requires String, Date, DateTime, or Time/)
       end
     end
