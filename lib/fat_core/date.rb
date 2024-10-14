@@ -1826,23 +1826,33 @@ module FatCore
       end
 
       # Ensure that date is of class Date based either on a string or Date
-      # object.
+      # object or an object that responds to #to_date or #to_datetime.  If the
+      # given object is a String, use Date.parse to try to convert it.
+      #
+      # If given a DateTime, it returns the unrounded DateTime; if given a
+      # Time, it converts it to a DateTime.
       #
       # @param dat [String, Date, Time] the object to be converted to Date
       # @return [Date, DateTime]
       def ensure_date(dat)
-        case dat
-        when String
-          ::Date.parse(dat)
-        when Date, DateTime
+        if dat.is_a?(Date) || dat.is_a?(DateTime)
           dat
-        when Time
+        elsif dat.is_a?(Time)
+          dat.to_datetime
+        elsif dat.respond_to?(:to_datetime)
+          dat.to_datetime
+        elsif dat.respond_to?(:to_date)
           dat.to_date
+        elsif dat.is_a?(String)
+          begin
+            ::Date.parse(dat)
+          rescue ::Date::Error
+            raise ArgumentError, "cannot convert string '#{dat}' to a Date or DateTime"
+          end
         else
-          raise ArgumentError, 'requires String, Date, DateTime, or Time'
+          raise ArgumentError, "cannot convert class '#{dat.class}' to a Date or DateTime"
         end
       end
-      alias ensure ensure_date
     end
 
     def self.included(base)
@@ -1853,6 +1863,9 @@ end
 
 class Date
   include FatCore::Date
+  def self.ensure(dat)
+    ensure_date(dat)
+  end
   # @!parse include FatCore::Date
   # @!parse extend FatCore::Date::ClassMethods
 end

@@ -23,21 +23,21 @@ describe Date do
         expect(described_class.ensure(described_class.today).class).to be described_class
       end
 
-      it 'converts Time as a date' do
-        expect(described_class.ensure_date(Time.now).class).to be described_class
-        expect(described_class.ensure(Time.now).class).to be described_class
+      it 'converts Time as a DateTime' do
+        expect(described_class.ensure_date(Time.now).class).to be DateTime
+        expect(described_class.ensure(Time.now).class).to be DateTime
       end
 
       it 'raises an error for bad date string' do
-        expect { described_class.ensure_date('2012-mm-tu') }.to raise_error(/invalid date/)
-        expect { described_class.ensure('2012-mm-tu') }.to raise_error(/invalid date/)
+        expect { described_class.ensure_date('2012-mm-tu') }.to raise_error(/cannot convert string/)
+        expect { described_class.ensure('2012-mm-tu') }.to raise_error(/cannot convert string/)
       end
 
       it 'raises an error for unknown class' do
         expect { described_class.ensure_date([2011, 11, 12]) }
-          .to raise_error(/requires String, Date, DateTime, or Time/)
+          .to raise_error(/cannot convert/)
         expect { described_class.ensure([2011, 11, 12]) }
-          .to raise_error(/requires String, Date, DateTime, or Time/)
+          .to raise_error(/cannot convert/)
       end
     end
 

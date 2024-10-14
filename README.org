@@ -54,7 +54,6 @@ Many of these have little that is of general interest, but there are a few
 goodies.
 
 *** Date
-
 **** Constants
 
 ~FatCore~ adds two constants to the ~Date~ class, Date::BOT and Date::EOT.
@@ -70,6 +69,39 @@ date ranges, for example.  They are defined as:
   which are observed with a closing of most federal agencies
 
 
+
+**** Parsing
+The ~Date.ensure~ class method tries to convert its argument to a ~Date~
+object by (1) applying the ~#to_date~ method or (2) applying the ~Date.parse~
+method to a String.  This is handy when you want to define a method that takes
+a date argument but want the caller to be able to supply anything that can
+reasonably be converted to a ~Date~:
+
+#+begin_src ruby
+  $:.unshift("~/src/fat_core/lib")
+  require 'fat_core/date'  # => true
+
+  def tomorow_tomorrow(arg)
+    from = Date.ensure(arg)  # => ArgumentError: cannot convert class 'Array' to a Date or DateTime
+    from + 2.days            # => Mon, 03 Jun 2024, Wed, 16 Oct 2024 05:47:30 -0500, Sun, 03 Mar 2024
+  end                        # => :tomorow_tomorrow
+
+  tomorow_tomorrow('June 1')  # => Mon, 03 Jun 2024
+  tomorow_tomorrow(Time.now)  # => Wed, 16 Oct 2024 05:47:30 -0500
+  # But it's only as good as Date.parse!
+  tomorow_tomorrow('Ides of March') # => Sun, 03 Mar 2024
+
+  tomorow_tomorrow([])
+  # =>
+
+  # ~> ArgumentError
+  # ~> cannot convert class 'Array' to a Date or DateTime
+  # ~>
+  # ~> /home/ded/src/fat_core/lib/fat_core/date.rb:1849:in `ensure_date'
+  # ~> /home/ded/src/fat_core/lib/fat_core/date.rb:1863:in `ensure'
+  # ~> /tmp/seeing_is_believing_temp_dir20241014-1457038-xj4k5x/program.rb:5:in `tomorow_tomorrow'
+  # ~> /tmp/seeing_is_believing_temp_dir20241014-1457038-xj4k5x/program.rb:14:in `<main>'
+#+end_src
 
 **** Formatting
 
@@ -88,7 +120,6 @@ that are often useful:
   puts "American: #{d.american}"
 #+end_SRC
 
-#+RESULTS:
 #+begin_example
 ISO: 1957-09-22
 All Numbers: 19570922
