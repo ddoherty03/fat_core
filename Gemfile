@@ -1,13 +1,19 @@
 source 'https://rubygems.org'
 
-gem 'damerau-levenshtein', git: 'https://github.com/ddoherty03/damerau-levenshtein'
-gem 'rubocop-shopify', require: false
-
 # Specify your gem's dependencies in fat_core.gemspec
 gemspec
 
-# group :debug do
-#   gem "byebug"
-#   gem "pry"
-#   gem "pry-doc"
-# end
+group :development do
+  gem 'rubocop-shopify', require: false
+  gem 'rubocop-rspec', require: false
+  gem 'rubocop-performance', require: false
+  gem 'rubocop-rake', require: false
+  gem 'bundler'
+  gem 'debug', '>= 1.0.0'
+  gem 'pry'
+  gem 'redcarpet'
+  gem 'pry-doc'
+  gem 'rake'
+  gem 'rspec'
+  gem 'simplecov'
+end
