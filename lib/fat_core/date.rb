@@ -9,45 +9,45 @@ require 'active_support/core_ext/integer/time'
 require 'fat_core/string'
 require 'fat_core/patches'
 
-# ## FatCore Date Extensions
-#
-# The FatCore extensions to the Date class add the notion of several additional
-# calendar periods besides years, months, and weeks to those provided for in the
-# Date class and the active_support extensions to Date.  In particular, there
-# are several additional calendar subdivisions (called "chunks" in this
-# documentation) supported by FatCore's extension to the Date class:
-#
-# * year,
-# * half,
-# * quarter,
-# * bimonth,
-# * month,
-# * semimonth,
-# * biweek,
-# * week, and
-# * day
-#
-# For each of those chunks, there are methods for finding the beginning and end
-# of the chunk, for advancing or retreating a Date by the chunk, and for testing
-# whether a Date is at the beginning or end of each of the chunk.
-#
-# FatCore's Date extension defines a few convenience formatting methods, such as
-# Date#iso and Date#org for formatting Dates as ISO strings and as Emacs
-# org-mode inactive timestamps respectively. It also has a few utility methods
-# for determining the date of Easter, the number of days in any given month, and
-# the Date of the nth workday in a given month (say the third Thursday in
-# October, 2014).
-#
-# The Date extension defines a couple of class methods for parsing strings into
-# Dates, especially Date.parse_spec, which allows Dates to be specified in a
-# lazy way, either absolutely or relative to the computer's clock.
-#
-# Finally FatCore's Date extensions provide thorough methods for determining if
-# a Date is a United States federal holiday or workday based on US law,
-# including executive orders. It does the same for the New York Stock Exchange,
-# based on the rules of the New York Stock Exchange, including dates on which
-# the NYSE was closed for special reasons, such as the 9-11 attacks in 2001.
 module FatCore
+  # ## FatCore Date Extensions
+  #
+  # The FatCore extensions to the Date class add the notion of several additional
+  # calendar periods besides years, months, and weeks to those provided for in the
+  # Date class and the active_support extensions to Date.  In particular, there
+  # are several additional calendar subdivisions (called "chunks" in this
+  # documentation) supported by FatCore's extension to the Date class:
+  #
+  # * year,
+  # * half,
+  # * quarter,
+  # * bimonth,
+  # * month,
+  # * semimonth,
+  # * biweek,
+  # * week, and
+  # * day
+  #
+  # For each of those chunks, there are methods for finding the beginning and end
+  # of the chunk, for advancing or retreating a Date by the chunk, and for testing
+  # whether a Date is at the beginning or end of each of the chunk.
+  #
+  # FatCore's Date extension defines a few convenience formatting methods, such as
+  # Date#iso and Date#org for formatting Dates as ISO strings and as Emacs
+  # org-mode inactive timestamps respectively. It also has a few utility methods
+  # for determining the date of Easter, the number of days in any given month, and
+  # the Date of the nth workday in a given month (say the third Thursday in
+  # October, 2014).
+  #
+  # The Date extension defines a couple of class methods for parsing strings into
+  # Dates, especially Date.parse_spec, which allows Dates to be specified in a
+  # lazy way, either absolutely or relative to the computer's clock.
+  #
+  # Finally FatCore's Date extensions provide thorough methods for determining if
+  # a Date is a United States federal holiday or workday based on US law,
+  # including executive orders. It does the same for the New York Stock Exchange,
+  # based on the rules of the New York Stock Exchange, including dates on which
+  # the NYSE was closed for special reasons, such as the 9-11 attacks in 2001.
   module Date
     # Set the default beginning of week to Monday for commercial weeks.
     # ::Date.beginning_of_week = :monday
