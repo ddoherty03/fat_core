@@ -31,7 +31,7 @@ module Enumerable
   #    end
   def each_with_flags
     # Test for beginless range
-    return nil if is_a?(Range) && self.begin.nil?
+    return if is_a?(Range) && self.begin.nil?
 
     last_k = size - 1
     each_with_index do |v, k|

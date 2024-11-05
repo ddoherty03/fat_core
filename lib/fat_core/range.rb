@@ -128,11 +128,11 @@ module FatCore
     # @param other [Range] the Range self is intersected with
     # @return [Range, nil] a Range representing the intersection
     def intersection(other)
-      return nil unless overlaps?(other)
+      return unless overlaps?(other)
 
       ([min, other.min].max..[max, other.max].min)
     end
-    alias & intersection
+    alias_method :&, :intersection
 
     # Return a Range that represents the union between this range and the
     # `other` range.  If there is no overlap and self is not contiguous with
@@ -146,11 +146,11 @@ module FatCore
     # @param other [Range] the Range self is union-ed with
     # @return [Range, nil] a Range representing the union
     def union(other)
-      return nil unless overlaps?(other) || contiguous?(other)
+      return unless overlaps?(other) || contiguous?(other)
 
       ([min, other.min].min..[max, other.max].max)
     end
-    alias + union
+    alias_method :+, :union
 
     # The difference method, -, removes the overlapping part of the other
     # argument from self.  Because in the case where self is a superset of the
@@ -187,7 +187,7 @@ module FatCore
         [(min..isec.min.pred), (isec.max.succ..max)]
       end
     end
-    alias - difference
+    alias_method :-, :difference
 
     # Allow erb or erubis documents to directly interpolate a Range.
     #

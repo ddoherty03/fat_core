@@ -15,8 +15,9 @@ describe String do
 
   describe 'instance methods' do
     describe 'wrapping' do
-      #23456789012345678901234567890123456789012345678901234567890123456789|
-      let(:getty) {"\
+      # 23456789012345678901234567890123456789012345678901234567890123456789|
+      let(:getty) do
+        "\
 Four score and seven years ago our fathers brought forth on this conti\
 nent a new nation, conceived in liberty, and dedicated to the proposit\
 ion that all men are created equal.  Now we are engaged in a great civ\
@@ -37,7 +38,8 @@ red dead we take increased devotion to that cause for which they gave \
 the last full measure of devotion--that we here highly resolve that th\
 ese dead shall not have died in vain--that this nation, under God, sha\
 ll have a new birth of freedom--and that government of the people, by \
-the people, for the people, shall not perish from the earth."}
+the people, for the people, shall not perish from the earth."
+      end
 
       # 0000000000111111111122222222223333333333444444444455555555556666666666
       # 0123456789012345678901234567890123456789012345678901234567890123456789|
@@ -81,9 +83,7 @@ the people, for the people, shall not perish from the earth."}
       it 'wraps a long string with a hangining indent' do
         str = getty.wrap(70, 10)
         str.split("\n").each { |l| expect(l.length).to be <= 70 }
-        str.split("\n")[1..-1].each do |l|
-          expect(l).to match(/^          /)
-        end
+        expect(str.split("\n")[1..-1]).to all match(/^          /)
         second_line = ' ' * 10 + 'this continent a new nation'
         third_line =  ' ' * 10 + 'dedicated to the proposition'
         twenty_fourth_line = ' ' * 10 + 'shall not have died in vain'
@@ -259,11 +259,6 @@ the people, for the people, shall not perish from the earth."}
       it 'fuzzy matches space-separated parts' do
         expect('Hello world'.fuzzy_match('hel wor')).to be_truthy
         expect('Hello, world'.fuzzy_match('hel ox')).to be_falsy
-      end
-
-      it 'fuzzy matches colon-separated parts' do
-        expect('Hello:world'.fuzzy_match('hel:wor')).to be_truthy
-        expect('Hello:world'.fuzzy_match('hel:ox')).to be_falsy
       end
 
       it 'fuzzy matches colon-separated parts' do

@@ -445,7 +445,7 @@ describe Date do
         expect(described_class.mo_name_to_num("octagon")).to eq 10
         expect(described_class.mo_name_to_num("   novena   this month")).to eq 11
         expect(described_class.mo_name_to_num("decimal")).to eq 12
-        expect(described_class.mo_name_to_num("  dewey decimal")).to be nil
+        expect(described_class.mo_name_to_num("  dewey decimal")).to be_nil
       end
     end
   end

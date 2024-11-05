@@ -63,7 +63,7 @@ module FatCore
         result << w
         first_word_on_line = false
         line_width_so_far += 1 + w.length
-        next unless line_width_so_far >= width
+        next if line_width_so_far < width
 
         result << "\n"
         line_width_so_far = 0
@@ -108,9 +108,11 @@ module FatCore
     # @return [Date] the translated Date
     def as_date
       if self =~ %r{(?<yr>\d\d\d\d)[-/]?(?<mo>\d\d?)[-/]?(?<dy>\d\d?)}
-        ::Date.new(Regexp.last_match[:yr].to_i,
-                   Regexp.last_match[:mo].to_i,
-                   Regexp.last_match[:dy].to_i)
+        ::Date.new(
+          Regexp.last_match[:yr].to_i,
+          Regexp.last_match[:mo].to_i,
+          Regexp.last_match[:dy].to_i,
+        )
       end
     end
 
@@ -149,8 +151,26 @@ module FatCore
     #
     # @return [String]
     def entitle
-      little_words = %w[a an the at for up and but
-                        or nor in on under of from as by to]
+      little_words = %w[
+        a
+        an
+        the
+        at
+        for
+        up
+        and
+        but
+        or
+        nor
+        in
+        on
+        under
+        of
+        from
+        as
+        by
+        to
+      ]
       preserve_acronyms = !all_upper?
       newwords = []
       capitalize_next = false
@@ -159,26 +179,26 @@ module FatCore
       words.each_with_index do |w, k|
         first = k.zero?
         last = (k == last_k)
-        if w =~ %r{c/o}i
+        if %r{c/o}i.match?(w)
           # Care of
           newwords.push('c/o')
-        elsif w =~ /^p\.?o\.?$/i
+        elsif /^p\.?o\.?$/i.match?(w)
           # Post office
           newwords.push('P.O.')
-        elsif w =~ /^[0-9]+(st|nd|rd|th)$/i
+        elsif /^[0-9]+(st|nd|rd|th)$/i.match?(w)
           # Ordinals
           newwords.push(w.downcase)
-        elsif w =~ /^(cr|dr|st|rd|ave|pk|cir)$/i
+        elsif /^(cr|dr|st|rd|ave|pk|cir)$/i.match?(w)
           # Common abbrs to capitalize
           newwords.push(w.capitalize)
-        elsif w =~ /^(us|ne|se|rr)$/i
+        elsif /^(us|ne|se|rr)$/i.match?(w)
           # Common 2-letter abbrs to upcase
           newwords.push(w.upcase)
-        elsif w =~ /^[0-9].*$/i
+        elsif /^[0-9].*$/i.match?(w)
           # Other runs starting with numbers,
           # like 3-A
           newwords.push(w.upcase)
-        elsif w =~ /^(N|S|E|W|NE|NW|SE|SW)$/i
+        elsif /^(N|S|E|W|NE|NW|SE|SW)$/i.match?(w)
           # Compass directions all caps
           newwords.push(w.upcase)
         elsif w =~ /^[^aeiouy]*$/i && w.size > 2
@@ -202,7 +222,7 @@ module FatCore
           newwords.push(w.capitalize)
         end
         # Capitalize following a ':'
-        capitalize_next = true if newwords.last =~ /:\s*\z/
+        capitalize_next = true if /:\s*\z/.match?(newwords.last)
       end
       newwords.join(' ')
     end
@@ -272,11 +292,11 @@ module FatCore
       matcher = matcher.strip.gsub(/[\*.,']/, '')
       if matcher.start_with?(':')
         begin_anchor = true
-        matcher.sub!(/\A:/, '')
+        matcher.delete_prefix!(':')
       end
       if matcher.end_with?(':')
         end_anchor = true
-        matcher.sub!(/:\z/, '')
+        matcher.delete_suffix!(':')
       end
       target = gsub(/[\*.,']/, '')
       matchers = matcher.split(/[: ]+/)
@@ -364,7 +384,7 @@ module FatCore
     # @return [String] commified number as a String
     def commas(places = nil)
       numeric_re = /\A([-+])?([\d_]*)((\.)?([\d_]*))?([eE][+-]?[\d_]+)?\z/
-      return self unless clean =~ numeric_re
+      return self unless clean&.match?(numeric_re)
 
       to_f.commas(places)
     end

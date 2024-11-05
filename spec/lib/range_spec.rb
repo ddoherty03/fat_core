@@ -74,8 +74,10 @@ describe Range do
 
     it 'knows the difference with another range' do
       # Other is same as self
+      # rubocop:disable Lint/BinaryOperatorWithIdenticalOperands
       expect(((4..10) - (4..10)).size).to eq(0)
       expect(((4..10) - (4..10))).to be_empty
+      # rubocop:enable Lint/BinaryOperatorWithIdenticalOperands
 
       # Other is proper subset of self
       expect(((4..10) - (6..7)).first).to eq((4..5))
@@ -129,7 +131,7 @@ describe Range do
     end
 
     it 'can determine that overlapping ranges do not span' do
-      expect((0..10)).to_not be_spanned_by([(0..3), (3..6), (7..10)])
+      expect((0..10)).not_to be_spanned_by([(0..3), (3..6), (7..10)])
     end
 
     it 'allows spanning ranges to be any Enumerable' do
@@ -137,7 +139,7 @@ describe Range do
       set = [(0..3), (4..6), (7..10)].to_set
       expect((0..10)).to be_spanned_by(set)
       set = [(0...3), (4..6), (7..10)].to_set
-      expect((0..10)).to_not be_spanned_by(set)
+      expect((0..10)).not_to be_spanned_by(set)
     end
 
     it 'allows the spanning set to be wider than itself' do
@@ -149,20 +151,20 @@ describe Range do
 
   describe 'overlapping a single range' do
     it 'knows if another range overlaps it' do
-      expect((0..10).overlaps?(-3..5)).to be_truthy
-      expect((0..10).overlaps?(3..5)).to be_truthy
-      expect((0..10).overlaps?(8..15)).to be_truthy
-      expect((0..10).overlaps?(0..10)).to be_truthy
-      expect((0..10).overlaps?(11..12)).to be_falsy
-      expect((0..10).overlaps?(-11..-1)).to be_falsy
+      expect((0..10)).to be_overlaps(-3..5)
+      expect((0..10)).to be_overlaps(3..5)
+      expect((0..10)).to be_overlaps(8..15)
+      expect((0..10)).to be_overlaps(0..10)
+      expect((0..10)).not_to be_overlaps(11..12)
+      expect((0..10)).not_to be_overlaps(-11..-1)
 
       # Order of operands should not matter
-      expect((-3..5).overlaps?(0..10)).to be_truthy
-      expect((3..5).overlaps?(0..10)).to be_truthy
-      expect((8..15).overlaps?(0..10)).to be_truthy
-      expect((0..10).overlaps?(0..10)).to be_truthy
-      expect((11..12).overlaps?(0..10)).to be_falsy
-      expect((-11..-1).overlaps?(0..10)).to be_falsy
+      expect((-3..5)).to be_overlaps(0..10)
+      expect((3..5)).to be_overlaps(0..10)
+      expect((8..15)).to be_overlaps(0..10)
+      expect((0..10)).to be_overlaps(0..10)
+      expect((11..12)).not_to be_overlaps(0..10)
+      expect((-11..-1)).not_to be_overlaps(0..10)
     end
 
     it 'can determine whether a set contains covered overlaps' do

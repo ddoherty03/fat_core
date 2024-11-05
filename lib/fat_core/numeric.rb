@@ -65,7 +65,7 @@ module FatCore
 
       # Only convert to string numbers with exponent unless they are
       # less than 1 (to ensure that really small numbers round to 0.0)
-      return to_s if abs > 1.0 && to_s =~ /e/
+      return to_s if abs > 1.0 && to_s.include?('e')
 
       # Round if places given
       str =
@@ -135,13 +135,20 @@ module FatCore
       mins, secs = divmod(60)
       hrs, mins = mins.divmod(60)
       if frac.round(5) > 0.0
-        format('%02<hrs>d:%02<mins>d:%02<secs>d.%<frac>d',
-               { hrs: hrs,
-                 mins: mins, secs: secs,
-                 frac: frac.round(5) * 100 })
+        format(
+          '%02<hrs>d:%02<mins>d:%02<secs>d.%<frac>d',
+          {
+            hrs: hrs,
+            mins: mins,
+            secs: secs,
+            frac: frac.round(5) * 100
+          },
+        )
       else
-        format('%02<hrs>d:%02<mins>d:%02<secs>d',
-               { hrs: hrs, mins: mins, secs: secs })
+        format(
+          '%02<hrs>d:%02<mins>d:%02<secs>d',
+          { hrs: hrs, mins: mins, secs: secs },
+        )
       end
     end
 

@@ -653,8 +653,10 @@ module FatCore
             if factor.positive?
               [beginning_of_month + 16.days + (day - 1).days, end_of_month].min
             else
-              [prior_month.beginning_of_month + 16.days + (day - 1).days,
-               prior_month.end_of_month].min
+              [
+                prior_month.beginning_of_month + 16.days + (day - 1).days,
+                prior_month.end_of_month
+              ].min
             end
           elsif factor.positive?
             # In the second half of the month (17th to the 31st), go as many
@@ -1330,7 +1332,7 @@ module FatCore
     #
     # @return [Boolean]
     def nyse_special_holiday?
-      return false unless self > ::Date.parse('1960-01-01')
+      return false if self <= ::Date.parse('1960-01-01')
 
       return true if PRESIDENTIAL_FUNERALS.include?(self)
 
@@ -1479,8 +1481,11 @@ module FatCore
         case spec.clean
         when %r{\A(?<yr>\d\d\d\d)[-/](?<mo>\d\d?)[-/](?<dy>\d\d?)\z}
           # A specified date
-          ::Date.new(Regexp.last_match[:yr].to_i, Regexp.last_match[:mo].to_i,
-                     Regexp.last_match[:dy].to_i)
+          ::Date.new(
+            Regexp.last_match[:yr].to_i,
+            Regexp.last_match[:mo].to_i,
+            Regexp.last_match[:dy].to_i,
+          )
         when /\AW(?<wk>\d\d?)\z/, /\A(?<wk>\d\d?)W\z/
           week_num = Regexp.last_match[:wk].to_i
           if week_num < 1 || week_num > 53
@@ -1537,7 +1542,7 @@ module FatCore
           year = Regexp.last_match[:yr].to_i
           half = Regexp.last_match[:hf].to_i
           msg = "invalid half number: '#{spec}'"
-          raise ArgumentError,  msg unless [1, 2].include?(half)
+          raise ArgumentError, msg unless [1, 2].include?(half)
 
           month = half * 6
           if spec_type == :from
@@ -1713,8 +1718,21 @@ module FatCore
 
       # An Array of the number of days in each month indexed by month number,
       # starting with January = 1, etc.
-      COMMON_YEAR_DAYS_IN_MONTH = [31, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31,
-                                   30, 31].freeze
+      COMMON_YEAR_DAYS_IN_MONTH = [
+        31,
+        31,
+        28,
+        31,
+        30,
+        31,
+        30,
+        31,
+        31,
+        30,
+        31,
+        30,
+        31
+      ].freeze
       def days_in_month(year, month)
         raise ArgumentError, 'illegal month number' if month < 1 || month > 12
 
@@ -1758,8 +1776,6 @@ module FatCore
           11
         when /\Adec/i
           12
-        else
-          nil
         end
       end
 

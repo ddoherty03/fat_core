@@ -8,7 +8,7 @@ module FatCore
     def as_string
       ''
     end
-    alias entitle as_string
+    alias_method :entitle, :as_string
 
     # Allow nils to respond to #tex_quote for use in TeX documents
     #
