@@ -1491,12 +1491,14 @@ module FatCore
             Regexp.last_match[:mo].to_i,
             Regexp.last_match[:dy].to_i,
           )
-        when /\AW(?<wk>\d\d?)(-(?<dy>\d?))?\z/, /\A(?<wk>\d\d?)W(-(?<dy>\d))?\z/
+        when %r{\A((?<yr>\d\d\d\d)[-/])?(?<wk>\d\d?)W(-(?<dy>\d))?\z}xi,
+          %r{\A((?<yr>\d\d\d\d)[-/])?W(?<wk>\d\d?)(-(?<dy>\d))?\z}xi
           # Commercial week numbers.  The first commercial week of the year is
           # the one that includes the first Thursday of that year. In the
           # Gregorian calendar, this is equivalent to the week which includes
           # January 4.  This appears to be the equivalent of ISO 8601 week
           # number as described at https://en.wikipedia.org/wiki/ISO_week_date
+          year = Regexp.last_match[:yr]&.to_i
           week_num = Regexp.last_match[:wk].to_i
           day = Regexp.last_match[:dy]&.to_i
           unless (1..53).cover?(week_num)
@@ -1507,25 +1509,9 @@ module FatCore
           end
 
           if spec_type == :from
-            ::Date.commercial(today.year, week_num, day ? day : 1)
+            ::Date.commercial(year ? year : today.year, week_num, day ? day : 1)
           else
-            ::Date.commercial(today.year, week_num, day ? day : 7)
-          end
-        when %r{\A(?<yr>\d\d\d\d)[-/]W(?<wk>\d\d?)(-(?<dy>\d))?\z}, %r{\A(?<yr>\d\d\d\d)[-/](?<wk>\d\d?)W(-(?<dy>\d))?\z}
-          year = Regexp.last_match[:yr].to_i
-          week_num = Regexp.last_match[:wk].to_i
-          day = Regexp.last_match[:dy]&.to_i
-          unless (1..53).cover?(week_num)
-            raise ArgumentError, "invalid week number (1-53): '#{spec}'"
-          end
-          if day && !(1..7).cover?(day)
-            raise ArgumentError, "invalid ISO day number (1-7): '#{spec}'"
-          end
-
-          if spec_type == :from
-            ::Date.commercial(year, week_num, day ? day : 1)
-          else
-            ::Date.commercial(year, week_num, day ? day : 7)
+            ::Date.commercial(year ? year : today.year, week_num, day ? day : 7)
           end
         when %r{^(?<yr>\d\d\d\d)[-/](?<qt>\d)[Qq]$}, %r{^(?<yr>\d\d\d\d)[-/][Qq](?<qt>\d)$}
           # Year-Quarter
