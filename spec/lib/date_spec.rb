@@ -257,7 +257,19 @@ describe Date do
         }.to raise_error(ArgumentError)
       end
 
-      it 'parse year-week numbers \'YYYY-W23\' correctly' do
+      it "parses week-day numbers such as 'W23-4' or '23W-3' correctly" do
+        expect(described_class.parse_spec('W1-4')).to eq described_class.parse('2012-01-05')
+        expect(described_class.parse_spec('W23-3')).to eq described_class.parse('2012-06-06')
+        expect(described_class.parse_spec('W23-3', :to)).to eq described_class.parse('2012-06-06')
+        expect(described_class.parse_spec('23W-2')).to eq described_class.parse('2012-06-05')
+        expect(described_class.parse_spec('23W-2', :to)).to eq described_class.parse('2012-06-05')
+        expect {
+          described_class.parse_spec('W38-9', :to)
+        }.to raise_error(ArgumentError)
+      end
+
+      it 'parse year-week numbers \'YYYY-Wnn\' correctly' do
+        expect(described_class.parse_spec('2002-W52')).to eq described_class.parse('2002-12-23')
         expect(described_class.parse_spec('2003-W1')).to eq described_class.parse('2002-12-30')
         expect(described_class.parse_spec('2003-W1', :to)).to eq described_class.parse('2003-01-05')
         expect(described_class.parse_spec('2003-W23')).to eq described_class.parse('2003-06-02')
@@ -335,7 +347,55 @@ describe Date do
         expect { described_class.parse_spec('99999') }.to raise_error(ArgumentError)
       end
 
+      it 'parses half-month specs such as YYYY-MM-I and YYYY-MM-II' do
+        expect(described_class.parse_spec('2010-09-I', :from)).to eq described_class.parse('2010-09-01')
+        expect(described_class.parse_spec('2010-09-I', :to)).to eq described_class.parse('2010-09-15')
+        expect(described_class.parse_spec('2010-09-II', :from)).to eq described_class.parse('2010-09-16')
+        expect(described_class.parse_spec('2010-09-II', :to)).to eq described_class.parse('2010-09-30')
+      end
+
+      it 'parses intra-month week specs such as YYYY-MM-i and YYYY-MM-v begin Sunday' do
+        ::Date.beginning_of_week = :sunday
+        expect(described_class.parse_spec('2010-09-i', :from)).to eq described_class.parse('2010-09-01')
+        expect(described_class.parse_spec('2010-09-ii', :from)).to eq described_class.parse('2010-09-05')
+        expect(described_class.parse_spec('2010-09-iii', :from)).to eq described_class.parse('2010-09-12')
+        expect(described_class.parse_spec('2010-09-iv', :from)).to eq described_class.parse('2010-09-19')
+        expect(described_class.parse_spec('2010-09-v', :from)).to eq described_class.parse('2010-09-26')
+        expect { described_class.parse_spec('2010-09-vi', :from) }.to raise_error /no week/
+        expect(described_class.parse_spec('2010-10-vi', :from)).to eq described_class.parse('2010-10-31')
+
+        expect(described_class.parse_spec('2010-09-i', :to)).to eq described_class.parse('2010-09-04')
+        expect(described_class.parse_spec('2010-09-ii', :to)).to eq described_class.parse('2010-09-11')
+        expect(described_class.parse_spec('2010-09-iii', :to)).to eq described_class.parse('2010-09-18')
+        expect(described_class.parse_spec('2010-09-iv', :to)).to eq described_class.parse('2010-09-25')
+        expect(described_class.parse_spec('2010-09-v', :to)).to eq described_class.parse('2010-09-30')
+        expect { described_class.parse_spec('2010-09-vi', :to) }.to raise_error /no week/
+        expect(described_class.parse_spec('2010-10-vi', :to)).to eq described_class.parse('2010-10-31')
+      end
+
+      it 'parses intra-month week specs such as YYYY-MM-i and YYYY-MM-v begin Monday' do
+        ::Date.beginning_of_week = :monday
+        expect(described_class.parse_spec('2010-09-i', :from)).to eq described_class.parse('2010-09-01')
+        expect(described_class.parse_spec('2010-09-ii', :from)).to eq described_class.parse('2010-09-06')
+        expect(described_class.parse_spec('2010-09-iii', :from)).to eq described_class.parse('2010-09-13')
+        expect(described_class.parse_spec('2010-09-iv', :from)).to eq described_class.parse('2010-09-20')
+        expect(described_class.parse_spec('2010-09-v', :from)).to eq described_class.parse('2010-09-27')
+        expect { described_class.parse_spec('2010-09-vi', :from) }.to raise_error /no week/
+        expect { described_class.parse_spec('2010-10-vi', :from) }.to raise_error /no week/
+        expect(described_class.parse_spec('2011-01-vi', :to)).to eq described_class.parse('2011-01-31')
+
+        expect(described_class.parse_spec('2010-09-i', :to)).to eq described_class.parse('2010-09-05')
+        expect(described_class.parse_spec('2010-09-ii', :to)).to eq described_class.parse('2010-09-12')
+        expect(described_class.parse_spec('2010-09-iii', :to)).to eq described_class.parse('2010-09-19')
+        expect(described_class.parse_spec('2010-09-iv', :to)).to eq described_class.parse('2010-09-26')
+        expect(described_class.parse_spec('2010-09-v', :to)).to eq described_class.parse('2010-09-30')
+        expect { described_class.parse_spec('2010-09-vi', :to) }.to raise_error /no week/
+        expect { described_class.parse_spec('2010-09-vi', :to) }.to raise_error /no week/
+        expect(described_class.parse_spec('2011-01-vi', :to)).to eq described_class.parse('2011-01-31')
+      end
+
       it 'parses relative day names: today, yesterday' do
+        ::Date.beginning_of_week = :monday
         expect(described_class.parse_spec('today')).to eq described_class.current
         expect(described_class.parse_spec('this_day')).to eq described_class.current
         expect(described_class.parse_spec('yesterday')).to eq described_class.current - 1.day
@@ -343,6 +403,7 @@ describe Date do
       end
 
       it 'parses relative weeks: this_week, last_week' do
+        ::Date.beginning_of_week = :monday
         expect(described_class.parse_spec('this_week')).to eq described_class.parse('2012-07-16')
         expect(described_class.parse_spec('this_week', :to)).to eq described_class.parse('2012-07-22')
         expect(described_class.parse_spec('last_week')).to eq described_class.parse('2012-07-09')
@@ -350,6 +411,7 @@ describe Date do
       end
 
       it 'parses relative biweeks: this_biweek, last_biweek' do
+        ::Date.beginning_of_week = :monday
         expect(described_class.parse_spec('this_biweek')).to eq described_class.parse('2012-07-16')
         expect(described_class.parse_spec('this_biweek', :to))
           .to eq described_class.parse('2012-07-29')

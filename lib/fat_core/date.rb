@@ -551,6 +551,8 @@ module FatCore
       end
     end
 
+    # NOTE: Date#end_of_week and Date#beginning_of_week is defined in ActiveSupport
+
     # Return the date that is +n+ calendar halves after this date, where a
     # calendar half is a period of 6 months.
     #
@@ -1440,6 +1442,8 @@ module FatCore
       # * `4` or `04` is April in the current year,
       # * `YYYY-W32` or `YYYY-32W` is the 32nd week in year YYYY,
       # * `W32` or `32W` is the 32nd week in the current year,
+      # * `W32-4` or `32W-4` is the 4th day of the 32nd week in the current year,
+      # * `YYYY-MM-I` or `YYYY-MM-II` is the first or second half of the given month,
       # * `YYYY-MM-DD` a particular date, so `:from` and `:to` return the same
       #   date,
       # * `this_<chunk>` where `<chunk>` is one of `year`, `half`, `quarter`,
@@ -1487,28 +1491,41 @@ module FatCore
             Regexp.last_match[:mo].to_i,
             Regexp.last_match[:dy].to_i,
           )
-        when /\AW(?<wk>\d\d?)\z/, /\A(?<wk>\d\d?)W\z/
+        when /\AW(?<wk>\d\d?)(-(?<dy>\d?))?\z/, /\A(?<wk>\d\d?)W(-(?<dy>\d))?\z/
+          # Commercial week numbers.  The first commercial week of the year is
+          # the one that includes the first Thursday of that year. In the
+          # Gregorian calendar, this is equivalent to the week which includes
+          # January 4.  This appears to be the equivalent of ISO 8601 week
+          # number as described at https://en.wikipedia.org/wiki/ISO_week_date
           week_num = Regexp.last_match[:wk].to_i
-          if week_num < 1 || week_num > 53
+          day = Regexp.last_match[:dy]&.to_i
+          unless (1..53).cover?(week_num)
             raise ArgumentError, "invalid week number (1-53): '#{spec}'"
+          end
+          if day && !(1..7).cover?(day)
+            raise ArgumentError, "invalid ISO day number (1-7): '#{spec}'"
           end
 
           if spec_type == :from
-            ::Date.commercial(today.year, week_num).beginning_of_week
+            ::Date.commercial(today.year, week_num, day ? day : 1)
           else
-            ::Date.commercial(today.year, week_num).end_of_week
+            ::Date.commercial(today.year, week_num, day ? day : 7)
           end
-        when %r{\A(?<yr>\d\d\d\d)[-/]W(?<wk>\d\d?)\z}, %r{\A(?<yr>\d\d\d\d)[-/](?<wk>\d\d?)W\z}
+        when %r{\A(?<yr>\d\d\d\d)[-/]W(?<wk>\d\d?)(-(?<dy>\d))?\z}, %r{\A(?<yr>\d\d\d\d)[-/](?<wk>\d\d?)W(-(?<dy>\d))?\z}
           year = Regexp.last_match[:yr].to_i
           week_num = Regexp.last_match[:wk].to_i
-          if week_num < 1 || week_num > 53
+          day = Regexp.last_match[:dy]&.to_i
+          unless (1..53).cover?(week_num)
             raise ArgumentError, "invalid week number (1-53): '#{spec}'"
+          end
+          if day && !(1..7).cover?(day)
+            raise ArgumentError, "invalid ISO day number (1-7): '#{spec}'"
           end
 
           if spec_type == :from
-            ::Date.commercial(year, week_num).beginning_of_week
+            ::Date.commercial(year, week_num, day ? day : 1)
           else
-            ::Date.commercial(year, week_num).end_of_week
+            ::Date.commercial(year, week_num, day ? day : 7)
           end
         when %r{^(?<yr>\d\d\d\d)[-/](?<qt>\d)[Qq]$}, %r{^(?<yr>\d\d\d\d)[-/][Qq](?<qt>\d)$}
           # Year-Quarter
@@ -1610,6 +1627,41 @@ module FatCore
           else
             ::Date.new(year, 12, 31)
           end
+        when /\A(?<yr>\d\d\d\d)-(?<mo>\d\d?)-(?<hf_mo>(I|II))\z/
+          # Year, month, half-month, designated with uppercase Roman
+          year = Regexp.last_match[:yr].to_i
+          month = Regexp.last_match[:mo].to_i
+          hf_mo = Regexp.last_match[:hf_mo]
+          if hf_mo == "I"
+            spec_type == :from ? ::Date.new(year, month, 1) : ::Date.new(year, month, 15)
+          elsif hf_mo == "II"
+            spec_type == :from ? ::Date.new(year, month, 16) : ::Date.new(year, month, 16).end_of_month
+          else
+            raise ArgumentError, "invalid half-month (I or II): #{spec}"
+          end
+        when /\A(?<yr>\d\d\d\d)-(?<mo>\d\d?)-(?<wk>(i|ii|iii|iv|v|vi))\z/
+          # Year, month, week-of-month, partial-or-whole, designated with lowercase Roman
+          year = Regexp.last_match[:yr].to_i
+          month = Regexp.last_match[:mo].to_i
+          wk = ['i', 'ii', 'iii', 'iv', 'v', 'vi'].index(Regexp.last_match[:wk]) + 1
+          result =
+            if spec_type == :from
+              ::Date.new(year, month, 1).beginning_of_week + (wk - 1).weeks
+            else
+              ::Date.new(year, month, 1).end_of_week + (wk - 1).weeks
+            end
+          # If beginning of week of the 1st is in prior month, return the 1st
+          result = [result, ::Date.new(year, month, 1)].max
+          # If the whole week of the result is in the next month, there was no such week
+          if result.beginning_of_week.month > month
+            msg = sprintf("no week number #{wk} in %04d-%02d", year, month)
+            raise ArgumentError, msg
+          else
+            # But if part of the result week is in this month, return end of month
+            [result, ::Date.new(year, month, 1).end_of_month].min
+          end
+        when /^(?<yr>\d\d\d\d)-E$/i
+          # Easter for the given year
         when /^(to|this_?)?day/
           today
         when /^(yester|last_?)?day/
