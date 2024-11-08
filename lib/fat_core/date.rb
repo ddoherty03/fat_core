@@ -51,6 +51,7 @@ module FatCore
   module Date
     # Set the default beginning of week to Monday for commercial weeks.
     # ::Date.beginning_of_week = :monday
+    # ::Date.beginning_of_week = :sunday
 
     # Constant for Beginning of Time (BOT) outside the range of what we would ever
     # want to find in commercial situations.
