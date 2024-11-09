@@ -1428,6 +1428,7 @@ module FatCore
       # `::Date.parse_spec` returns the first date in the period if `spec_type` is
       # `:from` and the last date in the period if `spec_type` is `:to`:
       #
+      # * `YYYY-MM-DD` a particular date, so `:from` and `:to` return the same
       # * `YYYY` is the whole year `YYYY`,
       # * `YYYY-1H` or `YYYY-H1` is the first calendar half in year `YYYY`,
       # * `H2` or `2H` is the second calendar half of the current year,
@@ -1440,8 +1441,17 @@ module FatCore
       # * `W32` or `32W` is the 32nd week in the current year,
       # * `W32-4` or `32W-4` is the 4th day of the 32nd week in the current year,
       # * `YYYY-MM-I` or `YYYY-MM-II` is the first or second half of the given month,
-      # * `YYYY-MM-DD` a particular date, so `:from` and `:to` return the same
-      #   date,
+      # * `YYYY-MM-i` or `YYYY-MM-v` is the first or fifth week of the given month,
+      # * `MM-i` or `MM-v` is the first or fifth week of the current month,
+      # * `YYYY-MM-3Tu` or `YYYY-MM-4Mo` is the third Tuesdsay and fourth Monday of the given month,
+      # * `MM-3Tu` or `MM-4Mo` is the third Tuesdsay and fourth Monday of the given month in the current year,
+      # * `3Tu` or `4Mo` is the third Tuesdsay and fourth Monday of the current month,
+      # * `YYYY-E` is Easter of the given year YYYY,
+      # * `E` is Easter of the current year YYYY,
+      # * `YYYY-E+50` and `YYYY-E-40` is 50 days after and 40 days before Easter of the given year,
+      # * `E+50` and `E-40` is 50 days after and 40 days before Easter of the current year,
+      # * `YYYY-001` and `YYYY-182` is first and 182nd day of the given year,
+      # * `001` and `182` is first and 182nd day of the current year,
       # * `this_<chunk>` where `<chunk>` is one of `year`, `half`, `quarter`,
       #   `bimonth`, `month`, `semimonth`, `biweek`, `week`, or `day`, the
       #   corresponding calendar period in which the current date falls,
@@ -1575,10 +1585,10 @@ module FatCore
           else
             raise ArgumentError, "invalid half-month (I or II): #{spec}"
           end
-        when %r{\A(?<yr>\d\d\d\d)[-/](?<mo>\d\d?)[-/](?<wk>(i|ii|iii|iv|v|vi))\z}
+        when %r{\A((?<yr>\d\d\d\d)[-/])?((?<mo>\d\d?)[-/])?(?<wk>(i|ii|iii|iv|v|vi))\z}
           # Year, month, week-of-month, partial-or-whole, designated with lowercase Roman
-          year = Regexp.last_match[:yr].to_i
-          month = Regexp.last_match[:mo].to_i
+          year = Regexp.last_match[:yr]&.to_i || Date.today.year
+          month = Regexp.last_match[:mo]&.to_i || Date.today.month
           wk = ['i', 'ii', 'iii', 'iv', 'v', 'vi'].index(Regexp.last_match[:wk]) + 1
           result =
             if spec_type == :from
@@ -1617,13 +1627,20 @@ module FatCore
           year = Regexp.last_match[:yr]&.to_i || Date.today.year
           offset = Regexp.last_match[:off]&.to_i || 0
           ::Date.easter(year) + offset
-        when %r{\A(?<this_last>(to|this_)|(last_|yester))
-                  (?<chunk>day|week|biweek|semimonth|bimonth|month|quarter|half|year)\z}x
+        when %r{\A(?<rel>(to[_-]?|this[_-]?)|(last[_-]?|yester[_-]?|next[_-]?))
+                  (?<chunk>morrow|day|week|biweek|semimonth|bimonth|month|quarter|half|year)\z}xi
+          rel = Regexp.last_match[:rel]
           chunk = Regexp.last_match[:chunk].to_sym
+          if chunk.match?(/morrow/i)
+            chunk = :day
+            rel = 'next'
+          end
           start =
-            if Regexp.last_match[:this_last].match?(/this_|to/)
+            if rel.match?(/this|to/i)
               ::Date.today
-            else
+            elsif rel.match?(/next/i)
+              ::Date.today.add_chunk(chunk, 1)
+            elsif rel.match?(/last|yester/i)
               ::Date.today.add_chunk(chunk, -1)
             end
           if spec_type == :from
@@ -1631,13 +1648,13 @@ module FatCore
           else
             start.end_of_chunk(chunk)
           end
-        when /^forever/
+        when /^forever/i
           if spec_type == :from
             ::Date::BOT
           else
             ::Date::EOT
           end
-        when /^never/
+        when /^never/i
           nil
         else
           raise ArgumentError, "bad date spec: '#{spec}''"
