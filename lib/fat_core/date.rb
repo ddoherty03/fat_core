@@ -1617,97 +1617,19 @@ module FatCore
           year = Regexp.last_match[:yr]&.to_i || Date.today.year
           offset = Regexp.last_match[:off]&.to_i || 0
           ::Date.easter(year) + offset
-        when /^(to|this_?)?day/
-          today
-        when /^(yester|last_?)?day/
-          today - 1.day
-        when /^(this_?)?week/
-          spec_type == :from ? today.beginning_of_week : today.end_of_week
-        when /last_?week/
+        when %r{\A(?<this_last>(to|this_)|(last_|yester))
+                  (?<chunk>day|week|biweek|semimonth|bimonth|month|quarter|half|year)\z}x
+          chunk = Regexp.last_match[:chunk].to_sym
+          start =
+            if Regexp.last_match[:this_last].match?(/this_|to/)
+              ::Date.today
+            else
+              ::Date.today.add_chunk(chunk, -1)
+            end
           if spec_type == :from
-            (today - 1.week).beginning_of_week
+            start.beginning_of_chunk(chunk)
           else
-            (today - 1.week).end_of_week
-          end
-        when /^(this_?)?biweek/
-          if spec_type == :from
-            today.beginning_of_biweek
-          else
-            today.end_of_biweek
-          end
-        when /last_?biweek/
-          if spec_type == :from
-            (today - 2.week).beginning_of_biweek
-          else
-            (today - 2.week).end_of_biweek
-          end
-        when /^(this_?)?semimonth/
-          spec_type == :from ? today.beginning_of_semimonth : today.end_of_semimonth
-        when /^last_?semimonth/
-          if spec_type == :from
-            (today - 15.days).beginning_of_semimonth
-          else
-            (today - 15.days).end_of_semimonth
-          end
-        when /^(this_?)?month/
-          if spec_type == :from
-            today.beginning_of_month
-          else
-            today.end_of_month
-          end
-        when /^last_?month/
-          if spec_type == :from
-            (today - 1.month).beginning_of_month
-          else
-            (today - 1.month).end_of_month
-          end
-        when /^(this_?)?bimonth/
-          if spec_type == :from
-            today.beginning_of_bimonth
-          else
-            today.end_of_bimonth
-          end
-        when /^last_?bimonth/
-          if spec_type == :from
-            (today - 2.month).beginning_of_bimonth
-          else
-            (today - 2.month).end_of_bimonth
-          end
-        when /^(this_?)?quarter/
-          if spec_type == :from
-            today.beginning_of_quarter
-          else
-            today.end_of_quarter
-          end
-        when /^last_?quarter/
-          if spec_type == :from
-            (today - 3.months).beginning_of_quarter
-          else
-            (today - 3.months).end_of_quarter
-          end
-        when /^(this_?)?half/
-          if spec_type == :from
-            today.beginning_of_half
-          else
-            today.end_of_half
-          end
-        when /^last_?half/
-          if spec_type == :from
-            (today - 6.months).beginning_of_half
-          else
-            (today - 6.months).end_of_half
-          end
-        when /^(this_?)?year/
-          if spec_type == :from
-            today.beginning_of_year
-          else
-            today.end_of_year
-          end
-        when /^last_?year/
-          if spec_type == :from
-            (today - 1.year).beginning_of_year
-          else
-            (today - 1.year).end_of_year
+            start.end_of_chunk(chunk)
           end
         when /^forever/
           if spec_type == :from
