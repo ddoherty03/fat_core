@@ -1484,13 +1484,22 @@ module FatCore
 
         today = ::Date.current
         case spec.clean
-        when %r{\A(?<yr>\d\d\d\d)[-/](?<mo>\d\d?)[-/](?<dy>\d\d?)\z}
-          # A specified date
-          ::Date.new(
-            Regexp.last_match[:yr].to_i,
-            Regexp.last_match[:mo].to_i,
-            Regexp.last_match[:dy].to_i,
-          )
+        when %r{\A((?<yr>\d\d\d\d)[-/])?(?<mo>\d\d?)([-/](?<dy>\d\d?))?\z}
+          # MM, YYYY-MM, MM-DD
+          year = Regexp.last_match[:yr]&.to_i || ::Date.today.year
+          month = Regexp.last_match[:mo].to_i
+          day = Regexp.last_match[:dy]&.to_i
+          unless [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].include?(month)
+            raise ArgumentError, "invalid month number (1-12): '#{spec}'"
+          end
+
+          if day
+            ::Date.new(year, month, day)
+          elsif spec_type == :from
+            ::Date.new(year, month, 1)
+          else
+            ::Date.new(year, month, 1).end_of_month
+          end
         when %r{\A((?<yr>\d\d\d\d)[-/])?(?<wk>\d\d?)W(-(?<dy>\d))?\z}xi,
           %r{\A((?<yr>\d\d\d\d)[-/])?W(?<wk>\d\d?)(-(?<dy>\d))?\z}xi
           # Commercial week numbers.  The first commercial week of the year is
@@ -1513,9 +1522,9 @@ module FatCore
           else
             ::Date.commercial(year ? year : today.year, week_num, day ? day : 7)
           end
-        when %r{^(?<yr>\d\d\d\d)[-/](?<qt>\d)[Qq]$}, %r{^(?<yr>\d\d\d\d)[-/][Qq](?<qt>\d)$}
+        when %r{^((?<yr>\d\d\d\d)[-/])?(?<qt>\d)[Qq]$}, %r{^((?<yr>\d\d\d\d)[-/])?[Qq](?<qt>\d)$}
           # Year-Quarter
-          year = Regexp.last_match[:yr].to_i
+          year = Regexp.last_match[:yr]&.to_i || ::Date.today.year
           quarter = Regexp.last_match[:qt].to_i
           unless [1, 2, 3, 4].include?(quarter)
             raise ArgumentError, "invalid quarter number (1-4): '#{spec}'"
@@ -1527,23 +1536,9 @@ module FatCore
           else
             ::Date.new(year, month, 1).end_of_quarter
           end
-        when /^(?<qt>[1234])[qQ]$/, /^[qQ](?<qt>[1234])$/
-          # Quarter only
-          this_year = today.year
-          quarter = Regexp.last_match[:qt].to_i
-          unless [1, 2, 3, 4].include?(quarter)
-            raise ArgumentError, "invalid quarter number (1-4): '#{spec}'"
-          end
-
-          date = ::Date.new(this_year, quarter * 3, 15)
-          if spec_type == :from
-            date.beginning_of_quarter
-          else
-            date.end_of_quarter
-          end
-        when %r{^(?<yr>\d\d\d\d)[-/](?<hf>\d)[Hh]$}, %r{^(?<yr>\d\d\d\d)[-/][Hh](?<hf>\d)$}
+        when %r{^((?<yr>\d\d\d\d)[-/])?(?<hf>\d)[Hh]$}, %r{^((?<yr>\d\d\d\d)[-/])?[Hh](?<hf>\d)$}
           # Year-Half
-          year = Regexp.last_match[:yr].to_i
+          year = Regexp.last_match[:yr]&.to_i || ::Date.today.year
           half = Regexp.last_match[:hf].to_i
           msg = "invalid half number: '#{spec}'"
           raise ArgumentError, msg unless [1, 2].include?(half)
@@ -1554,58 +1549,7 @@ module FatCore
           else
             ::Date.new(year, month, 1).end_of_half
           end
-        when /^(?<hf>[12])[hH]$/, /^[hH](?<hf>[12])$/
-          # Half only
-          this_year = today.year
-          half = Regexp.last_match[:hf].to_i
-          msg = "invalid half number: '#{spec}'"
-          raise ArgumentError, msg unless [1, 2].include?(half)
-
-          date = ::Date.new(this_year, half * 6, 15)
-          if spec_type == :from
-            date.beginning_of_half
-          else
-            date.end_of_half
-          end
-        when %r{^(?<yr>\d\d\d\d)[-/](?<mo>\d\d?)*$}
-          # Year-Month only
-          year = Regexp.last_match[:yr].to_i
-          month = Regexp.last_match[:mo].to_i
-          unless [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].include?(month)
-            raise ArgumentError, "invalid month number (1-12): '#{spec}'"
-          end
-
-          if spec_type == :from
-            ::Date.new(year, month, 1)
-          else
-            ::Date.new(year, month, 1).end_of_month
-          end
-        when %r{^(?<mo>\d\d?)[-/](?<dy>\d\d?)*$}
-          # Month-Day only
-          month = Regexp.last_match[:mo].to_i
-          day = Regexp.last_match[:dy].to_i
-          unless [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].include?(month)
-            raise ArgumentError, "invalid month number (1-12): '#{spec}'"
-          end
-
-          if spec_type == :from
-            ::Date.new(today.year, month, day)
-          else
-            ::Date.new(today.year, month, day).end_of_month
-          end
-        when /\A(?<mo>\d\d?)\z/
-          # Month only
-          month = Regexp.last_match[:mo].to_i
-          unless [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].include?(month)
-            raise ArgumentError, "invalid month number (1-12): '#{spec}'"
-          end
-
-          if spec_type == :from
-            ::Date.new(today.year, month, 1)
-          else
-            ::Date.new(today.year, month, 1).end_of_month
-          end
-        when /^(?<yr>\d\d\d\d)$/
+        when /\A(?<yr>\d\d\d\d)\z/
           # Year only
           year = Regexp.last_match[:yr].to_i
           if spec_type == :from
@@ -1822,7 +1766,7 @@ module FatCore
       # last day of month.
       #
       # @param nth [Integer] the ordinal number for the weekday
-      # @param wday [Integer] the weekday of interest with Monday 0 to Sunday 6
+      # @param wday [Integer] the weekday of interest with Sunday 0 to Saturday 6
       # @param year [Integer] the year of interest
       # @param month [Integer] the month of interest with January 1 to December 12
       def nth_wday_in_year_month(nth, wday, year, month)
