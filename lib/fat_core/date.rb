@@ -49,10 +49,6 @@ module FatCore
   # based on the rules of the New York Stock Exchange, including dates on which
   # the NYSE was closed for special reasons, such as the 9-11 attacks in 2001.
   module Date
-    # Set the default beginning of week to Monday for commercial weeks.
-    # ::Date.beginning_of_week = :monday
-    # ::Date.beginning_of_week = :sunday
-
     # Constant for Beginning of Time (BOT) outside the range of what we would ever
     # want to find in commercial situations.
     BOT = ::Date.parse('1900-01-01')
@@ -1477,13 +1473,13 @@ module FatCore
       # @return [::Date] date that is the first (:from) or last (:to) in the period
       #   designated by spec
       def parse_spec(spec, spec_type = :from)
-        spec = spec.to_s.strip
+        spec = spec.to_s.strip.clean
         unless %i[from to].include?(spec_type)
           raise ArgumentError, "invalid date spec type: '#{spec_type}'"
         end
 
         today = ::Date.current
-        case spec.clean
+        case spec
         when %r{\A(?<yr>\d\d\d\d)[-/](?<doy>\d\d\d)\z}
           # With 3-digit YYYY-ddd, return the day-of-year
           year = Regexp.last_match[:yr].to_i
