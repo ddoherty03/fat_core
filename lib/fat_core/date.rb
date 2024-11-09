@@ -1563,7 +1563,7 @@ module FatCore
           else
             ::Date.new(year, 12, 31)
           end
-        when /\A(?<yr>\d\d\d\d)-(?<mo>\d\d?)-(?<hf_mo>(I|II))\z/
+        when %r{\A(?<yr>\d\d\d\d)[-/](?<mo>\d\d?)[-/](?<hf_mo>(I|II))\z}
           # Year, month, half-month, designated with uppercase Roman
           year = Regexp.last_match[:yr].to_i
           month = Regexp.last_match[:mo].to_i
@@ -1575,7 +1575,7 @@ module FatCore
           else
             raise ArgumentError, "invalid half-month (I or II): #{spec}"
           end
-        when /\A(?<yr>\d\d\d\d)-(?<mo>\d\d?)-(?<wk>(i|ii|iii|iv|v|vi))\z/
+        when %r{\A(?<yr>\d\d\d\d)[-/](?<mo>\d\d?)[-/](?<wk>(i|ii|iii|iv|v|vi))\z}
           # Year, month, week-of-month, partial-or-whole, designated with lowercase Roman
           year = Regexp.last_match[:yr].to_i
           month = Regexp.last_match[:mo].to_i
@@ -1596,7 +1596,7 @@ module FatCore
             # But if part of the result week is in this month, return end of month
             [result, ::Date.new(year, month, 1).end_of_month].min
           end
-        when /\A((?<yr>\d\d\d\d)-)?((?<mo>\d\d?)-)?((?<ndow>\d+)(?<dow>Su|Mo|Tu|We|Th|Fr|Sa))\z/
+        when %r{\A((?<yr>\d\d\d\d)[-/])?((?<mo>\d\d?)[-/])?((?<ndow>\d+)(?<dow>Su|Mo|Tu|We|Th|Fr|Sa))\z}
           # Year, month, week-of-month, partial-or-whole, designated with lowercase Roman
           year = Regexp.last_match[:yr]&.to_i || Date.today.year
           month = Regexp.last_match[:mo]&.to_i || Date.today.month
@@ -1611,7 +1611,7 @@ module FatCore
           end
 
           ::Date.nth_wday_in_year_month(ndow, dow, year, month)
-        when /^(?<yr>\d\d\d\d-)?E(?<off>[+-]\d+)?$/i
+        when %r{\A(?<yr>\d\d\d\d[-/])?E(?<off>[+-]\d+)?\z}i
           # Easter for the given year, current year (if no year component),
           # optionally plus or minus a day offset
           year = Regexp.last_match[:yr]&.to_i || Date.today.year
