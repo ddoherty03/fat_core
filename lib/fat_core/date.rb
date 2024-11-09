@@ -1590,8 +1590,27 @@ module FatCore
             # But if part of the result week is in this month, return end of month
             [result, ::Date.new(year, month, 1).end_of_month].min
           end
-        when /^(?<yr>\d\d\d\d)-E$/i
-          # Easter for the given year
+        when /\A((?<yr>\d\d\d\d)-)?((?<mo>\d\d?)-)?((?<ndow>\d+)(?<dow>Su|Mo|Tu|We|Th|Fr|Sa))\z/
+          # Year, month, week-of-month, partial-or-whole, designated with lowercase Roman
+          year = Regexp.last_match[:yr]&.to_i || Date.today.year
+          month = Regexp.last_match[:mo]&.to_i || Date.today.month
+          ndow = Regexp.last_match[:ndow].to_i
+          dow = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].index(Regexp.last_match[:dow]) ||
+                ['su', 'mo', 'tu', 'we', 'th', 'fr', 'sa', 'su'].index(Regexp.last_match[:dow])
+          unless (1..12).cover?(month)
+            raise ArgumentError, "invalid month number (1-12): '#{month}' in '#{spec}'"
+          end
+          unless (1..5).cover?(ndow)
+            raise ArgumentError, "invalid ordinal day number (1-5): '#{ndow}' in '#{spec}'"
+          end
+
+          ::Date.nth_wday_in_year_month(ndow, dow, year, month)
+        when /^(?<yr>\d\d\d\d-)?E(?<off>[+-]\d+)?$/i
+          # Easter for the given year, current year (if no year component),
+          # optionally plus or minus a day offset
+          year = Regexp.last_match[:yr]&.to_i || Date.today.year
+          offset = Regexp.last_match[:off]&.to_i || 0
+          ::Date.easter(year) + offset
         when /^(to|this_?)?day/
           today
         when /^(yester|last_?)?day/
@@ -1777,32 +1796,44 @@ module FatCore
         raise ArgumentError, 'illegal month number' if month < 1 || month > 12
 
         nth = nth.to_i
-        if nth.positive?
-          # Set d to the 1st wday in month
-          d = ::Date.new(year, month, 1)
-          d += 1 while d.wday != wday
-          # Set d to the nth wday in month
-          nd = 1
-          while nd != nth
-            d += 7
-            nd += 1
-          end
-          d
-        elsif nth.negative?
-          nth = -nth
-          # Set d to the last wday in month
-          d = ::Date.new(year, month, 1).end_of_month
-          d -= 1 while d.wday != wday
-          # Set d to the nth wday in month
-          nd = 1
-          while nd != nth
-            d -= 7
-            nd += 1
-          end
-          d
-        else
-          raise ArgumentError, 'Argument nth cannot be zero'
+        if nth.abs > 5
+          raise ArgumentError, "#{nth.abs} out of range: can be no more than 5 of any day of the week in any month"
         end
+
+        result =
+          if nth.positive?
+            # Set d to the 1st wday in month
+            d = ::Date.new(year, month, 1)
+            d += 1 while d.wday != wday
+            # Set d to the nth wday in month
+            nd = 1
+            while nd != nth
+              d += 7
+              nd += 1
+            end
+            d
+          elsif nth.negative?
+            nth = -nth
+            # Set d to the last wday in month
+            d = ::Date.new(year, month, 1).end_of_month
+            d -= 1 while d.wday != wday
+            # Set d to the nth wday in month
+            nd = 1
+            while nd != nth
+              d -= 7
+              nd += 1
+            end
+            d
+          else
+            raise ArgumentError, 'Argument nth cannot be zero'
+          end
+
+        dow = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][wday]
+        if result.month != month
+          raise ArgumentError, "There is no #{nth}th #{dow} in #{year}-#{month}"
+        end
+
+        result
       end
 
       # Return the date of Easter for the Western Church in the given year.
