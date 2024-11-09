@@ -281,6 +281,27 @@ describe Date do
         }.to raise_error(ArgumentError)
       end
 
+      it 'parse year-week-day numbers \'YYYY-Wnn-d\' correctly' do
+        # Examples from the Wikipedia page on ISO 8601 dates
+        expect(described_class.parse_spec('1976-W53-6')).to eq described_class.parse('1977-01-01')
+        expect(described_class.parse_spec('1977-W52-6')).to eq described_class.parse('1977-12-31')
+        expect(described_class.parse_spec('1977-W52-7')).to eq described_class.parse('1978-01-01')
+        expect(described_class.parse_spec('1978-W01-1')).to eq described_class.parse('1978-01-02')
+        expect(described_class.parse_spec('1978-W52-7')).to eq described_class.parse('1978-12-31')
+        expect(described_class.parse_spec('1979-W01-1')).to eq described_class.parse('1979-01-01')
+        expect(described_class.parse_spec('1979-W52-7')).to eq described_class.parse('1979-12-30')
+        expect(described_class.parse_spec('1980-W01-1')).to eq described_class.parse('1979-12-31')
+        expect(described_class.parse_spec('1980-W52-7')).to eq described_class.parse('1980-12-28')
+        expect(described_class.parse_spec('1981-W01-2')).to eq described_class.parse('1980-12-30')
+        expect(described_class.parse_spec('1981-W01-3')).to eq described_class.parse('1980-12-31')
+        expect(described_class.parse_spec('1981-W01-4')).to eq described_class.parse('1981-01-01')
+        expect(described_class.parse_spec('1981-W53-4')).to eq described_class.parse('1981-12-31')
+        expect(described_class.parse_spec('1981-W53-5')).to eq described_class.parse('1982-01-01')
+        expect {
+          described_class.parse_spec('2003-W83', :to)
+        }.to raise_error(ArgumentError)
+      end
+
       it 'parses year-half specs such as YYYY-NH or YYYY-HN' do
         expect(described_class.parse_spec('2011-2H', :from)).to eq described_class.parse('2011-07-01')
         expect(described_class.parse_spec('2011-2H', :to)).to eq described_class.parse('2011-12-31')
@@ -371,6 +392,7 @@ describe Date do
         expect(described_class.parse_spec('2010-09-v', :to)).to eq described_class.parse('2010-09-30')
         expect { described_class.parse_spec('2010-09-vi', :to) }.to raise_error /no week/
         expect(described_class.parse_spec('2010-10-vi', :to)).to eq described_class.parse('2010-10-31')
+        ::Date.beginning_of_week = :monday
       end
 
       it 'parses intra-month week specs such as YYYY-MM-i and YYYY-MM-v begin Monday' do
@@ -392,6 +414,19 @@ describe Date do
         expect { described_class.parse_spec('2010-09-vi', :to) }.to raise_error /no week/
         expect { described_class.parse_spec('2010-09-vi', :to) }.to raise_error /no week/
         expect(described_class.parse_spec('2011-01-vi', :to)).to eq described_class.parse('2011-01-31')
+      end
+
+      it 'parses Easter-relative dates' do
+        expect(described_class.parse_spec('2024-E')).to eq described_class.parse('2024-03-31')
+        expect(described_class.parse_spec('2024-E+12')).to eq described_class.parse('2024-04-12')
+        expect(described_class.parse_spec('2024-E-12')).to eq described_class.parse('2024-03-19')
+      end
+
+      it 'parses DOW ordinals' do
+        expect(described_class.parse_spec('2024-11-4Th')).to eq described_class.parse('2024-11-28')
+        expect { described_class.parse_spec('2024-11-40Th') }.to raise_error(/invalid ordinal/)
+        expect { described_class.parse_spec('2024-15-4Th') }.to raise_error(/invalid month/)
+        expect { described_class.parse_spec('2024-11-5Th') }.to raise_error(/there is no 5th/i)
       end
 
       it 'parses relative day names: today, yesterday' do
@@ -766,7 +801,6 @@ describe Date do
           .to be false
         expect(described_class.parse('2013-11-04').beginning_of_chunk?(:week))
           .to be true
-        # Sunday is not beginning of commercial week
         expect(described_class.parse('2013-11-03').beginning_of_chunk?(:week))
           .to be false
         expect(described_class.parse('2013-11-01').beginning_of_chunk?(:day))
@@ -820,8 +854,9 @@ describe Date do
           .to be false
         expect(described_class.parse('2013-11-04').end_of_chunk?(:week))
           .to be false
-        # Sunday is not end of commercial week
-        expect(described_class.parse('2013-11-03').end_of_chunk?(:week))
+        expect(described_class.parse('2013-11-09').end_of_chunk?(:week))
+          .to be false
+        expect(described_class.parse('2013-11-10').end_of_chunk?(:week))
           .to be true
         expect(described_class.parse('2013-11-01').end_of_chunk?(:day))
           .to be true
