@@ -246,6 +246,14 @@ describe Date do
         expect(described_class.parse_spec('2011/08/05')).to eq described_class.parse('2011-08-05')
       end
 
+      it 'parses YYYY-ddd day-of-year dates correctly' do
+        expect(described_class.parse_spec('2011-115')).to eq described_class.parse('2011-04-25')
+        expect(described_class.parse_spec('2011/001')).to eq described_class.parse('2011-01-01')
+        expect {
+          described_class.parse_spec('2023-366')
+        }.to raise_error(/invalid day-of-year/)
+      end
+
       it "parses week numbers such as 'W23' or '23W' correctly" do
         expect(described_class.parse_spec('W1')).to eq described_class.parse('2012-01-02')
         expect(described_class.parse_spec('W23')).to eq described_class.parse('2012-06-04')

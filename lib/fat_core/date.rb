@@ -1484,6 +1484,16 @@ module FatCore
 
         today = ::Date.current
         case spec.clean
+        when %r{\A(?<yr>\d\d\d\d)[-/](?<doy>\d\d\d)\z}
+          # With 3-digit YYYY-ddd, return the day-of-year
+          year = Regexp.last_match[:yr].to_i
+          doy = Regexp.last_match[:doy].to_i
+          max_doy = ::Date.gregorian_leap?(year) ? 366 : 365
+          if doy > max_doy
+            raise ArgumentError, "invalid day-of-year '#{doy}' (1..#{max_doy}) in '#{spec}'"
+          end
+
+          ::Date.new(year, 1, 1) + doy - 1
         when %r{\A((?<yr>\d\d\d\d)[-/])?(?<mo>\d\d?)([-/](?<dy>\d\d?))?\z}
           # MM, YYYY-MM, MM-DD
           year = Regexp.last_match[:yr]&.to_i || ::Date.today.year
