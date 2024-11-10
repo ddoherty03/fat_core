@@ -61,6 +61,32 @@ describe Date do
         expect { described_class.days_in_month(2004, 13) }.to raise_error(ArgumentError)
       end
 
+      it 'knows a Date\'s half year' do
+        expect(Date.parse('2024-05-14').half).to eq(1)
+        expect(Date.parse('2024-09-14').half).to eq(2)
+      end
+
+      it 'knows a Date\'s quarter year' do
+        expect(Date.parse('2024-03-14').quarter).to eq(1)
+        expect(Date.parse('2024-05-14').quarter).to eq(2)
+        expect(Date.parse('2024-09-14').quarter).to eq(3)
+        expect(Date.parse('2024-11-14').quarter).to eq(4)
+      end
+
+      it 'knows a Date\'s bimonth' do
+        expect(Date.parse('2024-03-14').bimonth).to eq(2)
+        expect(Date.parse('2024-05-14').bimonth).to eq(3)
+        expect(Date.parse('2024-09-14').bimonth).to eq(5)
+        expect(Date.parse('2024-11-14').bimonth).to eq(6)
+      end
+
+      it 'knows a Date\'s semimonth' do
+        expect(Date.parse('2024-03-14').semimonth).to eq(5)
+        expect(Date.parse('2024-05-14').semimonth).to eq(9)
+        expect(Date.parse('2024-09-24').semimonth).to eq(18)
+        expect(Date.parse('2024-11-14').semimonth).to eq(21)
+      end
+
       it 'knows the nth weekday in a year, month' do
         # Sunday is 0, Saturday is 6
         #     January 2014
@@ -352,7 +378,8 @@ describe Date do
         expect(described_class.parse_spec('10', :from)).to eq described_class.parse('2012-10-01')
         expect(described_class.parse_spec('10', :to)).to eq described_class.parse('2012-10-31')
         expect { described_class.parse_spec('99') }.to raise_error(ArgumentError)
-        expect { described_class.parse_spec('011') }.to raise_error(ArgumentError)
+        # This is a valid day-of-year spec
+        expect { described_class.parse_spec('011') }.not_to raise_error(ArgumentError)
       end
 
       it 'parses month-day specs such as MM-DD' do
@@ -440,6 +467,10 @@ describe Date do
         expect(described_class.parse_spec('2024-E')).to eq described_class.parse('2024-03-31')
         expect(described_class.parse_spec('2024-E+12')).to eq described_class.parse('2024-04-12')
         expect(described_class.parse_spec('2024-E-12')).to eq described_class.parse('2024-03-19')
+        travel_to Time.local(2020, 9, 15)
+        expect(described_class.parse_spec('E-12')).to eq described_class.parse('2020-03-31')
+        expect(described_class.parse_spec('E+12')).to eq described_class.parse('2020-04-24')
+        travel_back
       end
 
       it 'parses DOW ordinals' do
@@ -447,6 +478,19 @@ describe Date do
         expect { described_class.parse_spec('2024-11-40Th') }.to raise_error(/invalid ordinal/)
         expect { described_class.parse_spec('2024-15-4Th') }.to raise_error(/invalid month/)
         expect { described_class.parse_spec('2024-11-5Th') }.to raise_error(/there is no 5th/i)
+        travel_to Time.local(2020, 9, 15)
+        expect(described_class.parse_spec('11-4Th')).to eq described_class.parse('2020-11-26')
+        expect(described_class.parse_spec('4Th')).to eq described_class.parse('2020-09-24')
+        travel_back
+      end
+
+      it 'parses DOY three-digit specs' do
+        expect(described_class.parse_spec('2024-001')).to eq described_class.parse('2024-01-01')
+        expect(described_class.parse_spec('2024-366')).to eq described_class.parse('2024-12-31')
+        expect { described_class.parse_spec('2024-885') }.to raise_error(/invalid day-of-year/)
+        travel_to Time.local(2020, 9, 15)
+        expect(described_class.parse_spec('150')).to eq described_class.parse('2020-05-29')
+        travel_back
       end
 
       it 'parses relative day names: today, yesterday' do
@@ -454,6 +498,7 @@ describe Date do
         expect(described_class.parse_spec('this_day')).to eq described_class.current
         expect(described_class.parse_spec('yesterday')).to eq described_class.current - 1.day
         expect(described_class.parse_spec('last_day')).to eq described_class.current - 1.day
+        expect(described_class.parse_spec('tomorrow')).to eq described_class.current + 1.day
       end
 
       it 'parses relative weeks: this_week, last_week' do

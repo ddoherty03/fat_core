@@ -1491,9 +1491,9 @@ module FatCore
 
         today = ::Date.current
         case spec
-        when %r{\A(?<yr>\d\d\d\d)[-/](?<doy>\d\d\d)\z}
+        when %r{\A((?<yr>\d\d\d\d)[-/])?(?<doy>\d\d\d)\z}
           # With 3-digit YYYY-ddd, return the day-of-year
-          year = Regexp.last_match[:yr].to_i
+          year = Regexp.last_match[:yr]&.to_i || ::Date.today.year
           doy = Regexp.last_match[:doy].to_i
           max_doy = ::Date.gregorian_leap?(year) ? 366 : 365
           if doy > max_doy
@@ -1581,10 +1581,9 @@ module FatCore
           hf_mo = Regexp.last_match[:hf_mo]
           if hf_mo == "I"
             spec_type == :from ? ::Date.new(year, month, 1) : ::Date.new(year, month, 15)
-          elsif hf_mo == "II"
-            spec_type == :from ? ::Date.new(year, month, 16) : ::Date.new(year, month, 16).end_of_month
           else
-            raise ArgumentError, "invalid half-month (I or II): #{spec}"
+            # hf_mo == "II"
+            spec_type == :from ? ::Date.new(year, month, 16) : ::Date.new(year, month, 16).end_of_month
           end
         when %r{\A((?<yr>\d\d\d\d)[-/])?((?<mo>\d\d?)[-/])?(?<wk>(i|ii|iii|iv|v|vi))\z}
           # Year, month, week-of-month, partial-or-whole, designated with lowercase Roman
@@ -1641,7 +1640,8 @@ module FatCore
               ::Date.today
             elsif rel.match?(/next/i)
               ::Date.today.add_chunk(chunk, 1)
-            elsif rel.match?(/last|yester/i)
+            else
+              # rel.match?(/last|yester/i)
               ::Date.today.add_chunk(chunk, -1)
             end
           if spec_type == :from
