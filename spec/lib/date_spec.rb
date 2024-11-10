@@ -419,6 +419,21 @@ describe Date do
         expect { described_class.parse_spec('2010-09-vi', :to) }.to raise_error /no week/
         expect { described_class.parse_spec('2010-09-vi', :to) }.to raise_error /no week/
         expect(described_class.parse_spec('2011-01-vi', :to)).to eq described_class.parse('2011-01-31')
+
+        travel_to Time.local(2020, 9, 15)
+        expect(described_class.parse_spec('9-i', :from)).to eq described_class.parse('2020-09-01')
+        expect(described_class.parse_spec('09-i', :to)).to eq described_class.parse('2020-09-06')
+        expect(described_class.parse_spec('09-iii', :from)).to eq described_class.parse('2020-09-14')
+        expect(described_class.parse_spec('09-iii', :to)).to eq described_class.parse('2020-09-20')
+        expect(described_class.parse_spec('09-v', :from)).to eq described_class.parse('2020-09-28')
+        expect(described_class.parse_spec('09-v', :to)).to eq described_class.parse('2020-09-30')
+
+        expect(described_class.parse_spec('i', :to)).to eq described_class.parse('2020-09-06')
+        expect(described_class.parse_spec('ii', :to)).to eq described_class.parse('2020-09-13')
+        expect(described_class.parse_spec('iii', :to)).to eq described_class.parse('2020-09-20')
+        expect(described_class.parse_spec('iv', :to)).to eq described_class.parse('2020-09-27')
+        expect(described_class.parse_spec('v', :to)).to eq described_class.parse('2020-09-30')
+        travel_back
       end
 
       it 'parses Easter-relative dates' do
