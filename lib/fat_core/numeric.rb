@@ -15,13 +15,11 @@ module FatCore
     #
     # @return [Integer] -1, 0, or 1 for negative, zero or positive self
     def signum
-      if positive?
-        1
-      elsif negative?
-        -1
-      else
-        0
-      end
+      raise NotImplementedError unless real?
+      return 1 if positive?
+      return -1 if negative?
+
+      0
     end
 
     # Convert this number into a string and insert grouping commas into the
