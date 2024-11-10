@@ -1200,11 +1200,12 @@ module FatCore
     # later trading day.
     #
     # @return [::Date]
-    def next_until_trading_day
+    def next_until_nyse_workday
       date = dup
       date += 1 until date.trading_day?
       date
     end
+    alias_method :next_until_trading_day, :next_until_nyse_workday
 
     # Return this date if its a trading day, otherwise skip back to the first prior
     # trading day.
