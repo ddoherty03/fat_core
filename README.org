@@ -55,11 +55,10 @@ goodies.
 
 *** Date
 **** Constants
-
-~FatCore~ adds two constants to the ~Date~ class, Date::BOT and Date::EOT.
-These represent the earliest and latest dates of practical commercial
-interest.  The exact values are rather arbitrary, but they prove useful in
-date ranges, for example.  They are defined as:
+~FatCore~ adds two date constants to the ~Date~ class, Date::BOT and
+Date::EOT.  These represent the earliest and latest dates of practical
+commercial interest.  The exact values are rather arbitrary, but they prove
+useful in date ranges, for example.  They are defined as:
 
 - ~Date::BOT~ :: January 1, 1900
 - ~Date::EOT~ :: December 31, 3000
@@ -68,9 +67,7 @@ date ranges, for example.  They are defined as:
 - ~Date::PRESIDENTIAL_FUNERALS~ :: an Array of dates of presidential funerals,
   which are observed with a closing of most federal agencies
 
-
-
-**** Parsing
+**** Ensure
 The ~Date.ensure~ class method tries to convert its argument to a ~Date~
 object by (1) applying the ~#to_date~ method or (2) applying the ~Date.parse~
 method to a String.  This is handy when you want to define a method that takes
@@ -143,7 +140,7 @@ convention of using en-dashes to separate the components.
 
 Many of the methods provided by ~FatCore~ deal with various calendar periods
 that are less common than those provided by the Ruby Standard Library or gems
-such as ~active_suupor~.  This documentation refers to these calendar periods
+such as ~active_support~.  This documentation refers to these calendar periods
 as "chunks", and they are the following:
 
 - year,
@@ -165,7 +162,7 @@ or end of each of these chunks:
   tab = []
   d = Date.parse('2017-06-30')
   %i[beginning end].each do |side|
-    %i(year half quarter bimonth month semimonth biweek week ).each do |chunk|
+    %i(year half quarter bimonth month semimonth biweek week).each do |chunk|
       meth = "#{side}_of_#{chunk}?".to_sym
       tab << [d.iso, meth.to_s, "#{d.send(meth)}"]
     end
@@ -262,7 +259,6 @@ You can query which numerical half, quarter, etc. that a given date falls in:
 objects.
 
 ***** American Dates
-
 Americans often write dates in the form M/d/Y, and the normal parse method
 will parse such a string as d/M/Y, often resulting in invalid date errors.
 ~FatCore~ adds the specialty parsing method, ~Date.parse_american~ to handle
@@ -287,15 +283,140 @@ Date.parse_american('9/22/1957') => 1957-09-22
 #+end_example
 
 ***** Date Specs
+It is often desirable to get the first or last date of a specified time
+period.  For this ~FatCore~ provides the ~parse_spec~ method that takes a
+string and an optional ~spec_type~ parameter of either ~:from~, indicating
+that the first date of the period should be returned or ~:to~, indicating that
+the last date of the period should be returned.
 
+This method supports a rich set of ways to specify periods of time:
 
+- YYYY-MM-DD :: returns a single day as the time period,
+- YYYY-MM :: returns the specified month, beginning or end
+- YYYY :: returns the specified year, beginning or end
+- YYYY-ddd :: returns the ddd'th day of the specified year, beginning or end
+- MM :: returns the specified month of the current year, beginning or end
+- MM-DD :: returns the specified day of the specified month in the current
+  year, beginning or end,
+- YYYY-Wnn or YYYY-nnW :: returns the nn'th commercial week of the given year
+  according to the ISO 8601 standard, in which the week containing the first
+  Thursday of the year counts as the first commercial week, even if that week
+  started in the prior calendar year,
+- Wnn or nnW :: returns the nn'th commercial week of the current year,
+- YYYY-1H or YYYY-2H :: returns the specified half year for the given year,
+- 1H or 2H :: returns the specified half year for the current year,
+- YYYY-1Q, YYYY-2Q, etc  :: returns the calendar quarter for the given year,
+- 1Q, 2Q, etc  :: returns the calendar quarter for the current year,
+- YYYY-MM-I or YYYY-MM-II :: returns the semi-month for the given month and
+  year, where the first semi-month always runs from the 1st to the 15th and
+  the second semi-month always runs from the 16th to the last day of the given
+  month, regardless of the number of days in the month,
+- YYYY-MM-i or YYYY-MM-ii up to YYYY-MM-vi :: returns the given week within
+  the month, including any partial weeks,
+- MM-i or MM-ii up to MM-vi :: returns the given week within the month of the
+  current year, including any partial weeks,
+- i or ii up to vi :: returns the given week within the current month of the current
+  year, including any partial weeks,
+- YYYY-MM-nSu up to YYYY-MM-nSa  :: returns the single date that is the n'th
+  Sunday, Monday, etc., in the given month using the first two letters of the
+  English names for the days of the week,
+- MM-nSu up to MM-nSa  :: returns the single date that is the n'th Sunday,
+  Monday, etc., in the given month of the current year using the first two
+  letters of the English names for the days of the week,
+- nSu up to nSa  :: returns the single date that is the n'th Sunday, Monday,
+  etc., in the current month of the current year using the first two letters
+  of the English names for the days of the week,
+- YYYY-nnn :: is the nnn'th day of the given year, exactly three digits needed,
+- nnn :: is the nnn'th day of the current year, exactly three digits needed,
+- YYYY-E :: returns the single date of Easter in the Western church for the
+  given year,
+- E :: returns the single date of Easter in the Western church for the current
+  year,
+- YYYY-E-n or YYYY-E+n :: returns the single date that falls n days before (-)
+  or after (+) Easter in the Western church for the given year,
+- E-n or E+n :: returns the single date that falls n days before (-) or after
+  (+) Easter in the Western church for the current year,
+- yesterday or yesteryear or lastday or last_year, etc :: the relative
+  prefixes, 'last' or 'yester' prepended to any chunk name returns the period
+  named by the chunk that precedes today's date.
+- today or toyear or this-year or thissemimonth, etc :: the relative prefixes,
+  'to' or 'this' prepended to any chunk name returns the period named by
+  the chunk that contains today's date.
+- nextday or nextyear or next-year or nextsemimonth, etc :: the relative
+  prefixes, 'next' prepended to any chunk name returns the period named by the
+  chunk that follows today's date. As a special case, 'tomorrow' is treated as
+  equivalent to 'nextday'.
+- forever :: returns the period Date::BOT to Date::EOT, which, for financial
+  applications is meant to stand in for eternity.
+- never :: returns nil, representing no date.
+
+Some things to note with respect to ~Date.parse_spec~:
+
+1. The second argument should be either ~:from~ or ~:to~, but it defaults to
+   ~:from~.  If it is ~:from~, ~parse_spec~ returns the first date of the
+   specified period; if it is ~:to~, it returns the last date of the specified
+   period.  When the "period" resolves to a single day, both arguments return
+   the same date, so ~parse_spec('2024-E', :from)~ and ~parse_spec('2024-E',
+   :to)~ both result in March 31, 2024.
+2. Where relevant, ~parse_spec~ accepts letters of either upper or lower case:
+   so 2024-1Q can be written 2024-1q and 'yesteryear' can be written
+   'YeSterYeaR', and likewise for all components of the spec using letters.
+3. Date components can be separated with either a hyphen, as in the examples
+   above, or with a '/' as is common.  Thus, 2024-11-09 can also be
+   2024/11/09, or indeed, 2024/11-09 or 2024-11/09.
+4. The prefixes for relative periods can be separated from the period name by
+   a hyphen, and underscore, or by nothing at all.  Thus, yester-day,
+   yester_day, and yesterday are all acceptable.  Clearly neologisms such as
+   'yestermonth' are quaint, but not harmful.
+5. On the other hand, to get a day-of-year spec right, you must use exactly 3
+   digits: 2024-011 is the 11th day of 2024, but 2024-11 is November of 2024.
 
 **** Holidays and Workdays
+One of the original motivations for this library was to provide an easy way to
+determine whether a given date is a federal holiday in the United States or,
+nearly but not quite the same, a non-trading day on the New York Stock
+Exchange.  To that end, ~FatCore~ provides the following methods:
 
-- weekend?
-- weekday?
+- Date#weekend? -- is this date on a weekend?
+- Date#weekday? -- is this date on a week day?
+- Date#easter_this_year -- the date of Easter in the Date's year
 
-**** Weekdays in Month
+Methods concerning Federal holidays:
+
+- Date#fed_holiday? -- is this date a Federal holiday?  It knows about
+  obscurities such as holidays decreed by past Presidents, dates of
+  Presidential funerals, and the Federal rule for when holidays fall on a
+  weekend, whether it is moved to the prior Friday or the following Monday.
+- Date#fed_workday? -- is it a date when the Federal government is open?,
+  inverse of Date#fed_holiday?
+- Date#add_fed_workdays(n) -- n Federal workdays following (or preceding if n
+  negative) this date,
+- Date#next_fed_workday -- the next Federal workday following this date,
+- Date#prior_fed_workday -- the previous Federal workday before this date,
+- Date#next_until_fed_workday -- starting with this date, move forward until
+  we hit a Federal workday
+- Date#prior_until_fed_workday -- starting with this date, move back until
+  we hit a Federal workday
+
+And we have similar methods for "holidays" or non-trading days on the NYSE:
+
+- Date#nyse_holiday? -- is this date a NYSE holiday?
+- Date#nyse_workday? -- is it a date when the NYSE is open for trading?,
+  inverse of Date#nyse_holiday?
+- Date#add_nyse_workdays(n) -- n NYSE workdays following (or preceding if n
+  negative) this date,
+- Date#next_nyse_workday -- the next NYSE workday following this date,
+- Date#prior_nyse_workday -- the previous NYSE workday before this date,
+- Date#next_until_nyse_~~workday -- starting with this date, move forward until
+  we hit a NYSE workday
+- Date#prior_until_nyse_workday -- starting with this date, move back until
+  we hit a Federal workday
+
+**** Ordinal Weekdays in Month
+It is often useful to find the 1st, 2nd, etc, Sunday, Monday, etc. in a given
+month.  ~FatCore~ provides the class method ~Date.nth_wday_in_year_month(nth,
+wday, year, month)~ to return such dates.  The first parameter can be
+negative, which will count from the end of the month.
 
 **** Easter
 The ~Date~ class extension adds two methods for determining whether a given
@@ -356,7 +477,6 @@ coverage on one Range by an Array of other Ranges:
   (0..12).gaps([(0..2), (5..7), (10..12)])  => [(3..4), (8..9)]
 #+end_SRC
 
-**
 * Enumerable
 FatCore::Enumerable extends Enumerable with the ~#each_with_flags~ method that
 yields the elements of the Enumerable but also yields two booleans, ~first~ and
