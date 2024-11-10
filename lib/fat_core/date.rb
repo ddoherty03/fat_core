@@ -366,7 +366,7 @@ module FatCore
     # @param from_date [::Date] the middle of the six-month range
     # @return [Boolean]
     def within_6mos_of?(from_date)
-      from_date = Date.parse(from_date) unless from_date.is_a?(Date)
+      from_date = ::Date.parse(from_date) unless from_date.is_a?(Date)
       from_day = from_date.day
       if [28, 29, 30, 31].include?(from_day)
         # Near the end of the month, we need to make sure that when we go
@@ -1587,8 +1587,8 @@ module FatCore
           end
         when %r{\A((?<yr>\d\d\d\d)[-/])?((?<mo>\d\d?)[-/])?(?<wk>(i|ii|iii|iv|v|vi))\z}
           # Year, month, week-of-month, partial-or-whole, designated with lowercase Roman
-          year = Regexp.last_match[:yr]&.to_i || Date.today.year
-          month = Regexp.last_match[:mo]&.to_i || Date.today.month
+          year = Regexp.last_match[:yr]&.to_i || ::Date.today.year
+          month = Regexp.last_match[:mo]&.to_i || ::Date.today.month
           wk = ['i', 'ii', 'iii', 'iv', 'v', 'vi'].index(Regexp.last_match[:wk]) + 1
           result =
             if spec_type == :from
@@ -1608,8 +1608,8 @@ module FatCore
           end
         when %r{\A((?<yr>\d\d\d\d)[-/])?((?<mo>\d\d?)[-/])?((?<ndow>\d+)(?<dow>Su|Mo|Tu|We|Th|Fr|Sa))\z}
           # Year, month, week-of-month, partial-or-whole, designated with lowercase Roman
-          year = Regexp.last_match[:yr]&.to_i || Date.today.year
-          month = Regexp.last_match[:mo]&.to_i || Date.today.month
+          year = Regexp.last_match[:yr]&.to_i || ::Date.today.year
+          month = Regexp.last_match[:mo]&.to_i || ::Date.today.month
           ndow = Regexp.last_match[:ndow].to_i
           dow = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].index(Regexp.last_match[:dow]) ||
                 ['su', 'mo', 'tu', 'we', 'th', 'fr', 'sa', 'su'].index(Regexp.last_match[:dow])
@@ -1624,7 +1624,7 @@ module FatCore
         when %r{\A(?<yr>\d\d\d\d[-/])?E(?<off>[+-]\d+)?\z}i
           # Easter for the given year, current year (if no year component),
           # optionally plus or minus a day offset
-          year = Regexp.last_match[:yr]&.to_i || Date.today.year
+          year = Regexp.last_match[:yr]&.to_i || ::Date.today.year
           offset = Regexp.last_match[:off]&.to_i || 0
           ::Date.easter(year) + offset
         when %r{\A(?<rel>(to[_-]?|this[_-]?)|(last[_-]?|yester[_-]?|next[_-]?))
