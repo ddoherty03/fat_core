@@ -389,7 +389,7 @@ describe Date do
         expect(described_class.parse_spec('2010-09-iii', :from)).to eq described_class.parse('2010-09-13')
         expect(described_class.parse_spec('2010-09-iv', :from)).to eq described_class.parse('2010-09-20')
         expect(described_class.parse_spec('2010-09-v', :from)).to eq described_class.parse('2010-09-27')
-        expect { described_class.parse_spec('2010-09-vi', :from) }.to raise_error /no week/
+        expect { described_class.parse_spec('2010-09-vi', :from) }.to raise_error(/no week/)
         expect(described_class.parse_spec('2011-01-vi', :from)).to eq described_class.parse('2011-01-31')
 
         expect(described_class.parse_spec('2010-09-i', :to)).to eq described_class.parse('2010-09-05')
@@ -397,7 +397,7 @@ describe Date do
         expect(described_class.parse_spec('2010-09-iii', :to)).to eq described_class.parse('2010-09-19')
         expect(described_class.parse_spec('2010-09-iv', :to)).to eq described_class.parse('2010-09-26')
         expect(described_class.parse_spec('2010-09-v', :to)).to eq described_class.parse('2010-09-30')
-        expect { described_class.parse_spec('2010-09-vi', :to) }.to raise_error /no week/
+        expect { described_class.parse_spec('2010-09-vi', :to) }.to raise_error(/no week/)
         expect(described_class.parse_spec('2011-01-vi', :to)).to eq described_class.parse('2011-01-31')
       end
 
@@ -407,8 +407,8 @@ describe Date do
         expect(described_class.parse_spec('2010-09-iii', :from)).to eq described_class.parse('2010-09-13')
         expect(described_class.parse_spec('2010-09-iv', :from)).to eq described_class.parse('2010-09-20')
         expect(described_class.parse_spec('2010-09-v', :from)).to eq described_class.parse('2010-09-27')
-        expect { described_class.parse_spec('2010-09-vi', :from) }.to raise_error /no week/
-        expect { described_class.parse_spec('2010-10-vi', :from) }.to raise_error /no week/
+        expect { described_class.parse_spec('2010-09-vi', :from) }.to raise_error(/no week/)
+        expect { described_class.parse_spec('2010-10-vi', :from) }.to raise_error(/no week/)
         expect(described_class.parse_spec('2011-01-vi', :to)).to eq described_class.parse('2011-01-31')
 
         expect(described_class.parse_spec('2010-09-i', :to)).to eq described_class.parse('2010-09-05')
@@ -416,8 +416,8 @@ describe Date do
         expect(described_class.parse_spec('2010-09-iii', :to)).to eq described_class.parse('2010-09-19')
         expect(described_class.parse_spec('2010-09-iv', :to)).to eq described_class.parse('2010-09-26')
         expect(described_class.parse_spec('2010-09-v', :to)).to eq described_class.parse('2010-09-30')
-        expect { described_class.parse_spec('2010-09-vi', :to) }.to raise_error /no week/
-        expect { described_class.parse_spec('2010-09-vi', :to) }.to raise_error /no week/
+        expect { described_class.parse_spec('2010-09-vi', :to) }.to raise_error(/no week/)
+        expect { described_class.parse_spec('2010-09-vi', :to) }.to raise_error(/no week/)
         expect(described_class.parse_spec('2011-01-vi', :to)).to eq described_class.parse('2011-01-31')
 
         travel_to Time.local(2020, 9, 15)
