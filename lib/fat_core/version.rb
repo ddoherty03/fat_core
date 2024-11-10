@@ -2,7 +2,7 @@
 
 module FatCore
   MAJOR = 5
-  MINOR = 2
+  MINOR = 3
   PATCH = 0
 
   # FatCore version number
