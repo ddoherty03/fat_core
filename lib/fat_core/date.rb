@@ -57,6 +57,9 @@ module FatCore
     # to find in commercial situations.
     EOT = ::Date.parse('3000-12-31')
 
+    # Symbols for each of the days of the week, e.g., :sunday, :monday, etc.
+    DAYSYMS = ::Date::DAYNAMES.map(&:downcase).map(&:to_sym)
+
     # :category: Formatting
     # @group Formatting
 
@@ -515,12 +518,56 @@ module FatCore
 
     # :category: Relative ::Dates
 
+    # In order to accomodate biweeks, we adopt the convention that weeks are
+    # numbered so that whatever week contains the year's first
+    # Date.beginning_of_week (usually Sunday or Monday) is week number 1.
+    # Biweeks are then pairs of weeks: an odd numbered week first, followed by
+    # an even numbered week last.
+    def week_number
+      start_of_weeks = ::Date.new(year, 1, 1)
+      bow_wday = DAYSYMS.index(::Date.beginning_of_week)
+      start_of_weeks += 1 until start_of_weeks.wday == bow_wday
+      if yday >= start_of_weeks.yday
+        ((yday - start_of_weeks.yday) / 7) + 1
+      else
+        # One of the days before the start of the year's first week, so it
+        # belongs to the last week of the prior year.
+        Date.new(year - 1, 12, 31).week_number
+      end
+    end
+
+    # Return the date that is the first day of the biweek in which self
+    # falls, or the first day of the year, whichever is later.
+    # @return [::Date]
+    def beginning_of_biweek
+      if week_number.odd?
+        beginning_of_week
+      else
+        (self - 1.week).beginning_of_week
+      end
+    end
+
+    # :category: Relative ::Dates
+
+    # Return the date that is the last day of the biweek in which
+    # self falls, or the last day of the year, whichever if earlier.
+    # @return [::Date]
+    def end_of_biweek
+      if week_number.even?
+        end_of_week
+      else
+        (self + 1.week).end_of_week
+      end
+    end
+
+    # NOTE: Date#end_of_week and Date#beginning_of_week is defined in ActiveSupport
+
     # Return the date that is the first day of the commercial biweek in which
     # self falls. A biweek is a period of two commercial weeks starting with an
     # odd-numbered week and with each week starting in Monday and ending on
     # Sunday.
     # @return [::Date]
-    def beginning_of_biweek
+    def beginning_of_bicweek
       if cweek.odd?
         beginning_of_week(::Date.beginning_of_week)
       else
@@ -537,7 +584,7 @@ module FatCore
     # In the last week of the year (if it is not part of next year's first
     # week) the end of the biweek will not extend beyond self's week, so that
     # week 1 of the following year will start a new biweek.  @return [::Date]
-    def end_of_biweek
+    def end_of_bicweek
       if cweek >= 52 && end_of_week(::Date.beginning_of_week).year > year
         end_of_week(::Date.beginning_of_week)
       elsif cweek.odd?
