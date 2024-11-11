@@ -379,7 +379,7 @@ describe Date do
         expect(described_class.parse_spec('10', :to)).to eq described_class.parse('2012-10-31')
         expect { described_class.parse_spec('99') }.to raise_error(ArgumentError)
         # This is a valid day-of-year spec
-        expect { described_class.parse_spec('011') }.not_to raise_error(ArgumentError)
+        expect { described_class.parse_spec('011') }.not_to raise_error
       end
 
       it 'parses month-day specs such as MM-DD' do
@@ -408,6 +408,8 @@ describe Date do
         expect(described_class.parse_spec('2010-09-I', :to)).to eq described_class.parse('2010-09-15')
         expect(described_class.parse_spec('2010-09-II', :from)).to eq described_class.parse('2010-09-16')
         expect(described_class.parse_spec('2010-09-II', :to)).to eq described_class.parse('2010-09-30')
+        expect(described_class.parse_spec('2010-05-I', :from)).to eq described_class.parse('2010-05-01')
+        expect(described_class.parse_spec('2010-05-I', :to)).to eq described_class.parse('2010-05-15')
       end
 
       it 'parses intra-month week specs such as YYYY-MM-i and YYYY-MM-v begin Sunday' do
@@ -753,15 +755,17 @@ describe Date do
 
       it 'knows about biweeks' do
         expect(described_class.parse('2013-11-07').beginning_of_biweek)
-          .to eq described_class.parse('2013-11-04')
+          .to eq described_class.parse('2013-10-28')
         expect(described_class.parse('2013-11-07').end_of_biweek)
-          .to eq described_class.parse('2013-11-17')
-        expect(described_class.parse('2013-03-11')).to be_beginning_of_biweek
-        expect(described_class.parse('2013-03-24')).to be_end_of_biweek
+          .to eq described_class.parse('2013-11-10')
+        expect(described_class.parse('2013-03-04')).to be_beginning_of_biweek
+        expect(described_class.parse('2013-03-17')).to be_end_of_biweek
         expect(described_class.parse('2013-12-30').end_of_biweek)
-          .to eq described_class.parse('2014-01-12')
+          .to eq described_class.parse('2014-01-05')
         expect(described_class.parse('2009-12-30').end_of_biweek)
           .to eq described_class.parse('2010-01-03')
+        expect(described_class.parse('2010-01-03').biweek)
+          .to eq described_class.parse('2009-12-31').biweek
       end
 
       it 'knows that a Monday is the beginning of the week' do
@@ -800,10 +804,10 @@ describe Date do
       it 'knows the beginning and end of bi-week-based chunks' do
         # First Friday to prior Monday
         expect(described_class.parse('2013-11-08').beginning_of_chunk(:biweek))
-          .to eq described_class.parse('2013-11-04')
+          .to eq described_class.parse('2013-10-28')
         # Second Wednesday to 2 prior Monday
         expect(described_class.parse('2013-11-13').beginning_of_chunk(:biweek))
-          .to eq described_class.parse('2013-11-04')
+          .to eq described_class.parse('2013-11-11')
       end
 
       it 'knows the beginning and end of week-based chunks' do
@@ -980,7 +984,7 @@ describe Date do
         expect(described_class.parse('2013-11-24').end_of_chunk(:semimonth))
           .to eq described_class.parse('2013-11-30')
         expect(described_class.parse('2013-11-08').end_of_chunk(:biweek))
-          .to eq described_class.parse('2013-11-17')
+          .to eq described_class.parse('2013-11-10')
         expect(described_class.parse('2013-07-04').end_of_chunk(:week))
           .to eq described_class.parse('2013-07-07')
         expect {
