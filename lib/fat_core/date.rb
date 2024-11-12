@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'date'
-require 'active_support'
 require 'active_support/core_ext/date'
 require 'active_support/core_ext/time'
 require 'active_support/core_ext/numeric/time'
@@ -58,7 +56,7 @@ module FatCore
     EOT = ::Date.parse('3000-12-31')
 
     # Symbols for each of the days of the week, e.g., :sunday, :monday, etc.
-    DAYSYMS = ::Date::DAYNAMES.map(&:downcase).map(&:to_sym)
+    DAYSYMS = ::Date::DAYNAMES.map { |name| name.downcase.to_sym }
 
     # :category: Formatting
     # @group Formatting
@@ -1834,6 +1832,7 @@ module FatCore
       # @param year [Integer] the year of interest
       # @return [::Date] the date of Easter for year
       def easter(year)
+        year = year.to_i
         y = year
         a = y % 19
         b, c = y.divmod(100)
