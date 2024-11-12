@@ -1069,6 +1069,7 @@ describe Date do
     describe 'holidays' do
       it 'knows Easter in its year' do
         expect(described_class.today.easter_this_year).to eq(described_class.parse('2012-04-08'))
+        expect(Date.easter(2012)).to eq(Date.parse('2012-04-08'))
         expect(described_class.parse('2014-04-20').easter?).to be true
         expect(described_class.parse('2014-03-20').easter?).to be false
       end
