@@ -530,7 +530,7 @@ module FatCore
       else
         # One of the days before the start of the year's first week, so it
         # belongs to the last week of the prior year.
-        Date.new(year - 1, 12, 31).week_number
+        ::Date.new(year - 1, 12, 31).week_number
       end
     end
 
