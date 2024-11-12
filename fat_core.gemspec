@@ -27,4 +27,6 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'activesupport'
   spec.add_dependency 'damerau-levenshtein'
+  spec.add_dependency 'ostruct'
+  spec.add_dependency 'stringio', '>=3.1.2'
 end
