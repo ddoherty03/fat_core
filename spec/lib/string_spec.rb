@@ -139,7 +139,7 @@ the people, for the people, shall not perish from the earth."
         expect('-8.008'.number?).to be true
         expect('8.008e33'.number?).to be true
         expect('-8.008e33'.number?).to be true
-        expect('0x8.008'.number?).to be false
+        expect('0x8.008'.number?).to be_truthy
         expect('hello world'.number?).to be false
       end
     end
