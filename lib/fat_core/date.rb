@@ -942,7 +942,9 @@ module FatCore
         ::Date.parse('2018-12-24'),
         ::Date.parse('2019-12-24'),
         ::Date.parse('2020-12-24'),
-      ].freeze
+        # Biden
+        ::Date.parse('2024-12-24'),
+      ]
 
     # Presidential funeral since JFK
     PRESIDENTIAL_FUNERALS = [
@@ -962,7 +964,9 @@ module FatCore
       ::Date.parse('2007-01-02'),
       # GHWBFuneral
       ::Date.parse('2018-12-05'),
-    ].freeze
+      # JEC Funeral
+      ::Date.parse('2018-12-05'),
+    ]
 
     # Return whether this date is a United States federal holiday.
     #
