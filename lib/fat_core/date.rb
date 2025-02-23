@@ -965,7 +965,7 @@ module FatCore
       # GHWBFuneral
       ::Date.parse('2018-12-05'),
       # JEC Funeral
-      ::Date.parse('2018-12-05'),
+      ::Date.parse('2025-01-09'),
     ]
 
     # Return whether this date is a United States federal holiday.
