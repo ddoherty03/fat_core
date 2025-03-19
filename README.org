@@ -503,9 +503,9 @@ so that
 
 FatCore::String has methods for performing matching of one string with another
 (~#matches_with~, ~#fuzzy_match~), for converting a string to title-case as
-might by used in the title of a book (~#entitle~), for converting a String into
-a useable Symbol (~#as_sym~) and vice-versa (~#as_string~ also
-~Symbol#as_string~), for wrapping with an optional hanging indent (~#wrap~),
+might by used in the title of a book (~#entitle~), for converting a String
+into a useable Symbol (~#as_sym~) and vice-versa (~#as_str~ also
+~Symbol#as_str~), for wrapping with an optional hanging indent (~#wrap~),
 cleaning up errant spaces (~#clean~), and computing the Damerau-Levenshtein
 distance between strings (~#distance~). And several others.
 

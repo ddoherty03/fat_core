@@ -2,13 +2,12 @@
 
 module FatCore
   module NilClass
-    # Allow nils to respond to #as_string like String and Symbol
+    # Allow nils to respond to #entitle like String and Symbol
     #
     # @return [String] empty string
-    def as_string
+    def entitle
       ''
     end
-    alias_method :entitle, :as_string
 
     # Allow nils to respond to #tex_quote for use in TeX documents
     #

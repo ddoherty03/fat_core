@@ -9,14 +9,12 @@ module FatCore
     #
     # @example
     #   :hello_world.entitle #=> "Hello World"
-    #   :hello_world.as_string #=> "Hello World"
     #   :joy_to_the_world #=> 'Joy to the World'
     #
     # @return [String]
-    def as_string
+    def entitle
       to_s.tr('_', ' ').split.join(' ').entitle
     end
-    alias_method :entitle, :as_string
 
     # Return self. This (together with String#as_sym) allows `#as_sym` to be
     # applied to a string or Symbol and get back a Symbol with out testing for
@@ -25,6 +23,15 @@ module FatCore
     # @return [Symbol] just self
     def as_sym
       self
+    end
+
+    # Convert this symbol to a string in such a manner that for simple cases,
+    # it is the inverse of String#as_sym and vice-versa.
+    def as_str
+      to_s
+        .downcase
+        .tr('_', '-')
+        .gsub(/[^-_A-Za-z0-9]/, '')
     end
 
     # Prepare this symbol for use in a TeX document by converting to String then

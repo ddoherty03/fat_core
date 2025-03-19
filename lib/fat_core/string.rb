@@ -22,28 +22,25 @@ module FatCore
       strip.squeeze(' ')
     end
 
-    # Convert to a lower-case symbol with all white space converted to a single
-    # '_' and all non-alphanumerics deleted, such that the string will work as
-    # an unquoted Symbol.
+    # Convert to a lower-case symbol with all hyphens and white space
+    # converted to a single '_' and all non-alphanumerics deleted, such that
+    # the string will work as an unquoted Symbol.
     #
     # @example
     #   "Hello World" -> :hello_world
     #   "Hello*+World" -> :helloworld
+    #   "jack-in-the-box" -> :jack_in_the_box
     #
     # @return [Symbol] self converted to a Symbol
     def as_sym
       clean
         .gsub(/\s+/, '_')
+        .tr('-', '_')
         .gsub(/[^_A-Za-z0-9]/, '')
         .downcase.to_sym
     end
 
-    # Return self unmodified. This method is here so to comply with the API of
-    # Symbol#as_string so that it can be applied to a variable that is either a
-    # String or a Symbol.
-    #
-    # @return [String] self unmodified
-    def as_string
+    def as_str
       self
     end
 

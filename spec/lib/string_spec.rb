@@ -194,10 +194,10 @@ the people, for the people, shall not perish from the earth."
       expect('Street1'.as_sym).to eq :street1
     end
 
-    it 'does nothing in response to as_string' do
-      expect('joke'.as_string).to eq 'joke'
-      expect('hello world'.as_string).to eq 'hello world'
-      expect("hello world   it's me".as_string).to eq "hello world   it's me"
+    it 'does nothing in response to as_str' do
+      expect('joke'.as_str).to eq 'joke'
+      expect('hello world'.as_str).to eq 'hello world'
+      expect("hello world   it's me".as_str).to eq "hello world   it's me"
     end
 
     it 'properly capitalizes a string as a title' do
