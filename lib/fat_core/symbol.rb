@@ -16,13 +16,15 @@ module FatCore
       to_s.tr('_', ' ').split.join(' ').entitle
     end
 
-    # Return self. This (together with String#as_sym) allows `#as_sym` to be
-    # applied to a string or Symbol and get back a Symbol with out testing for
-    # type.
+    # Return self in a form suitable as an identifier. Ruby allows symbols to
+    # have arbitrary characters in them that are not permitted as an
+    # identifier.  Convert this symbol to one that is a legal identifier. This
+    # (together with String#as_sym) allows `#as_sym` to be applied to a string
+    # or Symbol and get back a Symbol with out testing for type.
     #
     # @return [Symbol] just self
     def as_sym
-      self
+      as_str.as_sym
     end
 
     # Convert this symbol to a string in such a manner that for simple cases,
@@ -31,6 +33,7 @@ module FatCore
       to_s
         .downcase
         .tr('_', '-')
+        .gsub(/\s+/, '_')
         .gsub(/[^-_A-Za-z0-9]/, '')
     end
 

@@ -196,6 +196,7 @@ the people, for the people, shall not perish from the earth."
       expect('jack_in-the-box'.as_sym).to eq :jack_in_the_box
       expect('jack_in_the_box'.as_sym).to eq :jack_in_the_box
       expect('Jack in the Box'.as_sym).to eq :jack_in_the_box
+      expect("Four Score  \t\n   and 7 years ago".as_sym).to eq :four_score_and_7_years_ago
     end
 
     it 'does nothing in response to as_str' do
