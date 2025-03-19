@@ -114,6 +114,7 @@ module FatCore
     end
 
     UPPERS = ('A'..'Z').to_a
+    REGEXP_META_CHARACTERS = "\\$()*+.<>?[]^{|}".chars.freeze
 
     private
 
@@ -309,8 +310,6 @@ module FatCore
         end
       matched_text
     end
-
-    REGEXP_META_CHARACTERS = "\\$()*+.<>?[]^{|}".chars.freeze
 
     # Convert a string of the form '/.../Iixm' to a regular
     # expression. However, make the regular expression case-insensitive by

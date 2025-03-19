@@ -139,7 +139,7 @@ the people, for the people, shall not perish from the earth."
         expect('-8.008'.number?).to be true
         expect('8.008e33'.number?).to be true
         expect('-8.008e33'.number?).to be true
-        expect('0x8.008'.number?).to be_truthy
+        expect('0x8.008').to be_number
         expect('hello world'.number?).to be false
       end
     end
@@ -192,6 +192,10 @@ the people, for the people, shall not perish from the earth."
       expect('hello world'.as_sym).to eq :hello_world
       expect("hello world   it's me".as_sym).to eq :hello_world_its_me
       expect('Street1'.as_sym).to eq :street1
+      expect('jack-in-the-box'.as_sym).to eq :jack_in_the_box
+      expect('jack_in-the-box'.as_sym).to eq :jack_in_the_box
+      expect('jack_in_the_box'.as_sym).to eq :jack_in_the_box
+      expect('Jack in the Box'.as_sym).to eq :jack_in_the_box
     end
 
     it 'does nothing in response to as_str' do

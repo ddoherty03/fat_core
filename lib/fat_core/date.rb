@@ -1331,7 +1331,7 @@ module FatCore
         nth_wday_in_month?(1, 1, 9)
       when 10
         # Columbus Day (Oct 12) 1909--1953
-        year >= 1909 && year <= 1953 && day == 12
+        year.between?(1909, 1953) && day == 12
       when 11
         if tuesday?
           # Election Day. Until 1968 all Election Days.  From 1972 to 1980
@@ -1363,7 +1363,7 @@ module FatCore
           end
         elsif day == 11
           # Armistice or Veterans Day.  1918--1921; 1934--1953.
-          (year >= 1918 && year <= 1921) || (year >= 1934 && year <= 1953)
+          year.between?(1918, 1921) || year.between?(1934, 1953)
         else
           false
         end

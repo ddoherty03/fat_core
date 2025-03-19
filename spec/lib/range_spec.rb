@@ -74,10 +74,10 @@ describe Range do
 
     it 'knows the difference with another range' do
       # Other is same as self
-      # rubocop:disable Lint/BinaryOperatorWithIdenticalOperands
+      # xrubocop:disable Lint/BinaryOperatorWithIdenticalOperands
       expect(((4..10) - (4..10)).size).to eq(0)
       expect(((4..10) - (4..10))).to be_empty
-      # rubocop:enable Lint/BinaryOperatorWithIdenticalOperands
+      # xrubocop:enable Lint/BinaryOperatorWithIdenticalOperands
 
       # Other is proper subset of self
       expect(((4..10) - (6..7)).first).to eq((4..5))
