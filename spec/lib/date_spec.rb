@@ -9,6 +9,11 @@ describe Date do
     # month, or week.  It is a Wednesday
     allow(described_class).to receive_messages(today: described_class.parse('2012-07-18'))
     allow(described_class).to receive_messages(current: described_class.parse('2012-07-18'))
+    ::Date.beginning_of_week = :monday
+  end
+
+  after do
+    ::Date.beginning_of_week = :monday
   end
 
   describe 'class methods' do
@@ -85,6 +90,22 @@ describe Date do
         expect(Date.parse('2024-05-14').semimonth).to eq(9)
         expect(Date.parse('2024-09-24').semimonth).to eq(18)
         expect(Date.parse('2024-11-14').semimonth).to eq(21)
+      end
+
+      it 'knows a Date\'s week number with Monday bow' do
+        ::Date.beginning_of_week = :monday
+        expect(Date.parse('2024-03-14').week_number).to eq(11)
+        expect(Date.parse('2024-05-14').week_number).to eq(20)
+        expect(Date.parse('2024-09-24').week_number).to eq(39)
+        expect(Date.parse('2024-11-14').week_number).to eq(46)
+      end
+
+      it 'knows a Date\'s week number with Sunday bow' do
+        ::Date.beginning_of_week = :sunday
+        expect(Date.parse('2024-03-14').week_number).to eq(10)
+        expect(Date.parse('2024-05-14').week_number).to eq(19)
+        expect(Date.parse('2024-09-24').week_number).to eq(38)
+        expect(Date.parse('2024-11-14').week_number).to eq(45)
       end
 
       it 'knows the nth weekday in a year, month' do
@@ -403,13 +424,13 @@ describe Date do
         expect { described_class.parse_spec('99999') }.to raise_error(ArgumentError)
       end
 
-      it 'parses half-month specs such as YYYY-MM-I and YYYY-MM-II' do
-        expect(described_class.parse_spec('2010-09-I', :from)).to eq described_class.parse('2010-09-01')
-        expect(described_class.parse_spec('2010-09-I', :to)).to eq described_class.parse('2010-09-15')
-        expect(described_class.parse_spec('2010-09-II', :from)).to eq described_class.parse('2010-09-16')
-        expect(described_class.parse_spec('2010-09-II', :to)).to eq described_class.parse('2010-09-30')
-        expect(described_class.parse_spec('2010-05-I', :from)).to eq described_class.parse('2010-05-01')
-        expect(described_class.parse_spec('2010-05-I', :to)).to eq described_class.parse('2010-05-15')
+      it 'parses half-month specs such as YYYY-MM-A and YYYY-MM-B' do
+        expect(described_class.parse_spec('2010-09-A', :from)).to eq described_class.parse('2010-09-01')
+        expect(described_class.parse_spec('2010-09-A', :to)).to eq described_class.parse('2010-09-15')
+        expect(described_class.parse_spec('2010-09-B', :from)).to eq described_class.parse('2010-09-16')
+        expect(described_class.parse_spec('2010-09-B', :to)).to eq described_class.parse('2010-09-30')
+        expect(described_class.parse_spec('2010-05-A', :from)).to eq described_class.parse('2010-05-01')
+        expect(described_class.parse_spec('2010-05-A', :to)).to eq described_class.parse('2010-05-15')
       end
 
       it 'parses intra-month week specs such as YYYY-MM-i and YYYY-MM-v begin Sunday' do
@@ -439,6 +460,7 @@ describe Date do
         expect { described_class.parse_spec('2010-09-vi', :from) }.to raise_error(/no week/)
         expect { described_class.parse_spec('2010-10-vi', :from) }.to raise_error(/no week/)
         expect(described_class.parse_spec('2011-01-vi', :to)).to eq described_class.parse('2011-01-31')
+        expect(described_class.parse_spec('2021-09-i', :from)).to eq described_class.parse('2021-09-01')
 
         expect(described_class.parse_spec('2010-09-i', :to)).to eq described_class.parse('2010-09-05')
         expect(described_class.parse_spec('2010-09-ii', :to)).to eq described_class.parse('2010-09-12')
@@ -448,15 +470,21 @@ describe Date do
         expect { described_class.parse_spec('2010-09-vi', :to) }.to raise_error(/no week/)
         expect { described_class.parse_spec('2010-09-vi', :to) }.to raise_error(/no week/)
         expect(described_class.parse_spec('2011-01-vi', :to)).to eq described_class.parse('2011-01-31')
+      end
 
+      it 'parses intra-month week specs such as MM-i and MM-v begin Monday' do
         travel_to Time.local(2020, 9, 15)
-        expect(described_class.parse_spec('9-i', :from)).to eq described_class.parse('2020-09-01')
-        expect(described_class.parse_spec('09-i', :to)).to eq described_class.parse('2020-09-06')
-        expect(described_class.parse_spec('09-iii', :from)).to eq described_class.parse('2020-09-14')
-        expect(described_class.parse_spec('09-iii', :to)).to eq described_class.parse('2020-09-20')
-        expect(described_class.parse_spec('09-v', :from)).to eq described_class.parse('2020-09-28')
-        expect(described_class.parse_spec('09-v', :to)).to eq described_class.parse('2020-09-30')
+        expect(described_class.parse_spec('9-I', :from)).to eq described_class.parse('2020-09-01')
+        expect(described_class.parse_spec('09-I', :to)).to eq described_class.parse('2020-09-06')
+        expect(described_class.parse_spec('09-III', :from)).to eq described_class.parse('2020-09-14')
+        expect(described_class.parse_spec('09-III', :to)).to eq described_class.parse('2020-09-20')
+        expect(described_class.parse_spec('09-V', :from)).to eq described_class.parse('2020-09-28')
+        expect(described_class.parse_spec('09-V', :to)).to eq described_class.parse('2020-09-30')
+        travel_back
+      end
 
+      it 'parses intra-month week specs such as i and v begin Monday' do
+        travel_to Time.local(2020, 9, 15)
         expect(described_class.parse_spec('i', :to)).to eq described_class.parse('2020-09-06')
         expect(described_class.parse_spec('ii', :to)).to eq described_class.parse('2020-09-13')
         expect(described_class.parse_spec('iii', :to)).to eq described_class.parse('2020-09-20')
@@ -482,7 +510,22 @@ describe Date do
         expect { described_class.parse_spec('2024-11-5Th') }.to raise_error(/there is no 5th/i)
         travel_to Time.local(2020, 9, 15)
         expect(described_class.parse_spec('11-4Th')).to eq described_class.parse('2020-11-26')
-        expect(described_class.parse_spec('4Th')).to eq described_class.parse('2020-09-24')
+        expect(described_class.parse_spec('06-3Wed')).to eq described_class.parse('2020-06-17')
+        expect(described_class.parse_spec('06-3WellsFargo')).to eq described_class.parse('2020-06-17')
+        expect(described_class.parse_spec('4Thorium')).to eq described_class.parse('2020-09-24')
+        travel_back
+      end
+
+      it 'parses DOW negative ordinals' do
+        expect(described_class.parse_spec('2024-11--4Th')).to eq described_class.parse('2024-11-07')
+        expect { described_class.parse_spec('2024-11--40Th') }.to raise_error(/invalid ordinal/)
+        expect { described_class.parse_spec('2024-15--4Th') }.to raise_error(/invalid month/)
+        expect { described_class.parse_spec('2024-11--5Th') }.to raise_error(/there is no 5th/i)
+        travel_to Time.local(2020, 9, 15)
+        expect(described_class.parse_spec('11--4Th')).to eq described_class.parse('2020-11-05')
+        expect(described_class.parse_spec('06--3Wed')).to eq described_class.parse('2020-06-10')
+        expect(described_class.parse_spec('06--3WellsFargo')).to eq described_class.parse('2020-06-10')
+        expect(described_class.parse_spec('-1Thorium')).to eq described_class.parse('2020-09-24')
         travel_back
       end
 
@@ -516,6 +559,13 @@ describe Date do
           .to eq described_class.parse('2012-07-29')
         expect(described_class.parse_spec('last_biweek')).to eq described_class.parse('2012-07-02')
         expect(described_class.parse_spec('last_biweek', :to))
+          .to eq described_class.parse('2012-07-15')
+
+        expect(described_class.parse_spec('this_fortnight')).to eq described_class.parse('2012-07-16')
+        expect(described_class.parse_spec('this_fortnight', :to))
+          .to eq described_class.parse('2012-07-29')
+        expect(described_class.parse_spec('last_fortnight')).to eq described_class.parse('2012-07-02')
+        expect(described_class.parse_spec('yesterfortnight', :to))
           .to eq described_class.parse('2012-07-15')
       end
 
@@ -585,12 +635,28 @@ describe Date do
         expect(described_class.parse_spec('this_year', :to)).to eq described_class.parse('2012-12-31')
         expect(described_class.parse_spec('last_year')).to eq described_class.parse('2011-01-01')
         expect(described_class.parse_spec('last_year', :to)).to eq described_class.parse('2011-12-31')
+        expect(described_class.parse_spec('yesteryear')).to eq described_class.parse('2011-01-01')
+        expect(described_class.parse_spec('yesteryear', :to)).to eq described_class.parse('2011-12-31')
       end
 
       it 'parses forever and never' do
         expect(described_class.parse_spec('forever')).to eq Date::BOT
         expect(described_class.parse_spec('forever', :to)).to eq Date::EOT
         expect(described_class.parse_spec('never')).to be_nil
+      end
+
+      it 'parses skip to dow skip modifiers' do
+        # Ash Wednesday (40 days plus 6 non-fasting Sundays before Easter)
+        expect(described_class.parse_spec('2024-E-46<=We')).to eq described_class.parse('2024-02-14')
+        # Ascension Thursday
+        expect(described_class.parse_spec('2024-E+39>=Th')).to eq described_class.parse('2024-05-09')
+        # Pentecost
+        expect(described_class.parse_spec('2024-E+49>=Su')).to eq described_class.parse('2024-05-19')
+        # Thanksgiving
+        expect(described_class.parse_spec('2024-11<=Th', :to)).to eq described_class.parse('2024-11-28')
+        expect(described_class.parse_spec('2025-11<=Th', :to)).to eq described_class.parse('2025-11-27')
+        travel_to Time.local(2020, 9, 15)
+        travel_back
       end
 
       it 'converts a month name into its sequential number' do

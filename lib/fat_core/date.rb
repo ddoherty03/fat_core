@@ -1479,46 +1479,65 @@ module FatCore
       # `::Date.parse_spec` returns the first date in the period if `spec_type` is
       # `:from` and the last date in the period if `spec_type` is `:to`:
       #
-      # * `YYYY-MM-DD` a particular date, so `:from` and `:to` return the same
-      # * `YYYY` is the whole year `YYYY`,
-      # * `YYYY-1H` or `YYYY-H1` is the first calendar half in year `YYYY`,
-      # * `H2` or `2H` is the second calendar half of the current year,
-      # * `YYYY-3Q` or `YYYY-Q3` is the third calendar quarter of year YYYY,
-      # * `Q3` or `3Q` is the third calendar quarter in the current year,
-      # * `YYYY-04` or `YYYY-4` is April, the fourth month of year `YYYY`,
-      # * `4-12` or `04-12` is the 12th of April in the current year,
-      # * `4` or `04` is April in the current year,
-      # * `YYYY-W32` or `YYYY-32W` is the 32nd week in year YYYY,
-      # * `W32` or `32W` is the 32nd week in the current year,
-      # * `W32-4` or `32W-4` is the 4th day of the 32nd week in the current year,
-      # * `YYYY-MM-I` or `YYYY-MM-II` is the first or second half of the given month,
-      # * `YYYY-MM-i` or `YYYY-MM-v` is the first or fifth week of the given month,
-      # * `MM-i` or `MM-v` is the first or fifth week of the current month,
-      # * `YYYY-MM-3Tu` or `YYYY-MM-4Mo` is the third Tuesdsay and fourth Monday of the given month,
-      # * `MM-3Tu` or `MM-4Mo` is the third Tuesdsay and fourth Monday of the given month in the current year,
-      # * `3Tu` or `4Mo` is the third Tuesdsay and fourth Monday of the current month,
-      # * `YYYY-E` is Easter of the given year YYYY,
-      # * `E` is Easter of the current year YYYY,
-      # * `YYYY-E+50` and `YYYY-E-40` is 50 days after and 40 days before Easter of the given year,
-      # * `E+50` and `E-40` is 50 days after and 40 days before Easter of the current year,
-      # * `YYYY-001` and `YYYY-182` is first and 182nd day of the given year,
-      # * `001` and `182` is first and 182nd day of the current year,
-      # * `this_<chunk>` where `<chunk>` is one of `year`, `half`, `quarter`,
+      # - `YYYY-MM-DD` a particular date, so `:from` and `:to` return the same
+      # - `YYYY` is the whole year `YYYY`,
+      # - `YYYY-1H` or `YYYY-H1` is the first calendar half in year `YYYY`,
+      # - `H2` or `2H` is the second calendar half of the current year,
+      # - `YYYY-3Q` or `YYYY-Q3` is the third calendar quarter of year YYYY,
+      # - `Q3` or `3Q` is the third calendar quarter in the current year,
+      # - `YYYY-04` or `YYYY-4` is April, the fourth month of year `YYYY`,
+      # - `4-12` or `04-12` is the 12th of April in the current year,
+      # - `4` or `04` is April in the current year,
+      # - `YYYY-W32` or `YYYY-32W` is the 32nd week in year YYYY,
+      # - `W32` or `32W` is the 32nd week in the current year,
+      # - `W32-4` or `32W-4` is the 4th day of the 32nd week in the current year,
+      # - `YYYY-MM-A` or `YYYY-MM-B` is the first or second half of the given month,
+      # - `YYYY-MM-i` or `YYYY-MM-v` is the first or fifth week of the given month,
+      # - `YYYY-MM-I` or `YYYY-MM-V` is also the first or fifth week of the
+      #   given month, i.e., case does not matter,
+      # - `MM-i` or `MM-v` is the first or fifth week of the current month,
+      # - `YYYY-MM-3Tu` or `YYYY-MM-4Mo` or `YYYY-MM-3Tue` or `YYYY-MM-4Mon`
+      #   is the third Tuesdsay and fourth Monday of the given month,
+      # - `MM-3Tu` or `MM-4Mo` (`MM-3Tue` or `MM-4Mon`) is the third Tuesdsay
+      #   and fourth Monday of the given month in the current year,
+      # - `3Tu` or `4Mo` is the third Tuesdsay and fourth Monday of the current month,
+      # - `YYYY-E` is Easter of the given year YYYY,
+      # - `E` is Easter of the current year YYYY,
+      # - `YYYY-E+50` and `YYYY-E-40` is 50 days after and 40 days before Easter of the given year,
+      # - `E+50` and `E-40` is 50 days after and 40 days before Easter of the current year,
+      # - `YYYY-001` and `YYYY-182` is first and 182nd day of the given year,
+      # - `001` and `182` is first and 182nd day of the current year,
+      # - `this_<chunk>` where `<chunk>` is one of `year`, `half`, `quarter`,
       #   `bimonth`, `month`, `semimonth`, `biweek`, `week`, or `day`, the
       #   corresponding calendar period in which the current date falls,
-      # * `last_<chunk>` where `<chunk>` is one of `year`, `half`, `quarter`,
+      # - `last_<chunk>` where `<chunk>` is one of `year`, `half`, `quarter`,
       #   `bimonth`, `month`, `semimonth`, `biweek`, `week`, or `day`, the
       #   corresponding calendar period immediately before the one in which the
       #   current date falls,
-      # * `today` is the same as `this_day`,
-      # * `yesterday` is the same as `last_day`,
-      # * `forever` is the period from ::Date::BOT to ::Date::EOT, essentially all
+      # - `today` is the same as `this_day`,
+      # - `yesterday` is the same as `last_day`,
+      # - `forever` is the period from ::Date::BOT to ::Date::EOT, essentially all
       #   dates of commercial interest, and
-      # * `never` causes the method to return nil.
+      # - `never` causes the method to return nil.
       #
-      # In all of the above example specs, letter used for calendar chunks, `W`,
-      # `Q`, and `H` can be written in lower case as well. Also, you can use `/`
-      # to separate date components instead of `-`.
+      # In all of the above example specs, the letter used for calendar
+      # chunks, `W`, `Q`, and `H` can be written in lower case as well, as can
+      # roman numeral week numbers. Also, you can use `/` to separate date
+      # components instead of `-`.  Likewise, days of the week can be any
+      # string, upper or lower case, that starts with at least two letters of
+      # the day-of-week name: 'Su', 'su', 'sund', 'sunday', 'surgery', all are
+      # valid ways of writing 'Sunday'.
+      #
+      # Each of the foregoing specs may have a 'skip modifier' appended to it
+      # for finding the following or preceding day-of-week from that date
+      # given by the main spec.  A skip modifier is a construction appended to
+      # a date spec of the form '<Th', '>Th', '<=Th', or '>=Th' where 'Th'
+      # could be the name of any day-of-the-week, as described in the
+      # foregoing paragraph.  It means that /starting from the date determined
+      # by the date spec/, find the first Thursday before (<), on or before
+      # (<=), after (>), or on or after (>=) the date.  So Thanksgiving in
+      # 2028 could be found with Date.parse_spec('2028-11<=Th', :to), i.e.,
+      # the last Thursday on or before the last day of November, 2028.
       #
       # @example
       #   ::Date.parse_spec('2012-W32').iso      # => "2012-08-06"
@@ -1539,177 +1558,203 @@ module FatCore
           raise ArgumentError, "invalid date spec type: '#{spec_type}'"
         end
 
-        today = ::Date.current
-        case spec
-        when %r{\A((?<yr>\d\d\d\d)[-/])?(?<doy>\d\d\d)\z}
-          # With 3-digit YYYY-ddd, return the day-of-year
-          year = Regexp.last_match[:yr]&.to_i || ::Date.today.year
-          doy = Regexp.last_match[:doy].to_i
-          max_doy = ::Date.gregorian_leap?(year) ? 366 : 365
-          if doy > max_doy
-            raise ArgumentError, "invalid day-of-year '#{doy}' (1..#{max_doy}) in '#{spec}'"
-          end
-
-          ::Date.new(year, 1, 1) + doy - 1
-        when %r{\A((?<yr>\d\d\d\d)[-/])?(?<mo>\d\d?)([-/](?<dy>\d\d?))?\z}
-          # MM, YYYY-MM, MM-DD
-          year = Regexp.last_match[:yr]&.to_i || ::Date.today.year
-          month = Regexp.last_match[:mo].to_i
-          day = Regexp.last_match[:dy]&.to_i
-          unless [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].include?(month)
-            raise ArgumentError, "invalid month number (1-12): '#{spec}'"
-          end
-
-          if day
-            ::Date.new(year, month, day)
-          elsif spec_type == :from
-            ::Date.new(year, month, 1)
-          else
-            ::Date.new(year, month, 1).end_of_month
-          end
-        when %r{\A((?<yr>\d\d\d\d)[-/])?(?<wk>\d\d?)W(-(?<dy>\d))?\z}xi,
-          %r{\A((?<yr>\d\d\d\d)[-/])?W(?<wk>\d\d?)(-(?<dy>\d))?\z}xi
-          # Commercial week numbers.  The first commercial week of the year is
-          # the one that includes the first Thursday of that year. In the
-          # Gregorian calendar, this is equivalent to the week which includes
-          # January 4.  This appears to be the equivalent of ISO 8601 week
-          # number as described at https://en.wikipedia.org/wiki/ISO_week_date
-          year = Regexp.last_match[:yr]&.to_i
-          week_num = Regexp.last_match[:wk].to_i
-          day = Regexp.last_match[:dy]&.to_i
-          unless (1..53).cover?(week_num)
-            raise ArgumentError, "invalid week number (1-53): '#{spec}'"
-          end
-          if day && !(1..7).cover?(day)
-            raise ArgumentError, "invalid ISO day number (1-7): '#{spec}'"
-          end
-
-          if spec_type == :from
-            ::Date.commercial(year ? year : today.year, week_num, day ? day : 1)
-          else
-            ::Date.commercial(year ? year : today.year, week_num, day ? day : 7)
-          end
-        when %r{^((?<yr>\d\d\d\d)[-/])?(?<qt>\d)[Qq]$}, %r{^((?<yr>\d\d\d\d)[-/])?[Qq](?<qt>\d)$}
-          # Year-Quarter
-          year = Regexp.last_match[:yr]&.to_i || ::Date.today.year
-          quarter = Regexp.last_match[:qt].to_i
-          unless [1, 2, 3, 4].include?(quarter)
-            raise ArgumentError, "invalid quarter number (1-4): '#{spec}'"
-          end
-
-          month = quarter * 3
-          if spec_type == :from
-            ::Date.new(year, month, 1).beginning_of_quarter
-          else
-            ::Date.new(year, month, 1).end_of_quarter
-          end
-        when %r{^((?<yr>\d\d\d\d)[-/])?(?<hf>\d)[Hh]$}, %r{^((?<yr>\d\d\d\d)[-/])?[Hh](?<hf>\d)$}
-          # Year-Half
-          year = Regexp.last_match[:yr]&.to_i || ::Date.today.year
-          half = Regexp.last_match[:hf].to_i
-          msg = "invalid half number: '#{spec}'"
-          raise ArgumentError, msg unless [1, 2].include?(half)
-
-          month = half * 6
-          if spec_type == :from
-            ::Date.new(year, month, 15).beginning_of_half
-          else
-            ::Date.new(year, month, 1).end_of_half
-          end
-        when /\A(?<yr>\d\d\d\d)\z/
-          # Year only
-          year = Regexp.last_match[:yr].to_i
-          if spec_type == :from
-            ::Date.new(year, 1, 1)
-          else
-            ::Date.new(year, 12, 31)
-          end
-        when %r{\A(?<yr>\d\d\d\d)[-/](?<mo>\d\d?)[-/](?<hf_mo>(I|II))\z}
-          # Year, month, half-month, designated with uppercase Roman
-          year = Regexp.last_match[:yr].to_i
-          month = Regexp.last_match[:mo].to_i
-          hf_mo = Regexp.last_match[:hf_mo]
-          if hf_mo == "I"
-            spec_type == :from ? ::Date.new(year, month, 1) : ::Date.new(year, month, 15)
-          else
-            # hf_mo == "II"
-            spec_type == :from ? ::Date.new(year, month, 16) : ::Date.new(year, month, 16).end_of_month
-          end
-        when %r{\A((?<yr>\d\d\d\d)[-/])?((?<mo>\d\d?)[-/])?(?<wk>(i|ii|iii|iv|v|vi))\z}
-          # Year, month, week-of-month, partial-or-whole, designated with lowercase Roman
-          year = Regexp.last_match[:yr]&.to_i || ::Date.today.year
-          month = Regexp.last_match[:mo]&.to_i || ::Date.today.month
-          wk = ['i', 'ii', 'iii', 'iv', 'v', 'vi'].index(Regexp.last_match[:wk]) + 1
-          result =
-            if spec_type == :from
-              ::Date.new(year, month, 1).beginning_of_week + (wk - 1).weeks
-            else
-              ::Date.new(year, month, 1).end_of_week + (wk - 1).weeks
-            end
-          # If beginning of week of the 1st is in prior month, return the 1st
-          result = [result, ::Date.new(year, month, 1)].max
-          # If the whole week of the result is in the next month, there was no such week
-          if result.beginning_of_week.month > month
-            msg = sprintf("no week number #{wk} in %04d-%02d", year, month)
-            raise ArgumentError, msg
-          else
-            # But if part of the result week is in this month, return end of month
-            [result, ::Date.new(year, month, 1).end_of_month].min
-          end
-        when %r{\A((?<yr>\d\d\d\d)[-/])?((?<mo>\d\d?)[-/])?((?<ndow>\d+)(?<dow>Su|Mo|Tu|We|Th|Fr|Sa))\z}
-          # Year, month, week-of-month, partial-or-whole, designated with lowercase Roman
-          year = Regexp.last_match[:yr]&.to_i || ::Date.today.year
-          month = Regexp.last_match[:mo]&.to_i || ::Date.today.month
-          ndow = Regexp.last_match[:ndow].to_i
-          dow = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].index(Regexp.last_match[:dow]) ||
-                ['su', 'mo', 'tu', 'we', 'th', 'fr', 'sa', 'su'].index(Regexp.last_match[:dow])
-          unless (1..12).cover?(month)
-            raise ArgumentError, "invalid month number (1-12): '#{month}' in '#{spec}'"
-          end
-          unless (1..5).cover?(ndow)
-            raise ArgumentError, "invalid ordinal day number (1-5): '#{ndow}' in '#{spec}'"
-          end
-
-          ::Date.nth_wday_in_year_month(ndow, dow, year, month)
-        when %r{\A(?<yr>\d\d\d\d[-/])?E(?<off>[+-]\d+)?\z}i
-          # Easter for the given year, current year (if no year component),
-          # optionally plus or minus a day offset
-          year = Regexp.last_match[:yr]&.to_i || ::Date.today.year
-          offset = Regexp.last_match[:off]&.to_i || 0
-          ::Date.easter(year) + offset
-        when %r{\A(?<rel>(to[_-]?|this[_-]?)|(last[_-]?|yester[_-]?|next[_-]?))
-                  (?<chunk>morrow|day|week|biweek|semimonth|bimonth|month|quarter|half|year)\z}xi
-          rel = Regexp.last_match[:rel]
-          chunk = Regexp.last_match[:chunk].to_sym
-          if chunk.match?(/morrow/i)
-            chunk = :day
-            rel = 'next'
-          end
-          start =
-            if rel.match?(/this|to/i)
-              ::Date.today
-            elsif rel.match?(/next/i)
-              ::Date.today.add_chunk(chunk, 1)
-            else
-              # rel.match?(/last|yester/i)
-              ::Date.today.add_chunk(chunk, -1)
-            end
-          if spec_type == :from
-            start.beginning_of_chunk(chunk)
-          else
-            start.end_of_chunk(chunk)
-          end
-        when /^forever/i
-          if spec_type == :from
-            ::Date::BOT
-          else
-            ::Date::EOT
-          end
-        when /^never/i
-          nil
+        today = ::Date.today
+        if (md = spec.match(/(?<dir>[<>]=?)(?<dow>Su|Mo|Tu|We|Th|Fr|Sa)[a-z]*\z/i))
+          skip_to = md[:dow]
+          skip_dir = md[:dir]
+          spec = spec.sub(/[<>]=?(Su|Mo|Tu|We|Th|Fr|Sa)[a-z]*\z/i, '')
         else
-          raise ArgumentError, "bad date spec: '#{spec}''"
+          skip_to = nil
+          skip_dir = nil
         end
+        result =
+          case spec
+          when %r{\A((?<yr>\d\d\d\d)[-/])?(?<doy>\d\d\d)\z}
+            # With 3-digit YYYY-ddd, return the day-of-year
+            year = Regexp.last_match[:yr]&.to_i || ::Date.today.year
+            doy = Regexp.last_match[:doy].to_i
+            max_doy = ::Date.gregorian_leap?(year) ? 366 : 365
+            if doy > max_doy
+              raise ArgumentError, "invalid day-of-year '#{doy}' (1..#{max_doy}) in '#{spec}'"
+            end
+
+            ::Date.new(year, 1, 1) + doy - 1
+          when %r{\A((?<yr>\d\d\d\d)[-/])?(?<mo>\d\d?)([-/](?<dy>\d\d?))?\z}
+            # MM, YYYY-MM, MM-DD
+            year = Regexp.last_match[:yr]&.to_i || ::Date.today.year
+            month = Regexp.last_match[:mo].to_i
+            day = Regexp.last_match[:dy]&.to_i
+            unless [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].include?(month)
+              raise ArgumentError, "invalid month number (1-12): '#{spec}'"
+            end
+
+            if day
+              ::Date.new(year, month, day)
+            elsif spec_type == :from
+              ::Date.new(year, month, 1)
+            else
+              ::Date.new(year, month, 1).end_of_month
+            end
+          when %r{\A((?<yr>\d\d\d\d)[-/])?(?<wk>\d\d?)W(-(?<dy>\d))?\z}xi,
+            %r{\A((?<yr>\d\d\d\d)[-/])?W(?<wk>\d\d?)(-(?<dy>\d))?\z}xi
+            # Commercial week numbers.  The first commercial week of the year is
+            # the one that includes the first Thursday of that year. In the
+            # Gregorian calendar, this is equivalent to the week which includes
+            # January 4.  This appears to be the equivalent of ISO 8601 week
+            # number as described at https://en.wikipedia.org/wiki/ISO_week_date
+            year = Regexp.last_match[:yr]&.to_i
+            week_num = Regexp.last_match[:wk].to_i
+            day = Regexp.last_match[:dy]&.to_i
+            unless (1..53).cover?(week_num)
+              raise ArgumentError, "invalid week number (1-53): '#{spec}'"
+            end
+            if day && !(1..7).cover?(day)
+              raise ArgumentError, "invalid ISO day number (1-7): '#{spec}'"
+            end
+
+            if spec_type == :from
+              ::Date.commercial(year ? year : today.year, week_num, day ? day : 1)
+            else
+              ::Date.commercial(year ? year : today.year, week_num, day ? day : 7)
+            end
+          when %r{^((?<yr>\d\d\d\d)[-/])?(?<qt>\d)[Qq]$}, %r{^((?<yr>\d\d\d\d)[-/])?[Qq](?<qt>\d)$}
+            # Year-Quarter
+            year = Regexp.last_match[:yr]&.to_i || ::Date.today.year
+            quarter = Regexp.last_match[:qt].to_i
+            unless [1, 2, 3, 4].include?(quarter)
+              raise ArgumentError, "invalid quarter number (1-4): '#{spec}'"
+            end
+
+            month = quarter * 3
+            if spec_type == :from
+              ::Date.new(year, month, 1).beginning_of_quarter
+            else
+              ::Date.new(year, month, 1).end_of_quarter
+            end
+          when %r{^((?<yr>\d\d\d\d)[-/])?(?<hf>\d)[Hh]$}, %r{^((?<yr>\d\d\d\d)[-/])?[Hh](?<hf>\d)$}
+            # Year-Half
+            year = Regexp.last_match[:yr]&.to_i || ::Date.today.year
+            half = Regexp.last_match[:hf].to_i
+            msg = "invalid half number: '#{spec}'"
+            raise ArgumentError, msg unless [1, 2].include?(half)
+
+            month = half * 6
+            if spec_type == :from
+              ::Date.new(year, month, 15).beginning_of_half
+            else
+              ::Date.new(year, month, 1).end_of_half
+            end
+          when /\A(?<yr>\d\d\d\d)\z/
+            # Year only
+            year = Regexp.last_match[:yr].to_i
+            if spec_type == :from
+              ::Date.new(year, 1, 1)
+            else
+              ::Date.new(year, 12, 31)
+            end
+          when %r{\A(?<yr>\d\d\d\d)[-/](?<mo>\d\d?)[-/](?<hf_mo>(A|B))\z}
+            # Year, month, half-month, designated with uppercase Roman
+            year = Regexp.last_match[:yr].to_i
+            month = Regexp.last_match[:mo].to_i
+            hf_mo = Regexp.last_match[:hf_mo]
+            if hf_mo == "A"
+              spec_type == :from ? ::Date.new(year, month, 1) : ::Date.new(year, month, 15)
+            else
+              # hf_mo == "B"
+              spec_type == :from ? ::Date.new(year, month, 16) : ::Date.new(year, month, 16).end_of_month
+            end
+          when %r{\A((?<yr>\d\d\d\d)[-/])?((?<mo>\d\d?)[-/])?(?<wk>(i|ii|iii|iv|v|vi))\z}i
+            # Year, month, week-of-month, partial-or-whole, designated with lowercase Roman
+            year = Regexp.last_match[:yr]&.to_i || ::Date.today.year
+            month = Regexp.last_match[:mo]&.to_i || ::Date.today.month
+            wk = roman_to_week(Regexp.last_match[:wk])
+            result =
+              if spec_type == :from
+                ::Date.new(year, month, 1).beginning_of_week + (wk - 1).weeks
+              else
+                ::Date.new(year, month, 1).end_of_week + (wk - 1).weeks
+              end
+            # If beginning of week of the 1st is in prior month, return the 1st
+            result = [result, ::Date.new(year, month, 1)].max
+            # If the whole week of the result is in the next month, there was no such week
+            if result.beginning_of_week.month > month
+              msg = sprintf("no week number #{wk} in %04d-%02d", year, month)
+              raise ArgumentError, msg
+            else
+              # But if part of the result week is in this month, return end of month
+              [result, ::Date.new(year, month, 1).end_of_month].min
+            end
+          when %r{\A((?<yr>\d\d\d\d)[-/])?((?<mo>\d\d?)[-/])?((?<nth>[-+]?\d+)(?<dow>(Su|Mo|Tu|We|Th|Fr|Sa)[a-z]*))\z}i
+            # Year, month, ordinal dow name
+            year = Regexp.last_match[:yr]&.to_i || ::Date.today.year
+            month = Regexp.last_match[:mo]&.to_i || ::Date.today.month
+            nth = Regexp.last_match[:nth].to_i
+            wday = dow_to_wday(Regexp.last_match[:dow])
+            unless (1..12).cover?(month)
+              raise ArgumentError, "invalid month number (1-12): '#{month}' in '#{spec}'"
+            end
+            unless (1..5).cover?(nth.abs)
+              raise ArgumentError, "invalid ordinal day number (1-5): '#{nth}' in '#{spec}'"
+            end
+
+            ::Date.nth_wday_in_year_month(nth, wday, year, month)
+          when %r{\A(?<yr>\d\d\d\d[-/])?E(?<off>[+-]\d+)?\z}i
+            # Easter for the given year, current year (if no year component),
+            # optionally plus or minus a day offset
+            year = Regexp.last_match[:yr]&.to_i || ::Date.today.year
+            offset = Regexp.last_match[:off]&.to_i || 0
+            ::Date.easter(year) + offset
+          when %r{\A(?<rel>(to[_-]?|this[_-]?)|(last[_-]?|yester[_-]?|next[_-]?))
+                  (?<chunk>morrow|day|week|biweek|fortnight|semimonth|bimonth|month|quarter|half|year)\z}xi
+            rel = Regexp.last_match[:rel]
+            chunk = Regexp.last_match[:chunk].to_sym
+            if chunk.match?(/morrow/i)
+              chunk = :day
+              rel = 'next'
+            end
+            if chunk.match?(/fortnight/i)
+              chunk = :biweek
+            end
+            start =
+              if rel.match?(/this|to/i)
+                ::Date.today
+              elsif rel.match?(/next/i)
+                ::Date.today.add_chunk(chunk, 1)
+              else
+                # rel.match?(/last|yester/i)
+                ::Date.today.add_chunk(chunk, -1)
+              end
+            if spec_type == :from
+              start.beginning_of_chunk(chunk)
+            else
+              start.end_of_chunk(chunk)
+            end
+          when /^forever/i
+            if spec_type == :from
+              ::Date::BOT
+            else
+              ::Date::EOT
+            end
+          when /^never/i
+            nil
+          else
+            raise ArgumentError, "bad date spec: '#{spec}''"
+          end
+
+        # Now, skip to the next or preceding skip day if skip_to is defined.
+        if skip_to
+          wday = dow_to_wday(skip_to)
+          if result.wday == wday && skip_dir[1] == '='
+            true  # Do nothing
+          elsif skip_dir[0] == '<'
+            # Find prior date with dow
+            result -= 1.day while result.wday != wday
+          else
+            # Find subsequent date with dow
+            result += 1.day while result.wday != wday
+          end
+        end
+        result
       end
 
       # @group Utilities
@@ -1830,6 +1875,50 @@ module FatCore
         end
 
         result
+      end
+
+      # Return the wday number for the given DOW string allowing flexibility
+      # on how the days are written
+      def dow_to_wday(s)
+        case s.clean
+        when /\ASu/i
+          0
+        when /\AMo/i
+          1
+        when /\ATu/i
+          2
+        when /\AWe/i
+          3
+        when /\ATh/i
+          4
+        when /\AFr/i
+          5
+        when /\ASa/i
+          6
+        else
+          raise ArgumentError, "There is no weekday named #{s}"
+        end
+      end
+
+      # Return the week number indicated by roman numerals i to vi, regardless
+      # of case.
+      def roman_to_week(s)
+        case s.clean
+        when /\Ai\z/i
+          1
+        when /\Aii\z/i
+          2
+        when /\Aiii\z/i
+          3
+        when /\Aiv\z/i
+          4
+        when /\Av\z/i
+          5
+        when /\Avi\z/i
+          6
+        else
+          raise ArgumentError, "There is no week number #{s}"
+        end
       end
 
       # Return the date of Easter for the Western Church in the given year.
