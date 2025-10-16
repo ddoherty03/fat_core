@@ -143,14 +143,6 @@ the people, for the people, shall not perish from the earth."
       end
     end
 
-    it 'converts a digital date to a Date' do
-      expect('20140521'.as_date.iso).to eq '2014-05-21'
-      expect('2014-05-21'.as_date.iso).to eq '2014-05-21'
-      expect('2014/05/21'.as_date.iso).to eq '2014-05-21'
-      expect('2014/5/21'.as_date.iso).to eq '2014-05-21'
-      expect('201X/5/21'.as_date).to be_nil
-    end
-
     it 'converts a string to a regular expression' do
       # Ignores case by default
       re = "/hello((\s+)(world))?/".as_regexp

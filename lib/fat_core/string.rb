@@ -93,26 +93,6 @@ module FatCore
       r.gsub('XzXzXcbXzXzX', '\\}')
     end
 
-    # Convert a string representing a date with only digits, hyphens, or slashes
-    # to a Date.
-    #
-    # @example
-    #   "20090923".as_date.iso -> "2009-09-23"
-    #   "2009/09/23".as_date.iso -> "2009-09-23"
-    #   "2009-09-23".as_date.iso -> "2009-09-23"
-    #   "2009-9-23".as_date.iso -> "2009-09-23"
-    #
-    # @return [Date] the translated Date
-    def as_date
-      if self =~ %r{(?<yr>\d\d\d\d)[-/]?(?<mo>\d\d?)[-/]?(?<dy>\d\d?)}
-        ::Date.new(
-          Regexp.last_match[:yr].to_i,
-          Regexp.last_match[:mo].to_i,
-          Regexp.last_match[:dy].to_i,
-        )
-      end
-    end
-
     UPPERS = ('A'..'Z').to_a
     REGEXP_META_CHARACTERS = "\\$()*+.<>?[]^{|}".chars.freeze
 
