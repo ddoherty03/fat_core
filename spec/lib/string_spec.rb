@@ -2,7 +2,6 @@
 
 require 'spec_helper'
 require 'fat_core/string'
-require 'fat_core/date'
 
 describe String do
   describe 'class methods' do
