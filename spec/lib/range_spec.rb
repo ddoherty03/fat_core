@@ -4,48 +4,49 @@ require 'fat_core/range'
 describe Range do
   describe 'set operations' do
     it 'knows if it is a subset of another range' do
-      expect((4..8)).to be_subset_of(2..9)
-      expect((4..8)).to be_subset_of(4..8)
-      expect(Range.new(4, 8)).not_to be_subset_of(2..7)
-      expect(4..8).not_to be_subset_of(5..8)
-      expect(4..8).not_to be_subset_of(11..20)
+      expect((4..8).subset_of?(2..9)).to be true
+      expect((4..8).subset_of?(4..8)).to be true
+      expect((4..8).subset_of?(2..7)).to be false
+      expect((4..8).subset_of?(5..8)).to be false
+      expect((4..8).subset_of?(11..20)).to be false
     end
 
     it 'knows if it is a proper subset of another range' do
-      expect(4..8).to be_proper_subset_of(2..9)
-      expect(4..8).to be_proper_subset_of(4..9)
-      expect(4..8).not_to be_proper_subset_of(4..8)
-      expect(4..8).not_to be_proper_subset_of(2..7)
-      expect(4..8).not_to be_proper_subset_of(5..8)
-      expect(4..8).not_to be_proper_subset_of(11..20)
+      expect((4..8).proper_subset_of?(2..9)).to be true
+      expect((4..8).proper_subset_of?(4..9)).to be true
+      expect((4..8).proper_subset_of?(4..8)).to be false
+      expect((4..8).proper_subset_of?(2..7)).to be false
+      expect((4..8).proper_subset_of?(5..8)).to be false
+      expect((4..8).proper_subset_of?(11..20)).to be false
     end
 
     it 'knows if it is a superset of another range' do
-      expect(4..8).to be_superset_of(5..7)
-      expect(4..8).to be_superset_of(6..8)
-      expect(4..8).to be_superset_of(4..7)
-      expect(4..8).to be_superset_of(4..8)
-      expect(4..8).not_to be_superset_of(2..9)
-      expect(4..8).not_to be_superset_of(2..8)
-      expect(4..8).not_to be_superset_of(4..9)
-      expect(4..8).not_to be_superset_of(8..20)
-      expect(4..8).not_to be_superset_of(0..4)
-      expect(4..8).not_to be_superset_of(0..3)
-      expect(4..8).not_to be_superset_of(9..20)
+      expect((4..8).superset_of?(5..7)).to be true
+      expect((4..8).superset_of?(6..8)).to be true
+      expect((4..8).superset_of?(4..7)).to be true
+      expect((4..8).superset_of?(4..8)).to be true
+      expect((4..8).superset_of?(2..9)).to be false
+      expect((4..8).superset_of?(2..8)).to be false
+      expect((4..8).superset_of?(4..9)).to be false
+      expect((4..8).superset_of?(8..20)).to be false
+      expect((4..8).superset_of?(0..4)).to be false
+      expect((4..8).superset_of?(0..3)).to be false
+      expect((4..8).superset_of?(9..20)).to be false
     end
 
     it 'knows if it is a proper superset of another range' do
-      expect(4..8).to be_proper_superset_of(5..7)
-      expect(4..8).to be_proper_superset_of(6..8)
-      expect(4..8).to be_proper_superset_of(4..7)
-      expect(4..8).not_to be_proper_superset_of(4..8)
-      expect(4..8).not_to be_proper_superset_of(2..9)
-      expect(4..8).not_to be_proper_superset_of(2..8)
-      expect(4..8).not_to be_proper_superset_of(4..9)
-      expect(4..8).not_to be_proper_superset_of(8..20)
-      expect(4..8).not_to be_proper_superset_of(0..4)
-      expect(4..8).not_to be_proper_superset_of(0..3)
-      expect(4..8).not_to be_proper_superset_of(9..20)
+      expect((4..8).proper_superset_of?(5..7)).to be true
+      expect((4..8).proper_superset_of?(6..8)).to be true
+      expect((4..8).proper_superset_of?(4..7)).to be true
+      expect((4..8).proper_superset_of?(4..8)).to be false
+      expect((4..8).proper_superset_of?(2..9)).to be false
+      expect((4..8).proper_superset_of?(2..8)).to be false
+      expect((4..8).proper_superset_of?(4..9)).to be false
+      expect((4..8).proper_superset_of?(8..20)).to be false
+      expect((4..8).proper_superset_of?(0..4)).to be false
+      expect((4..8).proper_superset_of?(0..3)).to be false
+      expect((4..8).proper_superset_of?(9..20)).to be false
+      expect((4..8).proper_superset_of?(4..8)).to be false
     end
 
     it 'knows its intersection with another range' do
@@ -127,44 +128,44 @@ describe Range do
 
   describe 'spanning' do
     it 'can determine whether it is spanned by a set of ranges' do
-      expect((0..10)).to be_spanned_by([(0..3), (4..6), (7..10)])
+      expect((0..10).spanned_by?([(0..3), (4..6), (7..10)])).to be true
     end
 
     it 'can determine that overlapping ranges do not span' do
-      expect((0..10)).not_to be_spanned_by([(0..3), (3..6), (7..10)])
+      expect((0..10).spanned_by?([(0..3), (3..6), (7..10)])).to be false
     end
 
     it 'allows spanning ranges to be any Enumerable' do
       require 'set'
       set = [(0..3), (4..6), (7..10)].to_set
-      expect((0..10)).to be_spanned_by(set)
+      expect((0..10).spanned_by?(set)).to be true
       set = [(0...3), (4..6), (7..10)].to_set
-      expect((0..10)).not_to be_spanned_by(set)
+      expect((0..10).spanned_by?(set)).to be false
     end
 
     it 'allows the spanning set to be wider than itself' do
       set = [(0..3), (4..6), (7..10)].to_set
-      expect((2..8)).to be_spanned_by(set)
-      expect((5..6)).to be_spanned_by(set)
+      expect((2..8).spanned_by?(set)).to be true
+      expect((5..6).spanned_by?(set)).to be true
     end
   end
 
   describe 'overlapping a single range' do
     it 'knows if another range overlaps it' do
-      expect(0..10).to be_overlaps(-3..5)
-      expect(0..10).to be_overlaps(3..5)
-      expect(0..10).to be_overlaps(8..15)
-      expect(0..10).to be_overlaps(0..10)
-      expect(0..10).not_to be_overlaps(11..12)
-      expect(0..10).not_to be_overlaps(-11..-1)
+      expect((0..10).overlaps?(-3..5)).to be true
+      expect((0..10).overlaps?(3..5)).to be true
+      expect((0..10).overlaps?(8..15)).to be true
+      expect((0..10).overlaps?(0..10)).to be true
+      expect((0..10).overlaps?(11..12)).to be false
+      expect((0..10).overlaps?(-11..-1)).to be false
 
       # Order of operands should not matter
-      expect(-3..5).to be_overlaps(0..10)
-      expect(3..5).to be_overlaps(0..10)
-      expect(8..15).to be_overlaps(0..10)
-      expect(0..10).to be_overlaps(0..10)
-      expect(11..12).not_to be_overlaps(0..10)
-      expect(-11..-1).not_to be_overlaps(0..10)
+      expect((-3..5).overlaps?(0..10)).to be true
+      expect((3..5).overlaps?(0..10)).to be true
+      expect((8..15).overlaps?(0..10)).to be true
+      expect((0..10).overlaps?(0..10)).to be true
+      expect((11..12).overlaps?(0..10)).to be false
+      expect((-11..-1).overlaps?(0..10)).to be false
     end
 
     it 'can determine whether a set contains covered overlaps' do
