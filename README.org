@@ -106,7 +106,7 @@ coverage on one Range by an Array of other Ranges:
   (0..12).gaps([(0..2), (5..7), (10..12)])  => [(3..4), (8..9)]
 #+end_SRC
 
-* Enumerable
+*** Enumerable
 FatCore::Enumerable extends Enumerable with the ~#each_with_flags~ method that
 yields the elements of the Enumerable but also yields two booleans, ~first~ and
 ~last~ that are set to true on respectively, the first and last element of the
