@@ -3,7 +3,7 @@
 #+PROPERTY: header-args:ruby :colnames no :hlines yes :exports both :wrap example :ruby ruby
 #+PROPERTY: header-args:sh :exports code
 
-[[https://travis-ci.org/ddoherty03/fat_core.svg?branch=master]]
+[[https://github.com/ddoherty03/fat_core/actions/workflows/ruby.yml/badge.svg/branch=master]]
 
 * README Setup Do First for Code Blocks
 Run this block before all others to ensure that we are reading the libraries
