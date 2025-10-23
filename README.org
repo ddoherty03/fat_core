@@ -36,6 +36,19 @@ Ruby LOADPATH:
 #+end_example
 
 
+* Table of Contents                                            :toc:noexport:
+- [[#readme-setup-do-first-for-code-blocks][README Setup Do First for Code Blocks]]
+- [[#fatcore][FatCore]]
+  - [[#installation][Installation]]
+  - [[#usage][Usage]]
+    - [[#range][Range]]
+    - [[#enumerable][Enumerable]]
+    - [[#hash][Hash]]
+    - [[#string][String]]
+    - [[#tex-quoting][TeX Quoting]]
+    - [[#numbers][Numbers]]
+  - [[#contributing][Contributing]]
+
 * FatCore
 
 ~fat-core~ is a simple gem to collect core extensions and a few new classes
