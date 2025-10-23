@@ -1,5 +1,7 @@
-inherit_from:
-  - ./rubocop-global.yml
+# Inherit the shared config from the rubocop-ddoherty gem (git-hosted on GitHub)
+inherit_gem:
+  rubocop-ddoherty: 'config/default.yml'
 
+# Project-specific adjustments:
 Style/BitwisePredicate:
    Enabled: false

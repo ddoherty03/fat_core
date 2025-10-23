@@ -1,9 +1,14 @@
+# frozen_string_literal: true
+
 source 'https://rubygems.org'
 
 # Specify your gem's dependencies in fat_core.gemspec
 gemspec
 
 group :development do
+  # rubocop and the shared config gem:
+  gem 'rubocop', require: false
+  gem 'rubocop-ddoherty', git: 'https://github.com/ddoherty03/rubocop-ddoherty.git', branch: 'master', require: false
   gem 'rubocop-shopify', require: false
   gem 'rubocop-rspec', require: false
   gem 'rubocop-performance', require: false
