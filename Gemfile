@@ -9,10 +9,6 @@ group :development do
   # rubocop and the shared config gem:
   gem 'rubocop', require: false
   gem 'rubocop-ddoherty', git: 'https://github.com/ddoherty03/rubocop-ddoherty.git', branch: 'master', require: false
-  gem 'rubocop-shopify', require: false
-  gem 'rubocop-rspec', require: false
-  gem 'rubocop-performance', require: false
-  gem 'rubocop-rake', require: false
   gem 'bundler'
   gem 'debug', '>= 1.0.0'
   gem 'pry'
