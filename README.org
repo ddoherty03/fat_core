@@ -41,6 +41,11 @@ Ruby LOADPATH:
 - [[#fatcore][FatCore]]
   - [[#installation][Installation]]
   - [[#usage][Usage]]
+    - [[#array][Array]]
+      - [[#method-last_i][Method =#last_i=]]
+      - [[#method-intersect_with_dups][Method =#intersect_with_dups=]]
+      - [[#method-diff_with_dups][Method =diff_with_dups=]]
+      - [[#method-comma_joinsep-nil-last_sep-nil-two_sep-nil][Method =comma_join(sep: nil, last_sep: nil, two_sep: nil)=]]
     - [[#range][Range]]
     - [[#enumerable][Enumerable]]
     - [[#hash][Hash]]
@@ -98,6 +103,37 @@ Or, you can require them all:
 
 Many of these have little that is of general interest, but there are a few
 goodies.
+
+*** Array
+**** Method =#last_i=
+Return the index of the last element of the Array.
+
+**** Method =#intersect_with_dups=
+Return a new Array that is the intersection of this Array with all =others=,
+but without removing duplicates as the =Array#&= method does. All items of
+this Array are included in the result but only if they also appear in all of
+the other Arrays.
+
+**** Method =diff_with_dups=
+Return an Array that is the difference between this Array and =other=, but
+without removing duplicates as the Array#- method does. All items of this
+Array are included in the result /unless/ they also appear in any of the
+=other= Arrays.
+
+**** Method =comma_join(sep: nil, last_sep: nil, two_sep: nil)=
+Convert this array into a single string by (1) applying =#to_s= to each
+element and (2) joining the elements with the string given by the =sep:=
+parameter. By default the sep parameter is ', '. You may use a different
+separation string in the case when there are only two items in the list by
+supplying a =two_sep= parameter.  You may also supply a difference separation
+string to separate the second-last and last items in the array by supplying a
+=last_sep:= parameter.  By default, the sep parameter is the string ', ', the
+=two_sep= is ' and ', and the =last_sep= is ', and ', all of which makes for a
+well-punctuated English clause.  If =sep= is given, the other two parameters
+are set to its value by default.  If =last_sep= is given, =two_sep= takes its
+value by default.  If the input array is empty, =#comma_join= returns an empty
+string.
+
 
 *** Range
 
