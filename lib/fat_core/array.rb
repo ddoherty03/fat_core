@@ -21,10 +21,10 @@ module FatCore
       result
     end
 
-    # Return an Array that is the difference between this Array and +other+, but
-    # without removing duplicates as the Array#- method does. All items of this
-    # Array are included in the result unless they also appear in the +other+
-    # Array.
+    # Return an Array that is the difference between this Array and +other+,
+    # but without removing duplicates as the Array#- method does. All items of
+    # this Array are included in the result unless they also appear in any of
+    # the +other+ Arrays.
     def diff_with_dups(*others)
       result = []
       each do |itm|
@@ -35,7 +35,7 @@ module FatCore
 
     # Convert this array into a single string by (1) applying #to_s to each
     # element and (2) joining the elements with the string given by the sep:
-    # paramater. By default the sep parameter is ', '. You may use a different
+    # parameter. By default the sep parameter is ', '. You may use a different
     # separation string in the case when there are only two items in the list
     # by supplying a two_sep parameter.  You may also supply a difference
     # separation string to separate the second-last and last items in the
