@@ -133,18 +133,15 @@ module FatCore
         a
         an
         the
-        at
-        for
-        up
         and
         but
         or
         nor
+        at
+        for
         in
         on
-        under
         of
-        from
         as
         by
         to
@@ -179,10 +176,13 @@ module FatCore
         elsif /^(N|S|E|W|NE|NW|SE|SW)$/i.match?(w)
           # Compass directions all caps
           newwords.push(w.upcase)
+        elsif little_words.include?(w.downcase)
+          # Only capitalize at beginning or end
+          newwords.push(first || last ? w.capitalize : w.downcase)
         elsif w =~ /^[^aeiouy]*$/i && w.size > 2
           # All consonants and at least 3 chars, probably abbr
           newwords.push(w.upcase)
-        elsif w =~ /^[A-Z0-9]+\z/ && preserve_acronyms
+        elsif w =~ /[0-9]/ && w =~ /^[A-Z0-9]+\z/ && w.size <= 5 && preserve_acronyms
           # All uppercase and numbers, keep as is
           newwords.push(w)
         elsif w =~ /^(\w+)-(\w+)$/i
@@ -192,9 +192,6 @@ module FatCore
           # Last word ended with a ':'
           newwords.push(w.capitalize)
           capitalize_next = false
-        elsif little_words.include?(w.downcase)
-          # Only capitalize at beginning or end
-          newwords.push(first || last ? w.capitalize : w.downcase)
         else
           # All else
           newwords.push(w.capitalize)
