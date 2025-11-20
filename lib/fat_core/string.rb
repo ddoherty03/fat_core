@@ -229,11 +229,13 @@ module FatCore
     # @see #fuzzy_match #fuzzy_match for the specifics of string matching
     # @see #as_regexp #as_regexp for conversion of `matcher` to regular expression
     def matches_with(matcher)
+      target = clean.gsub(/[\*.,']/, '')
       if matcher.nil?
         nil
-      elsif matcher =~ %r{^\s*/}
+      elsif matcher.match?(%r{^\s*/})
         re = matcher.as_regexp
-        $& if to_s =~ re
+        md = target.match(re)
+        md[0] if md
       else
         to_s.fuzzy_match(matcher)
       end
@@ -242,22 +244,32 @@ module FatCore
     # Return the matched portion of self, minus punctuation characters, if self
     # matches the string `matcher` using the following notion of matching:
     #
-    # 1. Remove all periods, commas, apostrophes, and asterisks (the punctuation
-    #    characters) from both self and `matcher`,
-    # 2. Treat internal ':stuff' in the matcher as the equivalent of
-    #    '\bstuff.*?\b' in a regular expression, that is, match any word
+    # 1. Remove leading and trailing whitespace in the subject and the matcher
+    #    and collapse its internal whitespace to a single space,
+    # 2. Remove all periods, commas, apostrophes, and asterisks (the
+    #    punctuation characters) from both self and `matcher`,
+    # 3. Treat internal ':stuff' or ' :stuff' in the matcher as the equivalent
+    #    of /\bstuff.*/ in a regular expression, that is, match any word
     #    starting with stuff in self,
-    # 3. Treat leading ':' in the matcher as anchoring the match to the
+    # 4. Treat internal 'stuff: ' in the matcher as the equivalent
+    #    of /.*stuff\b/ in a regular expression, that is, match any word
+    #    ending with stuff in self,
+    # 5. A colon with no spaces around it is treated as belonging to the
+    #    following word, requiring it to start with it, so 'some:stuff'
+    #    requires 'some' anywhere followed by a word beginning with 'stuff',
+    #    i.e., /some.*\bstuff/i,
+    # 6. Treat leading ':' in the matcher as anchoring the match to the
     #    beginning of the target string,
-    # 4. Treat ending ':' in the matcher as anchoring the match to the
+    # 7. Treat ending ':' in the matcher as anchoring the match to the
     #    end of the target string,
-    # 5. Require each component to match the beginning of a word boundary
-    # 6. Ignore case in the match
+    # 8. Require each component to match some part of self, and
+    # 9. Ignore case in the match
     #
     # @example
     #   "St. Luke's Hospital".fuzzy_match('st lukes') #=> 'St Lukes'
     #   "St. Luke's Hospital".fuzzy_match('luk:hosp') #=> 'Lukes Hosp'
-    #   "St. Luke's Hospital".fuzzy_match('st:spital') #=> 'St Lukes Hospital'
+    #   "St. Luke's Hospital".fuzzy_match('st:spital') #=> nil
+    #   "St. Luke's Hospital".fuzzy_match('st spital') #=> 'St Lukes Hospital'
     #   "St. Luke's Hospital".fuzzy_match('st:laks') #=> nil
     #   "St. Luke's Hospital".fuzzy_match(':lukes') #=> nil
     #   "St. Luke's Hospital".fuzzy_match('lukes:hospital:') #=> 'Lukes Hospital'
@@ -267,22 +279,16 @@ module FatCore
     # @return [nil] if self did not match matcher
     def fuzzy_match(matcher)
       # Remove periods, asterisks, commas, and apostrophes
-      matcher = matcher.strip.gsub(/[\*.,']/, '')
-      if matcher.start_with?(':')
-        begin_anchor = true
-        matcher.delete_prefix!(':')
-      end
-      if matcher.end_with?(':')
-        end_anchor = true
-        matcher.delete_suffix!(':')
-      end
-      target = gsub(/[\*.,']/, '')
-      matchers = matcher.split(/[: ]+/)
-      regexp_string = matchers.map { |m| ".*?\\b#{Regexp.escape(m)}.*?" }.join('\\b')
-      regexp_string.sub!(/^\.\*\?/, '')
-      regexp_string.sub!(/\.\*\?$/, '')
-      regexp_string.sub!(/\A/, '\\A') if begin_anchor
-      regexp_string.sub!(/\z/, '\\z') if end_anchor
+      matcher = matcher.clean.strip.gsub(/[\*.,']/, '')
+      target = clean.gsub(/[\*.,']/, '')
+      regexp_string =
+        if matcher.match?(/[: ]/)
+          matcher.sub(/\A:/, "\\A").sub(/:\z/, "\\z")
+            .gsub(/:\s+/, "\\b.*").gsub(':', ".*\\b")
+            .gsub(/\s+/, ".*")
+        else
+          Regexp.escape(matcher)
+        end
       regexp = /#{regexp_string}/i
       matched_text =
         if (match = regexp.match(target))
@@ -317,7 +323,6 @@ module FatCore
           flags |= Regexp::MULTILINE if opts.include?('m')
         end
         flags = nil if flags.zero?
-        # body = Regexp.quote(body) if REGEXP_META_CHARACTERS.include?(body)
         Regexp.new(body, flags)
       else
         Regexp.new(Regexp.quote(self), Regexp::IGNORECASE)

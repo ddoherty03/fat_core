@@ -243,12 +243,8 @@ the people, for the people, shall not perish from the earth."
     describe 'Fuzzy Matching' do
       it 'fuzzy matches with another string' do
         expect('Hello, world'.fuzzy_match('wor')).to be_truthy
+        expect('Hello, world'.fuzzy_match('orl')).to be_truthy
         expect('Hello, world'.fuzzy_match('ox')).to be_falsy
-      end
-
-      it 'fuzzy matches with another string containing re' do
-        expect('Hello, world'.matches_with('/or/')).to be_truthy
-        expect('Hello, world'.matches_with('/ox/')).to be_falsy
       end
 
       it 'fuzzy matches space-separated parts' do
@@ -258,22 +254,34 @@ the people, for the people, shall not perish from the earth."
 
       it 'fuzzy matches colon-separated parts' do
         expect('Hello:world'.fuzzy_match('hel:wor')).to be_truthy
-        expect('Hello:world'.fuzzy_match('hel:ox')).to be_falsy
+        expect('Hello:world'.fuzzy_match('hel :wor')).to be_truthy
+        expect('Hello:world'.fuzzy_match('hel: wor')).to be_falsy
+        expect('Hello:world'.fuzzy_match('hel:orld')).to be_falsy
+        expect("Hello, 'world'".fuzzy_match('hel:wor')).to be_truthy
+        expect('Hello "world"'.fuzzy_match('hel:world')).to be_truthy
       end
 
-      it 'treats an internal `:stuff in the matcher as \bstuff.*?\b' do
+      it 'treats an internal `:stuff` as \bstuff.*' do
         expect('Hello, what is with the world?'.fuzzy_match('wha:wi:wor')).to be_truthy
         expect('Hello:world'.fuzzy_match('what:or')).to be_falsy
         expect('Hello, what=+&is (with) the world?'.fuzzy_match('wha:wi:wor')).to be_truthy
       end
 
+      it 'treats an internal `stuff: ` as stuff\b.*' do
+        expect('Hello, what is with the world?'.fuzzy_match('llo: th: :wor')).to be_truthy
+        expect('Hello:world'.fuzzy_match('llox: ')).to be_falsy
+        expect('Hello, what=+&is (with) the world?'.fuzzy_match('at: ith: the')).to be_truthy
+      end
+
       it 'requires end-anchor for ending colon' do
         expect('Hello, to the world'.fuzzy_match('hel:world:')).to eq('Hello to the world')
+        expect('Hello, to the world   '.fuzzy_match('hel:world:')).to eq('Hello to the world')
         expect('Hello, to the world today'.fuzzy_match('to:world:')).to be_nil
       end
 
       it 'requires start-anchor for leading colon' do
         expect('Hello, to the world'.fuzzy_match(':hel:the')).to eq('Hello to the')
+        expect('   Hello, to the world'.fuzzy_match(':hel:the')).to eq('Hello to the')
         expect('Hello, to the world today'.fuzzy_match(':world:today')).to be_nil
       end
 
@@ -296,6 +304,51 @@ the people, for the people, shall not perish from the earth."
         # Does not recognize non-alphanumerics as start of string.
         expect('The 1 Dollar Store'.fuzzy_match('1 stor')).to be_truthy
         expect('The $1 Dollar Store'.fuzzy_match('$1 stor')).to be_falsy
+      end
+
+      it 'performs examples in documentation' do
+        expect("St. Luke's".fuzzy_match('st lukes')).to eq('St Lukes')
+        expect("St. Luke's Hospital".fuzzy_match('st lukes')).to eq('St Lukes')
+        expect("St. Luke's Hospital".fuzzy_match('luk:hosp')).to eq('Lukes Hosp')
+        expect("St. Luke's Hospital".fuzzy_match('st:spital')).to be_nil
+        expect("St. Luke's Hospital".fuzzy_match('st spital')).to eq('St Lukes Hospital')
+        expect("St. Luke's Hospital".fuzzy_match('st:laks')).to be_nil
+        expect("St. Luke's Hospital".fuzzy_match(':lukes')).to be_nil
+        expect("St. Luke's Hospital".fuzzy_match('lukes:hospital')).to eq('Lukes Hospital')
+      end
+    end
+
+    describe '#matches_with' do
+      it 'matches with another string containing a plain string' do
+        expect('Hello, world'.matches_with('or')).to be_truthy
+        expect('Hello, world'.matches_with('ox')).to be_falsy
+      end
+
+      it 'matches with another string containing re' do
+        expect('Hello, world'.matches_with('/or/')).to be_truthy
+        expect('Hello, world'.matches_with('/ox/')).to be_falsy
+      end
+
+      it 'performs examples in documentation with just strings' do
+        expect("St. Luke's".matches_with('st lukes')).to eq('St Lukes')
+        expect("St. Luke's Hospital".matches_with('st lukes')).to eq('St Lukes')
+        expect("St. Luke's Hospital".matches_with('luk:hosp')).to eq('Lukes Hosp')
+        expect("St. Luke's Hospital".matches_with('st:spital')).to be_nil
+        expect("St. Luke's Hospital".matches_with('st spital')).to eq('St Lukes Hospital')
+        expect("St. Luke's Hospital".matches_with('st:laks')).to be_nil
+        expect("St. Luke's Hospital".matches_with(':lukes')).to be_nil
+        expect("St. Luke's Hospital".matches_with('lukes:hospital')).to eq('Lukes Hospital')
+      end
+
+      it 'performs examples in documentation with regexes' do
+        expect("St. Luke's".matches_with('/st\s*lukes/')).to eq('St Lukes')
+        expect("St. Luke's Hospital".matches_with('/st lukes/')).to eq('St Lukes')
+        expect("St. Luke's Hospital".matches_with('/luk.*\bhosp/')).to eq('Lukes Hosp')
+        expect("St. Luke's Hospital".matches_with('/st(.*)spital\z/')).to eq('St Lukes Hospital')
+        expect("St. Luke's Hospital".matches_with('/st spital/')).to be_nil
+        expect("St. Luke's Hospital".matches_with('/st.*laks/')).to be_nil
+        expect("St. Luke's Hospital".matches_with('/\Alukes/')).to be_nil
+        expect("St. Luke's Hospital".matches_with('/lukes hospital/')).to eq('Lukes Hospital')
       end
     end
   end
