@@ -1,6 +1,6 @@
 #+TITLE: FatCore Guide
 #+OPTIONS: toc:5
-#+PROPERTY: header-args:ruby :colnames no :hlines yes :exports both :wrap example :ruby ruby
+#+PROPERTY: header-args:ruby :colnames no :hlines yes :exports both :wrap example :ruby ruby :session readme
 #+PROPERTY: header-args:sh :exports code
 
 [[https://github.com/ddoherty03/fat_core/actions/workflows/ruby.yml][https://github.com/ddoherty03/fat_core/actions/workflows/ruby.yml/badge.svg?branch=master]]
@@ -24,20 +24,21 @@ Current directory: /home/ded/src/fat_core
 Ruby LOADPATH:
 ./lib
 /home/ded/.rbenv/rbenv.d/exec/gem-rehash
-/home/ded/.rbenv/versions/3.4.1/lib/ruby/site_ruby/3.4.0
-/home/ded/.rbenv/versions/3.4.1/lib/ruby/site_ruby/3.4.0/x86_64-linux
-/home/ded/.rbenv/versions/3.4.1/lib/ruby/site_ruby
-/home/ded/.rbenv/versions/3.4.1/lib/ruby/vendor_ruby/3.4.0
-/home/ded/.rbenv/versions/3.4.1/lib/ruby/vendor_ruby/3.4.0/x86_64-linux
-/home/ded/.rbenv/versions/3.4.1/lib/ruby/vendor_ruby
-/home/ded/.rbenv/versions/3.4.1/lib/ruby/3.4.0
-/home/ded/.rbenv/versions/3.4.1/lib/ruby/3.4.0/x86_64-linux
+/home/ded/.rbenv/versions/3.2.2/lib/ruby/site_ruby/3.2.0
+/home/ded/.rbenv/versions/3.2.2/lib/ruby/site_ruby/3.2.0/x86_64-linux
+/home/ded/.rbenv/versions/3.2.2/lib/ruby/site_ruby
+/home/ded/.rbenv/versions/3.2.2/lib/ruby/vendor_ruby/3.2.0
+/home/ded/.rbenv/versions/3.2.2/lib/ruby/vendor_ruby/3.2.0/x86_64-linux
+/home/ded/.rbenv/versions/3.2.2/lib/ruby/vendor_ruby
+/home/ded/.rbenv/versions/3.2.2/lib/ruby/3.2.0
+/home/ded/.rbenv/versions/3.2.2/lib/ruby/3.2.0/x86_64-linux
 ...
 #+end_example
 
 
 * Table of Contents                                            :toc:noexport:
 - [[#readme-setup-do-first-for-code-blocks][README Setup Do First for Code Blocks]]
+- [[#version][Version]]
 - [[#fatcore][FatCore]]
   - [[#installation][Installation]]
   - [[#usage][Usage]]
@@ -50,9 +51,25 @@ Ruby LOADPATH:
     - [[#enumerable][Enumerable]]
     - [[#hash][Hash]]
     - [[#string][String]]
+      - [[#fuzzy-matching][Fuzzy Matching]]
+      - [[#regex-or-fuzzy-matching-using-matches_with][Regex or Fuzzy Matching using ~#matches_with~]]
+      - [[#entitle][Entitle]]
+      - [[#distance][Distance]]
+      - [[#commas][Commas]]
     - [[#tex-quoting][TeX Quoting]]
     - [[#numbers][Numbers]]
   - [[#contributing][Contributing]]
+
+* Version
+#+begin_src ruby :wrap EXAMPLE
+  require_relative './lib/fat_core/version'
+  "Current version is: #{FatCore::VERSION}"
+#+end_src
+
+#+begin_EXAMPLE
+Current version is: 6.0.2
+#+end_EXAMPLE
+
 
 * FatCore
 
@@ -64,7 +81,7 @@ that I find useful in multiple projects.
 Add this line to your application's Gemfile:
 
 #+begin_SRC ruby
-  gem 'fat_core', :git => 'https://github.com/ddoherty03/fat_core.git'
+  gem 'fat_core'
 #+end_SRC
 
 And then execute:
@@ -178,7 +195,6 @@ so that
 #+end_src
 
 *** String
-
 FatCore::String has methods for performing matching of one string with another
 (~#matches_with~, ~#fuzzy_match~), for converting a string to title-case as
 might by used in the title of a book (~#entitle~), for converting a String
@@ -186,6 +202,199 @@ into a useable Symbol (~#as_sym~) and vice-versa (~#as_str~ also
 ~Symbol#as_str~), for wrapping with an optional hanging indent (~#wrap~),
 cleaning up errant spaces (~#clean~), and computing the Damerau-Levenshtein
 distance between strings (~#distance~). And several others.
+
+**** Fuzzy Matching
+The ~#fuzzy_match~ method determines whether the subject string matches the
+given "matcher" string, which provides a simple syntax that allows a limited
+kind of pattern matching.  If there is a match, it returns the matched portion
+of self, minus punctuation characters, if self matches the string, and returns
+nil otherwise.
+
+What makes this handy is that a user trying to match by memory can be loose
+about case, punctuation, and spaces, and still find desired matches.  In the
+matcher both the space and colon ':' have special meaning as shown below.
+
+~#fuzzy_match(matcher)~ uses the following rules for matching:
+
+1. Remove leading and trailing whitespace in the subject and the matcher
+   and collapse its internal whitespace to a single space,
+2. Remove all periods, commas, apostrophes, and asterisks (the
+   punctuation characters) from both self and `matcher`,
+3. Treat internal ':stuff' or ' :stuff' in the matcher as the equivalent
+   of /\bstuff.*/ in a regular expression, that is, match any word
+   starting with stuff in self,
+4. Treat internal 'stuff: ' in the matcher as the equivalent of /.*stuff\b/ in
+   a regular expression, that is, match any word ending with stuff in self,
+5. A colon with no spaces around it is treated as belonging to the
+   following word, requiring it to start with it, so 'some:stuff'
+   requires 'some' anywhere followed by a word beginning with 'stuff',
+   i.e., /some.*\bstuff/i,
+6. Treat leading ':' in the matcher as anchoring the match to the
+   beginning of the target string,
+7. Treat ending ':' in the matcher as anchoring the match to the
+   end of the target string,
+8. Require each component to match some part of self, and
+
+#+begin_src ruby
+  require_relative './lib/fat_core/string'
+
+  result = []
+  result << ['Self', 'Matcher', 'Match']
+  result << nil
+  subj = "St. Luke's Hospital"
+  matchers = ['st lukes', 'luk:hosp', 'st:spital', 'uk spital', 'st:laks', ':lukes', 's lukes', 'lukes:hospital']
+  matchers.each do |m|
+    result << [subj, m, subj.fuzzy_match(m)]
+  end
+  result
+#+end_src
+
+#+RESULTS:
+#+begin_example
+| Self                | Matcher        | Match          |
+|---------------------+----------------+----------------|
+| St. Luke's Hospital | st lukes       | St Lukes       |
+| St. Luke's Hospital | luk:hosp       | Lukes Hosp     |
+| St. Luke's Hospital | st:spital      | nil            |
+| St. Luke's Hospital | uk spital      | ukes Hospital  |
+| St. Luke's Hospital | st:laks        | nil            |
+| St. Luke's Hospital | :lukes         | nil            |
+| St. Luke's Hospital | s lukes        | St Lukes       |
+| St. Luke's Hospital | lukes:hospital | Lukes Hospital |
+#+end_example
+
+**** Regex or Fuzzy Matching using ~#matches_with~
+The ~#matches_with(matcher)~ method allows the use of either a regular
+expression or fuzzy matching as described above depending on whether the
+matcher is enclosed in '/' characters.  It also returns the matched portion of
+~self~ or nil if there is no match.  Even when a regex is given, the match is
+case insensitive by default and commas, apostrophes, and periods are removed
+from the subject string before matching.
+
+#+begin_src ruby
+  require_relative './lib/fat_core/string'
+
+  result = []
+  result << ['Self', 'Matcher', 'Match']
+  result << nil
+  subj = "St. Luke's Hospital"
+  matchers = ['st lukes', '/luk.*hosp/', 'st:spital', '/u.*s\b/', 'st:laks', ':lukes', 's lukes', '/lukes hospital\z/']
+  matchers.each do |m|
+    result << [subj, m, subj.matches_with(m)]
+  end
+  result
+#+end_src
+
+#+RESULTS:
+#+begin_example
+| Self                | Matcher            | Match          |
+|---------------------+--------------------+----------------|
+| St. Luke's Hospital | st lukes           | St Lukes       |
+| St. Luke's Hospital | /luk.*hosp/        | Lukes Hosp     |
+| St. Luke's Hospital | st:spital          | nil            |
+| St. Luke's Hospital | /u.*s\b/           | ukes           |
+| St. Luke's Hospital | st:laks            | nil            |
+| St. Luke's Hospital | :lukes             | nil            |
+| St. Luke's Hospital | s lukes            | St Lukes       |
+| St. Luke's Hospital | /lukes hospital\z/ | Lukes Hospital |
+#+end_example
+
+**** Entitle
+For a string meant to serve as the title of a book, song, or other item, there
+are certain rules in English as to which words should be capitalized and which
+should be put in lower case.  "PROFILES IN courage" should be rendered
+"Profiles in Courage" for example.  The preposition "in" is typically not
+capitalized unless it starts the title: "in the HEAT OF THE NIght" should be
+something like "In the Heat of the Night".
+
+#+begin_src ruby
+    require_relative './lib/fat_core/string'
+
+    result = []
+    result << ['Self', 'Entitled']
+    result << nil
+    titles = ['PROFILES IN courage', 'in the HEAT OF THE NIght', 'a day in the life', 'FROM HERE TO ETERNITY',
+             'lucy in the sky with diamonds']
+    titles.each do |t|
+      result << [t, t.entitle]
+    end
+    result
+#+end_src
+
+#+RESULTS:
+#+begin_example
+| Self                          | Entitled                      |
+|-------------------------------+-------------------------------|
+| PROFILES IN courage           | Profiles in Courage           |
+| in the HEAT OF THE NIght      | In the Heat of the Night      |
+| a day in the life             | A Day in the Life             |
+| FROM HERE TO ETERNITY         | From Here to Eternity         |
+| lucy in the sky with diamonds | Lucy in the Sky With Diamonds |
+#+end_example
+
+
+**** Distance
+~FatCore~ provides ~distance~ as a simple wrapper around the
+Damerau-Levenshtein distance function in ~damerau-levenshtein~ gem, using a
+block size of 1 and a max distance of 10.
+
+#+begin_src ruby
+  require_relative './lib/fat_core/string'
+
+  result = []
+  result << ['Word1', 'Word2', 'Distance']
+  result << nil
+  pairs = [['Shelf', 'Shell'], ['Shelf', 'Shall'], ['Doherty', 'Daughtery'], ['Doherty', 'Dorrit'], ['Smith', 'Jones']]
+  pairs.each do |w1, w2|
+    result << [w1, w2, w1.distance(w2)]
+  end
+  result
+#+end_src
+
+#+RESULTS:
+#+begin_example
+| Word1   | Word2     | Distance |
+|---------+-----------+----------|
+| Shelf   | Shell     | 1        |
+| Shelf   | Shall     | 2        |
+| Doherty | Daughtery | 5        |
+| Doherty | Dorrit    | 4        |
+| Smith   | Jones     | 5        |
+#+end_example
+
+**** Commas
+When presenting numbers, it is common to want to add grouping digits to make
+the numbers more readable.  The ~commas(places)~ method does this be
+converting the number into a Float, rounding to places digits, then converting
+back to a ~String~ with grouping commas inserted.
+
+#+begin_src ruby
+  require_relative './lib/fat_core/string'
+
+  result = []
+  result << ['N', 'Places', 'With Commas']
+  result << nil
+  nums_places = [["798964655.66541325", 3], ["798964655.66541325", 0], ["798964655.66541325", 5], ["3.14159", 3],
+               ["3.14159e6", 3], ["-3.14159e4", 2], ["+3.14159e3", 2]]
+  nums_places.each do |n, p|
+    result << [n, p, n.commas(p)]
+  end
+  result
+#+end_src
+
+#+RESULTS:
+#+begin_example
+|                  N | Places |       With Commas |
+|--------------------+--------+-------------------|
+| 798964655.66541325 | 3      |   798,964,655.665 |
+| 798964655.66541325 | 0      |       798,964,656 |
+| 798964655.66541325 | 5      | 798,964,655.66541 |
+|            3.14159 | 3      |             3.142 |
+|          3.14159e6 | 3      |     3,141,590.000 |
+|         -3.14159e4 | 2      |        -31,415.90 |
+|         +3.14159e3 | 2      |          3,141.59 |
+#+end_example
+
 
 *** TeX Quoting
 
