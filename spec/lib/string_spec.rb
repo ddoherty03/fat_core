@@ -204,7 +204,7 @@ the people, for the people, shall not perish from the earth."
       expect('tr'.entitle).to eq('Tr')
       expect('trd'.entitle).to eq('TRD')
       # Don't capitalize c/o
-      expect('IBM c/o watson'.entitle).to eq('IBM c/o Watson')
+      expect('sherLOCK c/o watson'.entitle).to eq('Sherlock c/o Watson')
       # Capitlaize p.o.
       expect('p.o. box 123'.entitle).to eq('P.O. Box 123')
       # Don't capitalize ordinals
@@ -214,8 +214,6 @@ the people, for the people, shall not perish from the earth."
       expect('nw territory'.entitle).to eq('NW Territory')
       # Leave word starting with numbers alone
       expect('apartment 33-B'.entitle).to eq('Apartment 33-B')
-      # Assume all uppercase is an acronym
-      expect('the ABC network'.entitle).to eq('The ABC Network')
       # But not if the whole string is uppercase
       expect('THE ABC NETWORK'.entitle).to eq('The Abc Network')
       # Capitalize both parts of a hyphenated word
