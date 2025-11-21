@@ -15,7 +15,7 @@ from the source directory.
   $:.unshift("./lib") unless $:[0] == './lib'
   $:[0..10].each { |d| puts d }
   puts "..."
-  require 'fat_core/all'  # => true
+  require_relative 'lib/fat_core/all'  # => true
 #+end_src
 
 #+RESULTS:
@@ -285,7 +285,6 @@ from the subject string before matching.
   result
 #+end_src
 
-#+RESULTS:
 #+begin_example
 | Self                | Matcher            | Match          |
 |---------------------+--------------------+----------------|
@@ -321,7 +320,6 @@ something like "In the Heat of the Night".
     result
 #+end_src
 
-#+RESULTS:
 #+begin_example
 | Self                          | Entitled                      |
 |-------------------------------+-------------------------------|
@@ -351,7 +349,6 @@ block size of 1 and a max distance of 10.
   result
 #+end_src
 
-#+RESULTS:
 #+begin_example
 | Word1   | Word2     | Distance |
 |---------+-----------+----------|
@@ -382,7 +379,6 @@ back to a ~String~ with grouping commas inserted.
   result
 #+end_src
 
-#+RESULTS:
 #+begin_example
 |                  N | Places |       With Commas |
 |--------------------+--------+-------------------|
