@@ -1,11 +1,11 @@
 #+TITLE: FatCore Guide
 #+OPTIONS: toc:5
-#+PROPERTY: header-args:ruby :colnames no :hlines yes :exports both :wrap example :ruby ruby :session readme
+#+PROPERTY: header-args:ruby :colnames no :hlines yes :exports both :wrap example :ruby ruby
 #+PROPERTY: header-args:sh :exports code
 
 [[https://github.com/ddoherty03/fat_core/actions/workflows/ruby.yml][https://github.com/ddoherty03/fat_core/actions/workflows/ruby.yml/badge.svg?branch=master]]
 
-* README Setup Do First for Code Blocks
+* README Setup Do First for Code Blocks                            :noexport:
 Run this block before all others to ensure that we are reading the libraries
 from the source directory.
 
@@ -37,50 +37,70 @@ Ruby LOADPATH:
 
 
 * Table of Contents                                            :toc:noexport:
-- [[#readme-setup-do-first-for-code-blocks][README Setup Do First for Code Blocks]]
 - [[#version][Version]]
 - [[#fatcore][FatCore]]
-  - [[#installation][Installation]]
-  - [[#usage][Usage]]
+- [[#installation][Installation]]
+- [[#usage][Usage]]
     - [[#array][Array]]
-      - [[#method-last_i][Method =#last_i=]]
-      - [[#method-intersect_with_dups][Method =#intersect_with_dups=]]
-      - [[#method-diff_with_dups][Method =diff_with_dups=]]
-      - [[#method-comma_joinsep-nil-last_sep-nil-two_sep-nil][Method =comma_join(sep: nil, last_sep: nil, two_sep: nil)=]]
-    - [[#range][Range]]
+      - [[#method-comma_joinsep-nil-last_sep-nil-two_sep-nil][Method ~#comma_join(sep: nil, last_sep: nil, two_sep: nil)~]]
+      - [[#method-last_i][Method ~#last_i~]]
+      - [[#method-intersect_with_dups][Method ~#intersect_with_dups~]]
+      - [[#method-diff_with_dups][Method ~diff_with_dups~]]
+    - [[#bigdecimal-inspect][BigDecimal ~#inspect~]]
     - [[#enumerable][Enumerable]]
+      - [[#method-each_with_flags][Method ~#each_with_flags~]]
+      - [[#method-groups_ofn][Method ~#groups_of(n)~]]
+      - [[#method-each_group_ofn][Method ~#each_group_of(n)~]]
     - [[#hash][Hash]]
+      - [[#method-each_pair_with_flags][Method ~#each_pair_with_flags~]]
+      - [[#method-delete_with_value-and-delete_with_value][Method ~#delete_with_value~ and ~#delete_with_value!~]]
+      - [[#method-keys_with_value][Method ~#keys_with_value~]]
+      - [[#method-remap_keys][Method ~#remap_keys~]]
+      - [[#method-replace_keys][Method ~#replace_keys~]]
+      - [[#alias-merge-to-][Alias ~#merge~ to ~<<~]]
+    - [[#numeric][Numeric]]
+      - [[#method-signum][Method ~#signum~]]
+      - [[#method-commasplaces--nil][Method ~#commas(places = nil)~]]
+      - [[#methods-whole-and-int_if_whole][Methods ~#whole?~ and ~#int_if_whole~]]
+      - [[#method-secs_to_hms][Method ~#secs_to_hms~]]
+    - [[#range][Range]]
+      - [[#methods-contiguous-left_contiguous-right_contiguous][Methods ~#contiguous~, ~#left_contiguous~, ~#right_contiguous~]]
+      - [[#method-joinother][Method ~#join(other)~]]
+      - [[#method-spanned_byothers][Method ~#spanned_by?(others)~]]
+      - [[#methods-gapsothers-overlapsothers][Methods ~#gaps(others)~, ~#overlaps(others)~]]
     - [[#string][String]]
-      - [[#fuzzy-matching][Fuzzy Matching]]
-      - [[#regex-or-fuzzy-matching-using-matches_with][Regex or Fuzzy Matching using ~#matches_with~]]
-      - [[#entitle][Entitle]]
-      - [[#distance][Distance]]
-      - [[#commas][Commas]]
+      - [[#method-fuzzy_match][Method ~#fuzzy_match~]]
+      - [[#method-matches_with][Method ~#matches_with~]]
+      - [[#method-entitle][Method ~#entitle~]]
+      - [[#method-distance][Method ~#distance~]]
+      - [[#method-commansplaces][Method ~#commans(places)~]]
+    - [[#symbol][Symbol]]
     - [[#tex-quoting][TeX Quoting]]
-    - [[#numbers][Numbers]]
-  - [[#contributing][Contributing]]
+- [[#contributing][Contributing]]
 
 * Version
-#+begin_src ruby :wrap EXAMPLE
+#+begin_src ruby
   require_relative './lib/fat_core/version'
   "Current version is: #{FatCore::VERSION}"
 #+end_src
 
-#+begin_EXAMPLE
-Current version is: 6.0.2
-#+end_EXAMPLE
-
+#+begin_example
+Current version is: 6.1.1
+#+end_example
 
 * FatCore
 
-~fat-core~ is a simple gem to collect core extensions and a few new classes
-that I find useful in multiple projects.
+~fat-core~ is somewhat of a grab bag of core class extensions that I have
+found useful across several projects.  It's higgeldy-piggeldy nature reflects
+the fact that none of them are important enough to deserve a gem of their own,
+but nonetheless need to be collected in one place to reduce redundancy across
+projects and provide a focused place to develop and test them.
 
-** Installation
+* Installation
 
 Add this line to your application's Gemfile:
 
-#+begin_SRC ruby
+#+begin_src ruby
   gem 'fat_core'
 #+end_SRC
 
@@ -96,7 +116,7 @@ Or install it yourself as:
   $ gem install fat_core
 #+end_src
 
-** Usage
+* Usage
 
 You can extend classes individually by requiring the corresponding file:
 
@@ -122,77 +142,708 @@ Many of these have little that is of general interest, but there are a few
 goodies.
 
 *** Array
-**** Method =#last_i=
+**** Method ~#comma_join(sep: nil, last_sep: nil, two_sep: nil)~
+Convert this array into a single string by (1) applying ~#to_s~ to each
+element and (2) joining the elements with the string given by the ~sep:~
+parameter. By default the sep parameter is ', '.
+
+You may use a different separation string in the case when there are only two
+items in the list by supplying a ~two_sep~ parameter.
+
+You may also supply a difference separation string to separate the second-last
+and last items in the array by supplying a ~last_sep:~ parameter.
+
+By default, the sep parameter is the string ', ', the ~two_sep~ is ' and ',
+and the ~last_sep~ is ', and ', all of which makes for a well-punctuated
+English clause.
+
+If ~sep~ is given, the other two parameters are set to its
+value by default.  If ~last_sep~ is given, ~two_sep~ takes its value by
+default.
+
+If the input array is empty, ~#comma_join~ returns an empty string.
+
+#+begin_src ruby
+  require_relative 'lib/fat_core/array'
+
+  %w{hammers nails glue bolts}.comma_join
+#+end_src
+
+#+begin_example
+hammers, nails, glue, and bolts
+#+end_example
+
+#+begin_src ruby
+  require_relative 'lib/fat_core/array'
+
+  %w{hammers nails}.comma_join
+#+end_src
+
+#+begin_example
+hammers and nails
+#+end_example
+
+And, if you are ideologically opposed to the Oxford comma:
+
+#+begin_src ruby
+  require_relative 'lib/fat_core/array'
+
+  %w{hammers nails glue bolts}.comma_join(last_sep: ' and ')
+#+end_src
+
+#+begin_example
+hammers, nails, glue and bolts
+#+end_example
+
+**** Method ~#last_i~
 Return the index of the last element of the Array.
 
-**** Method =#intersect_with_dups=
-Return a new Array that is the intersection of this Array with all =others=,
-but without removing duplicates as the =Array#&= method does. All items of
+#+begin_src ruby
+  require_relative 'lib/fat_core/array'
+
+  %w{hammers nails glue bolts}.last_i
+#+end_src
+
+#+begin_example
+3
+#+end_example
+
+**** Method ~#intersect_with_dups~
+Return a new Array that is the intersection of this Array with all ~others~,
+but without removing duplicates as the ~Array#&~ method does. All items of
 this Array are included in the result but only if they also appear in all of
 the other Arrays.
 
-**** Method =diff_with_dups=
+#+begin_src ruby
+  require_relative 'lib/fat_core/array'
+
+  a = %w{hammers nails glue bolts nails}
+  b = %w{nails fingers knuckles nails}
+  a.intersect_with_dups(b)
+#+end_src
+
+#+begin_example
+| nails | nails |
+#+end_example
+
+**** Method ~diff_with_dups~
 Return an Array that is the difference between this Array and =other=, but
 without removing duplicates as the Array#- method does. All items of this
 Array are included in the result /unless/ they also appear in any of the
 =other= Arrays.
 
-**** Method =comma_join(sep: nil, last_sep: nil, two_sep: nil)=
-Convert this array into a single string by (1) applying =#to_s= to each
-element and (2) joining the elements with the string given by the =sep:=
-parameter. By default the sep parameter is ', '. You may use a different
-separation string in the case when there are only two items in the list by
-supplying a =two_sep= parameter.  You may also supply a difference separation
-string to separate the second-last and last items in the array by supplying a
-=last_sep:= parameter.  By default, the sep parameter is the string ', ', the
-=two_sep= is ' and ', and the =last_sep= is ', and ', all of which makes for a
-well-punctuated English clause.  If =sep= is given, the other two parameters
-are set to its value by default.  If =last_sep= is given, =two_sep= takes its
-value by default.  If the input array is empty, =#comma_join= returns an empty
-string.
+#+begin_src ruby
+  require_relative 'lib/fat_core/array'
+
+  a = %w{hammers nails glue bolts hammers nails}
+  b = %w{nails fingers knuckles nails}
+  a.diff_with_dups(b)
+#+end_src
+
+#+begin_example
+| hammers | glue | bolts | hammers |
+#+end_example
+
+*** BigDecimal ~#inspect~
+~FatCore~ provides nothing but a better ~#inspect~ method for the ~BigDecimal~
+class since the default inspect method is not very readable.
+
+#+begin_src ruby
+  require_relative 'lib/fat_core/bigdecimal'
+
+  BigDecimal('2.1718281828').inspect
+#+end_src
+
+#+begin_example
+2.1718281828
+#+end_example
+
+Without ~FatCore~, the result is  "0.2718281828e1", forcing you to interpret
+the exponent to understand where the decimal place is.
+
+*** Enumerable
+**** Method ~#each_with_flags~
+~FatCore::Enumerable~ extends ~Enumerable~ with the ~#each_with_flags~ method
+that yields the elements of the ~Enumerable~ but also yields two booleans,
+~first~ and ~last~ that are set to ~true~ on respectively, the first and last
+element of the Enumerable and ~false~ otherwise.  This makes it easy to treat
+these two cases specially without testing the index as in ~#each_with_index~.
+
+#+begin_src ruby
+  require_relative 'lib/fat_core/enumerable'
+
+  result = []
+  fibs = %w{1, 1, 2, 3, 5, 8, 13, 21}
+  fibs.each_with_flags do |f, first, last|
+    result <<
+      if first
+        ["Start", f]
+      elsif last
+        ["Last", f]
+      else
+        ["Continue", f]
+      end
+  end
+  result
+#+end_src
+
+#+begin_example
+| Start    |  1, |
+| Continue |  1, |
+| Continue |  2, |
+| Continue |  3, |
+| Continue |  5, |
+| Continue |  8, |
+| Continue | 13, |
+| Last     |  21 |
+#+end_example
+
+**** Method ~#groups_of(n)~
+This method returns the elements of the ~Enumerable~ in arrays of size ~n~.
+The last group will not be of full size if the size of the ~Enumerable~ is not
+evenly divisible ~n~.
+
+#+begin_src ruby :ruby ruby
+  require_relative 'lib/fat_core/enumerable'
+
+  result = []
+  abcs = ('A'..'Z').to_a
+  abcs.groups_of(4).each do |g|
+    result << g
+  end
+  result
+#+end_src
+
+#+begin_example
+| A | B | C | D |
+| E | F | G | H |
+| I | J | K | L |
+| M | N | O | P |
+| Q | R | S | T |
+| U | V | W | X |
+| Y | Z |   |   |
+#+end_example
+
+#+begin_src ruby :ruby ruby
+  require_relative 'lib/fat_core/enumerable'
+
+  result = []
+  abcs = ('A'..'Z').to_a
+  abcs.groups_of(5).each do |g|
+    result << g
+  end
+  result
+#+end_src
+
+#+begin_example
+| A | B | C | D | E |
+| F | G | H | I | J |
+| K | L | M | N | O |
+| P | Q | R | S | T |
+| U | V | W | X | Y |
+| Z |   |   |   |   |
+#+end_example
+
+**** Method ~#each_group_of(n)~
+This method yields each group returned by the ~groups_by~ method to the given
+block.
+
+#+begin_src ruby :ruby ruby
+  require_relative 'lib/fat_core/enumerable'
+
+  result = []
+  abcs = ('A'..'Z').to_a
+  abcs.each_group_of(7) do |g|
+    result << g
+  end
+  result
+#+end_src
+
+#+begin_example
+| A | B | C | D | E | F | G |
+| H | I | J | K | L | M | N |
+| O | P | Q | R | S | T | U |
+| V | W | X | Y | Z |   |   |
+#+end_example
+
+*** Hash
+FatCore::Hash extends the Hash class with some useful methods.
+
+**** Method ~#each_pair_with_flags~
+As with the extension for ~Enumerables~, ~FatCore~ provides a method for
+enumerating the key-value pair of the ~Hash~ with flags that are set ~true~
+for the first and last elements but ~false~ otherwise:
+
+#+begin_src ruby
+  require_relative './lib/fat_core/hash'
+
+  h = {'Chaucer' => 'Cantebury Tales', 'Shakespeare' => 'The Merchant of Venice',
+       'Austen' => 'Pride and Prejudice', 'C. Brontë' => 'Jane Eyre',
+       'E. Brontë' => 'Wuthering Heights' }
+  result = []
+  result << ['Position', 'Author', 'Novel']
+  result << nil
+  h.each_pair_with_flags do |k, v, first, last|
+    pos=
+      if first
+        'Begin'
+      elsif last
+        'End'
+      else
+        'Middle'
+      end
+    result << [pos, k, v]
+  end
+  result
+#+end_src
+
+#+begin_example
+| Position | Author      | Novel                  |
+|----------+-------------+------------------------|
+| Begin    | Chaucer     | Cantebury Tales        |
+| Middle   | Shakespeare | The Merchant of Venice |
+| Middle   | Austen      | Pride and Prejudice    |
+| Middle   | C. Brontë   | Jane Eyre              |
+| End      | E. Brontë   | Wuthering Heights      |
+#+end_example
+
+**** Method ~#delete_with_value~ and ~#delete_with_value!~
+This method modifies a ~Hash~ by deleting the key-value pairs when the value
+equals the given value or values:
+
+#+begin_src ruby :results output
+  require_relative './lib/fat_core/hash'
+
+  h = { a: 1, b: 2, c: 3, d: 2, e: 1 }
+  h.delete_with_value!(2)
+  puts h
+#+end_src
+
+#+begin_example
+{:a=>1, :c=>3, :e=>1}
+#+end_example
+
+You can supply multiple values for deletion:
+
+#+begin_src ruby :results output
+  require_relative './lib/fat_core/hash'
+
+  h = { a: 1, b: 2, c: 3, d: 2, e: 1 }
+  h.delete_with_value!(1, 3)
+  puts h
+#+end_src
+
+#+begin_example
+{:b=>2, :d=>2}
+#+end_example
+
+The non-bang method returns a clone of the Hash with the given deletions made:
+
+#+begin_src ruby :results output
+  require_relative './lib/fat_core/hash'
+
+  h = { a: 1, b: 2, c: 3, d: 2, e: 1 }
+  h2 = h.delete_with_value(1, 3)
+  puts h
+  puts h2
+#+end_src
+
+#+begin_example
+{:a=>1, :b=>2, :c=>3, :d=>2, :e=>1}
+{:b=>2, :d=>2}
+#+end_example
+
+**** Method ~#keys_with_value~
+Return an ~Array~ of keys of the ~Hash~ with a value ~==~ to the given value
+or values.
+
+#+begin_src ruby :results output
+  require_relative './lib/fat_core/hash'
+
+  h = { a: 1, b: 2, c: 3, d: 2, e: 1 }
+  puts h.keys_with_value(1).inspect
+  puts h.keys_with_value(2, 3).inspect
+#+end_src
+
+#+begin_example
+[:a, :e]
+[:b, :d, :c]
+#+end_example
+
+**** Method ~#remap_keys~
+This method pre-dates the new ~#transform_keys~ method now available for
+~Hash~, but it is kept as an alternative.  It takes a ~Hash~ as an argument
+that maps existing keys to their replacement in the resulting ~Hash~.  The
+original ~Hash~ is not effected.
+
+#+begin_src ruby :results output
+  require_relative './lib/fat_core/hash'
+
+  h = { a: 1, b: 2, c: 3, d: 2, e: 1 }
+  puts h.remap_keys({:a => :A, :b => :B}).inspect
+#+end_src
+
+#+begin_example
+{:A=>1, :B=>2, :c=>3, :d=>2, :e=>1}
+#+end_example
+
+These days, a more systematic job could be done with ~#transform_keys~:
+#+begin_src ruby :results output
+  h = { a: 1, b: 2, c: 3, d: 2, e: 1 }
+  puts h.transform_keys { |k| k.to_s.upcase.to_sym }.inspect
+#+end_src
+
+#+begin_example
+{:A=>1, :B=>2, :C=>3, :D=>2, :E=>1}
+#+end_example
+
+**** Method ~#replace_keys~
+A wholesale replacement of the existing keys can be done with this method:
+
+#+begin_src ruby :results output
+  require_relative './lib/fat_core/hash'
+
+  h = { a: 1, b: 2, c: 3, d: 2, e: 1 }
+  puts h
+  puts h.replace_keys([:z, :y, :x, :w, :v]).inspect
+#+end_src
+
+#+begin_example
+{:a=>1, :b=>2, :c=>3, :d=>2, :e=>1}
+{:z=>1, :y=>2, :x=>3, :w=>2, :v=>1}
+#+end_example
+
+**** Alias ~#merge~ to ~<<~
+Finally, ~FatCore~ adds the "shovel" operator as an alias for ~#merge~ to
+provide a pretty way to represent the merger of the right ~Hash~ into the left
+~Hash~:
+
+#+begin_src ruby :results output
+  require_relative './lib/fat_core/hash'
+
+  h = {a: 'A', b: 'B', c: 'C'} << {c: 'CC', d: 'DD'} << {d: 'DDD', e: 'EEE'}
+  puts h
+#+end_src
+
+#+begin_example
+{:a=>"A", :b=>"B", :c=>"CC", :d=>"DDD", :e=>"EEE"}
+#+end_example
+
+It groups values into pairs and applies the ~#to_h~ method to the right-hand
+argument if it is an ~Enumerable~, so it also works if the right-hand argument
+is an ~Array~ or ~Enumerable~:
+
+#+begin_src ruby :results output
+  require 'fileutils'
+  require_relative './lib/fat_core/hash'
+
+  FileUtils.mkdir_p('./tmp')
+  ff = File.open('./tmp/junk', 'w')
+  ff.write("f\n", "FFFF\n", "g\n", "GGGG\n")
+  ff.close
+  ff = File.open('./tmp/junk', 'r')
+  h = {a: 'A', b: 'B', c: 'C'} <<
+      [:c, 'CC', :d, 'DD'] <<
+      {d: 'DDD', e: 'EEE'} <<
+      ff.readlines.map(&:chomp) <<
+      [[:h, 'HHHHH'], [:j, 'JJJJJ']]
+  # h.transform_keys!(&:to_sym)
+  ff.close
+  FileUtils.rm_rf('./tmp/junk')
+  puts h
+#+end_src
+
+#+begin_example
+{:a=>"A", :b=>"B", :c=>"CC", :d=>"DDD", :e=>"EEE", "f"=>"FFFF", "g"=>"GGGG", :h=>"HHHHH", :j=>"JJJJJ"}
+#+end_example
+
+*** Numeric
+**** Method ~#signum~
+Return ~-1~ for negative numbers, ~0~ for zero, and ~+1~ for positive numbers.
+This is sometimes handy.
+
+**** Method ~#commas(places = nil)~
+To get s ~String~ representation of a ~Numeric~ with grouping commas inserted,
+~FatCore~ provides the ~#commas~ method:
+
+#+begin_src ruby
+  require_relative 'lib/fat_core/numeric'
+  result = []
+  result << ['N', 'Places', 'N.commas(places)']
+  result << nil
+  nums = [3.14159, 2.718281828, 100000, 0.0059, 16236565468798.66877]
+  places = [0, 3, 5]
+  nums.each do |n|
+    places.each do |pl|
+    result << [n, pl, n.commas(pl)]
+    end
+  end
+  result
+#+end_src
+
+#+begin_example
+|                  N | Places |         N.commas(places) |
+|--------------------+--------+--------------------------|
+|            3.14159 | 0      |                        3 |
+|            3.14159 | 3      |                    3.142 |
+|            3.14159 | 5      |                  3.14159 |
+|        2.718281828 | 0      |                        3 |
+|        2.718281828 | 3      |                    2.718 |
+|        2.718281828 | 5      |                  2.71828 |
+|             100000 | 0      |                  100,000 |
+|             100000 | 3      |              100,000.000 |
+|             100000 | 5      |            100,000.00000 |
+|             0.0059 | 0      |                        0 |
+|             0.0059 | 3      |                    0.006 |
+|             0.0059 | 5      |                  0.00590 |
+| 16236565468798.668 | 0      |       16,236,565,468,799 |
+| 16236565468798.668 | 3      |   16,236,565,468,798.668 |
+| 16236565468798.668 | 5      | 16,236,565,468,798.66800 |
+#+end_example
+
+FatCore::Numeric has methods for inserting grouping commas into a number
+(~#commas~ and ~#group~), for converting seconds to HH:MM:SS.dd format
+(~#secs_to_hms~), for testing for integrality (~#whole?~ and ~#int_if_whole~), and
+testing for sign (~#signum~).
+
+**** Methods ~#whole?~ and ~#int_if_whole~
+At times it is useful to know if a Float or BigDecimal can be converted to an
+~Integer~ without losing precision.
+
+#+begin_src ruby
+  require_relative 'lib/fat_core/numeric'
+  result = []
+  result << ['N', '#whole?', '#int_if_whole', 'Classes']
+  result << nil
+  nums = [3.14159, 3.000000, 100000, 0.0059, 16236565468798.66877]
+  nums.each do |n|
+    result << [n, n.whole?, n.int_if_whole, "#{n.class} -> #{n.int_if_whole.class}"]
+  end
+  result
+#+end_src
+
+#+begin_example
+|                  N | #whole? |      #int_if_whole | Classes            |
+|--------------------+---------+--------------------+--------------------|
+|            3.14159 | false   |            3.14159 | Float -> Float     |
+|                3.0 | true    |                  3 | Float -> Integer   |
+|             100000 | true    |             100000 | Integer -> Integer |
+|             0.0059 | false   |             0.0059 | Float -> Float     |
+| 16236565468798.668 | false   | 16236565468798.668 | Float -> Float     |
+#+end_example
+
+**** Method ~#secs_to_hms~
+This method converts a numeric representing a number of seconds or an angle in
+degrees to a ~String~ of the form "HH:MM:SS" representing the same quantity in
+hours, minutes, and seconds.
+
+#+begin_src ruby
+  require_relative 'lib/fat_core/numeric'
+  result = []
+  result << ['N', 'HH:MM:SS']
+  result << nil
+  nums = [85777.66, 959.66, -1198.33, 0, 3.14159 * 180]
+  nums.each do |n|
+    result << [n, n.secs_to_hms]
+  end
+  result
+#+end_src
+
+#+begin_example
+|                 N | HH:MM:SS    |
+|-------------------+-------------|
+|          85777.66 | 23:49:37.66 |
+|            959.66 | 00:15:59.66 |
+|          -1198.33 | -1:40:01.67 |
+|                 0 | 00:00:00    |
+| 565.4861999999999 | 00:09:25.48 |
+#+end_example
 
 
 *** Range
+~FatCore~ can also extend the Range class with several useful methods that
+emphasize coverage of one range by one or more others (~#spanned_by?~ and
+~#gaps~), contiguity of Ranges to one another (~#contiguous?~,
+~#left_contiguous?~, and ~#right_contiguous?~, ~#join~), and the testing of
+overlaps between ranges (~#overlaps?~, ~#overlaps_among?~). These are put to
+good use in the 'fat_period' ([[https://github.com/ddoherty03/fat_period]]) gem,
+which combines fat_core's extended Range class with its extended Date class to
+make a useful Period class for date ranges, and you may find fat_core's
+extended Range class likewise useful.
 
-You can also extend the Range class with several useful methods that emphasize
-coverage of one range by one or more others (~#spanned_by?~ and ~#gaps~),
-contiguity of Ranges to one another (~#contiguous?~, ~#left_contiguous?~, and
-~#right_contiguous?~, ~#join~), and the testing of overlaps between ranges
-(~#overlaps?~, ~#overlaps_among?~). These are put to good use in the
-'fat_period' ([[https://github.com/ddoherty03/fat_period]]) gem, which combines
-fat_core's extended Range class with its extended Date class to make a useful
-Period class for date ranges, and you may find fat_core's extended Range class
-likewise useful.
+**** Methods ~#contiguous~, ~#left_contiguous~, ~#right_contiguous~
+These methods determine whether the subject ~Range~ are "contiguous" with
+another ~Range~ on the left, right, or either side.  The notion of contiguity
+is different for ~Ranges~ whose min and max values respond to the ~#succ~
+method: if they do, "contiguity" only requires that the ~#succ~ of the max
+value of the left range equal the min value of the right ~Range~; otherwise
+the max value of the left ~Range~ must equal the min value of the right
+~Range~.
 
-For example, you can use the ~#gaps~ method to find the gaps left in the
-coverage on one Range by an Array of other Ranges:
+#+begin_src ruby
+  require_relative 'lib/fat_core/range'
+  require 'date'
 
-#+begin_SRC ruby
-  require 'fat_core/range'
-  (0..12).gaps([(0..2), (5..7), (10..12)])  => [(3..4), (8..9)]
-#+end_SRC
-
-*** Enumerable
-FatCore::Enumerable extends Enumerable with the ~#each_with_flags~ method that
-yields the elements of the Enumerable but also yields two booleans, ~first~ and
-~last~ that are set to true on respectively, the first and last element of the
-Enumerable.  This makes it easy to treat these two cases specially without
-testing the index as in ~#each_with_index~.
-
-*** Hash
-
-FatCore::Hash extends the Hash class with some useful methods for element
-deletion (~#delete_with_value~) and for manipulating the keys
-(~#keys_with_value~, ~#remap_keys~ and ~#replace_keys~) of a Hash. It also
-provides ~#each_pair_with_flags~ as an analog to Enumerable's
-~#each_with_flags~.
-
-It also provides the shovel operator as a convenient alias for ~Hash#merge~,
-so that
-
-#+begin_src ruby :tangle no
-{a: 'A', b: 'B', c: 'C'} << {c: 'CC', d: 'DD'} << {e: 'EEE'} => {a: 'A', b: 'B', c: 'CC', d: 'DD', e: 'EEE'}
+  result = []
+  result << ["Self", "Other", "Contiguous?", "Right?", "Left?"]
+  result << nil
+  pairs = [
+    [(0..10), (11..12)],
+    [(11..20), (0..10)],
+    [(0..10), (15..20)],
+    [(3.145..12.3), (0.5..3.145)],
+    [(3.146..12.3), (0.5..3.145)],
+    [('a'..'q'), ('r'..'z')],
+    [('a'..'q'), ('s'..'z')],
+    [(Date.parse('1963-11-22')..Date.parse('1964-11-03')), (Date.parse('1964-11-04')..Date.today)],
+    [(Date.parse('1963-11-22')..Date.parse('1964-11-03')), (Date.parse('1964-11-28')..Date.today)]
+  ]
+  pairs.each do |r1, r2|
+    result << [r1.to_s, r2.to_s, r1.contiguous?(r2), r1.right_contiguous?(r2), r1.left_contiguous?(r2)]
+  end
+  result
 #+end_src
+
+#+begin_example
+|                   Self |                  Other | Contiguous? | Right? | Left? |
+|------------------------+------------------------+-------------+--------+-------|
+|                  0..10 |                 11..12 | true        | true   | false |
+|                 11..20 |                  0..10 | true        | false  | true  |
+|                  0..10 |                 15..20 | false       | false  | false |
+|            3.145..12.3 |             0.5..3.145 | true        | false  | true  |
+|            3.146..12.3 |             0.5..3.145 | false       | false  | false |
+|                   a..q |                   r..z | true        | true   | false |
+|                   a..q |                   s..z | false       | false  | false |
+| 1963-11-22..1964-11-03 | 1964-11-04..2025-11-22 | true        | true   | false |
+| 1963-11-22..1964-11-03 | 1964-11-28..2025-11-22 | false       | false  | false |
+#+end_example
+
+**** Method ~#join(other)~
+If ~self~ is contiguous with ~other~, return a new ~Range~ that splices the
+two ~Range~s into one ~Range~.
+
+#+begin_src ruby
+  require_relative 'lib/fat_core/range'
+  require 'date'
+
+  result = []
+  result << ["Self", "Other", "Contiguous?", "Joined"]
+  result << nil
+  pairs = [
+    [(0..10), (11..12)],
+    [(11..20), (0..10)],
+    [(0..10), (15..20)],
+    [(3.145..12.3), (0.5..3.145)],
+    [(3.146..12.3), (0.5..3.145)],
+    [('a'..'q'), ('r'..'z')],
+    [('a'..'q'), ('s'..'z')],
+    [(Date.parse('1963-11-22')..Date.parse('1964-11-03')), (Date.parse('1964-11-04')..Date.today)],
+    [(Date.parse('1963-11-22')..Date.parse('1964-11-03')), (Date.parse('1964-11-28')..Date.today)]
+  ]
+  pairs.each do |r1, r2|
+    result << [r1.to_s, r2.to_s, r1.contiguous?(r2), "#{r1.join(r2)}"]
+  end
+  result
+#+end_src
+
+#+begin_example
+|                   Self |                  Other | Contiguous? |                 Joined |
+|------------------------+------------------------+-------------+------------------------|
+|                  0..10 |                 11..12 | true        |                  0..12 |
+|                 11..20 |                  0..10 | true        |                  0..20 |
+|                  0..10 |                 15..20 | false       |                        |
+|            3.145..12.3 |             0.5..3.145 | true        |              0.5..12.3 |
+|            3.146..12.3 |             0.5..3.145 | false       |                        |
+|                   a..q |                   r..z | true        |                   a..z |
+|                   a..q |                   s..z | false       |                        |
+| 1963-11-22..1964-11-03 | 1964-11-04..2025-11-22 | true        | 1963-11-22..2025-11-22 |
+| 1963-11-22..1964-11-03 | 1964-11-28..2025-11-22 | false       |                        |
+#+end_example
+
+
+**** Method ~#spanned_by?(others)~
+A set of ~Ranges~ "spans" a given ~Range~ if the set is contiguous and fully
+covers the given ~Range~ with no overlaps and no gaps.  A set that over-covers
+the given ~Range~ is still considered to span it, even though it is wider than
+the given ~Range~.  In other words, a set spans the given ~Range~ if the set
+can be joined and the given ~Range~ is within the joined ~Range~.
+
+#+begin_src ruby
+  require_relative 'lib/fat_core/range'
+  require 'date'
+
+  result = []
+  result << ["Self", "Others", "Spanned By?"]
+  result << nil
+  pairs = [
+    [(0..10), [(-1..5), (6..10)]],
+    [(1..20), [(0..10), (11..20)]],
+    [(1..20), [(0..10), (10..20)]],
+    [(3.145..12.3), [(0.5..3.45), (3.45..10.5), (10.5..13.5)]],
+    [(3.145..12.3), [(0.5..3.45), (3.45..10.5), (10.6..13.5)]],
+    [('a'..'z'), [('a'..'g'), ('h'..'s'), ('t'..'z')]],
+    [('a'..'z'), [('a'..'g'), ('j'..'s'), ('t'..'z')]],
+  ]
+  pairs.each do |r, others|
+    result << ["#{r}", "#{others}", r.spanned_by?(others)]
+  end
+  result
+#+end_src
+
+#+begin_example
+|        Self | Others                              | Spanned By? |
+|-------------+-------------------------------------+-------------|
+|       0..10 | [-1..5, 6..10]                      | true        |
+|       1..20 | [0..10, 11..20]                     | true        |
+|       1..20 | [0..10, 10..20]                     | false       |
+| 3.145..12.3 | [0.5..3.45, 3.45..10.5, 10.5..13.5] | true        |
+| 3.145..12.3 | [0.5..3.45, 3.45..10.5, 10.6..13.5] | false       |
+|        a..z | ["a".."g", "h".."s", "t".."z"]      | true        |
+|        a..z | ["a".."g", "j".."s", "t".."z"]      | false       |
+#+end_example
+
+**** Methods ~#gaps(others)~, ~#overlaps(others)~
+When the set of other ~Ranges~ does not span the given ~Range~, these methods
+return an set of ~Ranges~ that represent the portions of the given ~Range~ no
+covered by the ~others~, the "gaps", or the points within the given ~Range~
+where the ~others~ overlap one another and thus are not contiguous.
+
+#+begin_src ruby
+  require_relative 'lib/fat_core/range'
+  require 'date'
+
+  result = []
+  result << ["Self", "Others", "Spanned By?", "Gaps", "Overlaps"]
+  result << nil
+  pairs = [
+    [(0..10), [(-1..5), (6..10)]],
+    [(1..20), [(0..10), (11..20)]],
+    [(1..20), [(0..15), (11..20)]],
+    [(1..20), [(0..10), (10..20)]],
+    [(3.145..12.3), [(0.5..3.45), (3.45..10.5), (10.5..13.5)]],
+    [(3.145..12.3), [(0.5..3.45), (3.45..10.5), (10.6..13.5)]],
+    [('a'..'z'), [('a'..'g'), ('h'..'s'), ('t'..'z')]],
+    [('a'..'z'), [('a'..'g'), ('j'..'s'), ('t'..'z')]],
+  ]
+  pairs.each do |r, others|
+    result << ["#{r}", "#{others}", r.spanned_by?(others), "#{r.gaps(others)}", "#{r.overlaps(others)}"]
+  end
+  result
+#+end_src
+
+#+begin_example
+|        Self | Others                              | Spanned By? | Gaps                  | Overlaps |
+|-------------+-------------------------------------+-------------+-----------------------+----------|
+|       0..10 | [-1..5, 6..10]                      | true        | []                    | []       |
+|       1..20 | [0..10, 11..20]                     | true        | []                    | []       |
+|       1..20 | [0..15, 11..20]                     | false       | []                    | [11..15] |
+|       1..20 | [0..10, 10..20]                     | false       | []                    | []       |
+| 3.145..12.3 | [0.5..3.45, 3.45..10.5, 10.5..13.5] | true        | []                    | []       |
+| 3.145..12.3 | [0.5..3.45, 3.45..10.5, 10.6..13.5] | false       | [10.5..10.6]          | []       |
+|        a..z | ["a".."g", "h".."s", "t".."z"]      | true        | []                    | []       |
+|        a..z | ["a".."g", "j".."s", "t".."z"]      | false       | ["h".."i", "aa".."z"] | []       |
+#+end_example
+
 
 *** String
 FatCore::String has methods for performing matching of one string with another
@@ -203,7 +854,7 @@ into a useable Symbol (~#as_sym~) and vice-versa (~#as_str~ also
 cleaning up errant spaces (~#clean~), and computing the Damerau-Levenshtein
 distance between strings (~#distance~). And several others.
 
-**** Fuzzy Matching
+**** Method ~#fuzzy_match~
 The ~#fuzzy_match~ method determines whether the subject string matches the
 given "matcher" string, which provides a simple syntax that allows a limited
 kind of pattern matching.  If there is a match, it returns the matched portion
@@ -249,7 +900,6 @@ matcher both the space and colon ':' have special meaning as shown below.
   result
 #+end_src
 
-#+RESULTS:
 #+begin_example
 | Self                | Matcher        | Match          |
 |---------------------+----------------+----------------|
@@ -263,7 +913,7 @@ matcher both the space and colon ':' have special meaning as shown below.
 | St. Luke's Hospital | lukes:hospital | Lukes Hospital |
 #+end_example
 
-**** Regex or Fuzzy Matching using ~#matches_with~
+**** Method ~#matches_with~
 The ~#matches_with(matcher)~ method allows the use of either a regular
 expression or fuzzy matching as described above depending on whether the
 matcher is enclosed in '/' characters.  It also returns the matched portion of
@@ -298,7 +948,7 @@ from the subject string before matching.
 | St. Luke's Hospital | /lukes hospital\z/ | Lukes Hospital |
 #+end_example
 
-**** Entitle
+**** Method ~#entitle~
 For a string meant to serve as the title of a book, song, or other item, there
 are certain rules in English as to which words should be capitalized and which
 should be put in lower case.  "PROFILES IN courage" should be rendered
@@ -331,7 +981,7 @@ something like "In the Heat of the Night".
 #+end_example
 
 
-**** Distance
+**** Method ~#distance~
 ~FatCore~ provides ~distance~ as a simple wrapper around the
 Damerau-Levenshtein distance function in ~damerau-levenshtein~ gem, using a
 block size of 1 and a max distance of 10.
@@ -359,7 +1009,7 @@ block size of 1 and a max distance of 10.
 | Smith   | Jones     | 5        |
 #+end_example
 
-**** Commas
+**** Method ~#commans(places)~
 When presenting numbers, it is common to want to add grouping digits to make
 the numbers more readable.  The ~commas(places)~ method does this be
 converting the number into a Float, rounding to places digits, then converting
@@ -392,6 +1042,8 @@ back to a ~String~ with grouping commas inserted.
 #+end_example
 
 
+*** Symbol
+
 *** TeX Quoting
 
 Several of the extension, most notably 'fat_core/string', provides a
@@ -399,14 +1051,8 @@ Several of the extension, most notably 'fat_core/string', provides a
 its inclusion in a TeX document and quote characters such as '$' or '%' that
 have a special meaning for TeX.
 
-*** Numbers
 
-FatCore::Numeric has methods for inserting grouping commas into a number
-(~#commas~ and ~#group~), for converting seconds to HH:MM:SS.dd format
-(~#secs_to_hms~), for testing for integrality (~#whole?~ and ~#int_if_whole~), and
-testing for sign (~#signum~).
-
-** Contributing
+* Contributing
 
 1. Fork it ([[http://github.com/ddoherty03/fat_core/fork]]  )
 2. Create your feature branch (~git checkout -b my-new-feature~)
