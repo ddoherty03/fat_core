@@ -1,0 +1,49 @@
+* Version 7.0.0 from Version 6.0.0
+** Enumerable
+- Remove =#groups_of= as duplicative of =each_slice=
+** Hash
+- Rename =delete_with_value= to =delete_with_values!= to make it clear that
+  the Hash is modified in place,
+- Add =delete_with_value= as a non-mutating variant
+- Change arg to =keys_with_value(vals)= to allow variable arguments for
+  multiple values instead of requiring an Array,
+- Allow =<<= operator to merge any =Enumerable= as well as a =Hash=
+** Numeric
+- Enhance =#tex_quote= to put special numbers such as =Math::PI=, =Math::E=,
+  and =Float::INFINITY= in TeX notation, so, e.g., Complex(Math::E,
+  Math:PI).tex_quote will render to "$\\pi+e i$", Rationals will be rendered
+  as fractions, etc.
+** Range
+- =Range#gaps= now better handles Ranges with countable endpoints that need
+  =:succ= and =:pred= methods,
+- =tex_quote= applies =#tex_quote= to endpoints if they respond to a =#tex_quote=
+  method,
+- Check argument Ranges to =#gaps=, =#spanned_by?=, and =#overlaps= for
+  compatibility with the subject Range,
+** String
+- =String#fuzzy_match= changes the semantics of the string matcher argument:
+  1. an internal ':' preceded and followed by non-whitespace now only applies
+     to the word following it to indicate that the word must be a word
+     boundary, so 'hel:wor' matches 'Shell worms' as well as 'Hello, world'.
+  2. an internal ':' preceded by whitespace but followed by non-whitespace is
+     also treated as requiring a word boundary for the following word but not
+     the preceding word, as in 1, so 'hel :wor'
+  3. but an internal ':' preceded by non-whitespace but followed by whitespace
+     requires a word boundary after the preceding word, so 'hel: wor'
+  4. a lone matcher now allows a match anywhere in the subject text regardless
+     of boundaries; the prior version added a word boundary restriction to the
+     bare matcher, so before 'zz' would not match "Pizza" since 'zz' did not
+     occur at the end of word, but now 'zz' will match "Pizza".  Rule 3 above
+     allows putting a boundary restriction on the matcher with 'zz: ' as
+     before.
+  5. Leading and trailing ':' continue to require the text to occur at the
+     beginning or end, respectively, of the subject string, so ':hel' and
+     'ld:' match "Hello, world" but ':wor' and 'wor:' do not.
+- =String#number= no longer considers a hex number with a decimal point to be
+  in the form of a number
+- provide a :pred method in a refinement accesses with 'using StringPred
+- =String#entitle= no longer tries to detect general acronyms for upper case
+  handling since it was unreliable.  Thus, ="ibm corporation".enetitle=
+  becomers "Ibm Corporation" rather than "IBM corporation."
+** Kernel
+- removed the =Kernel.time_it= method since Benchmark already does this better.
