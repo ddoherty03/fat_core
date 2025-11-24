@@ -390,3 +390,34 @@ class String
   # @!parse include FatCore::String
   # @!parse extend FatCore::String::ClassMethods
 end
+
+module StringPred
+  refine String do
+        # This is a kludgy version of #pred (Ruby does define it for a good
+    # reason, namely there is no unique string for which x.pred.succ == x).
+    # Still, for my Range extensions, it helps to have this limited version to
+    # produce a usable #pred for the #gaps method.
+    def pred
+      str = clean
+      return "9" if str.length == 1 && str[0] == 'A'
+      return "Z" if str.length == 1 && str[0] == 'a'
+      return "a" if str.length == 1 && str[0] == '0'
+      return "" if str.empty?
+
+      unless str.match?(/\A[A-Za-z0-9]+\z/)
+        raise NoMethodError, "undefined method :pred for \"#{self}\":String"
+      end
+
+      case str[-1]
+      when 'A'
+        str[0..-2].pred + 'Z'
+      when 'a'
+        str[0..-2].pred + 'z'
+      when '0'
+        str[0..-2].pred + '9'
+      else
+        str[0..-2] + (str[-1].ord - 1).chr
+      end
+    end
+  end
+end
