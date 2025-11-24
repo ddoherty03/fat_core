@@ -219,16 +219,18 @@ module FatCore
     #
     # @return [String]
     def tex_quote
-      if min.respond_to?(:tex_quote)
-        minq = min.tex_quote
-      else
-        minq = min.to_s
-      end
-      if max.respond_to?(:tex_quote)
-        maxq = max.tex_quote
-      else
-        maxq = max.to_s
-      end
+      minq =
+        if min.respond_to?(:tex_quote)
+          min.tex_quote
+        else
+          min.to_s
+        end
+      maxq =
+        if max.respond_to?(:tex_quote)
+          max.tex_quote
+        else
+          max.to_s
+        end
       "(#{minq}..#{maxq})"
     end
 

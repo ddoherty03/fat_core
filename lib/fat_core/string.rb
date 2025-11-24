@@ -393,7 +393,7 @@ end
 
 module StringPred
   refine String do
-        # This is a kludgy version of #pred (Ruby does define it for a good
+    # This is a kludgy version of #pred (Ruby does define it for a good
     # reason, namely there is no unique string for which x.pred.succ == x).
     # Still, for my Range extensions, it helps to have this limited version to
     # produce a usable #pred for the #gaps method.
