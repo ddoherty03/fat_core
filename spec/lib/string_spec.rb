@@ -277,6 +277,7 @@ the people, for the people, shall not perish from the earth."
 
       it 'treats an internal `:stuff` as \bstuff.*' do
         expect('Hello, what is with the world?'.fuzzy_match('wha:wi:wor')).to be_truthy
+        expect('Hello, what is with the world?'.fuzzy_match('hat :wi :wor')).to be_truthy
         expect('Hello:world'.fuzzy_match('what:or')).to be_falsy
         expect('Hello, what=+&is (with) the world?'.fuzzy_match('wha:wi:wor')).to be_truthy
       end
