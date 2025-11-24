@@ -12,8 +12,13 @@
 #    coverage,
 # 5. provide a definition for sorting Ranges based on sorting by the min values
 #    and sizes of the Ranges.
+
+require_relative 'string'
+
 module FatCore
   module Range
+    using StringPred
+
     # @group Operations
 
     # Return a range that concatenates this range with other if it is contiguous
@@ -29,9 +34,9 @@ module FatCore
     # @see contiguous? For the definition of "contiguous"
     def join(other)
       if left_contiguous?(other)
-        ::Range.new(min, other.max)
-      elsif right_contiguous?(other)
         ::Range.new(other.min, max)
+      elsif right_contiguous?(other)
+        ::Range.new(min, other.max)
       end
     end
 
@@ -53,30 +58,48 @@ module FatCore
     # @param ranges [Array<Range>]
     # @return [Array<Range>]
     def gaps(ranges)
-      if ranges.empty?
-        [clone]
-      elsif spanned_by?(ranges)
-        []
-      else
-        # TODO: does not work unless min and max respond to :succ
-        ranges = ranges.sort_by(&:min)
-        gaps = []
-        cur_point = min
-        ranges.each do |rr|
-          break if rr.min > max
+      return [clone] if ranges.empty?
 
-          if rr.min > cur_point
-            start_point = cur_point
-            end_point = rr.min.pred
-            gaps << (start_point..end_point)
-            cur_point = rr.max.succ
-          elsif rr.max >= cur_point
-            cur_point = rr.max.succ
-          end
+      msg = "#{ranges.first.min.class} range incompatible with #{min.class} Range"
+      raise ArgumentError, msg unless compatible?(ranges)
+
+      return [] if spanned_by?(ranges)
+
+      ranges = ranges.select { |r| r.overlaps?(self) }.sort
+      self_is_continuous = ranges.map(&:minmax).flatten.any? { |p| !p.respond_to?(:succ) }
+      gaps = []
+      cur_point = min
+      ranges.each do |rr|
+        # Loop Invariant: cur_point is the last element in the self Range
+        # NOT covered by the given ranges or the gaps so far.
+        break if cur_point == max
+
+        if (self_is_continuous && rr.min > cur_point) ||
+           (!self_is_continuous && rr.min > cur_point)
+          # There is a gap between the cur_point within self and the start
+          # of this range, rr, so we need to record it.
+          start_point = cur_point
+          end_point = self_is_continuous ? rr.min : rr.min.pred
+          gaps << (start_point..end_point)
         end
-        gaps << (cur_point..max) if cur_point <= max
-        gaps
+        cur_point =
+          if rr.max.is_a?(String) && rr.max[-1].match?(/[Zz9]/)
+            # This is a real kludge that stems from the fact that 'z'.succ <
+            # 'z', so the test for gaps at the end of the self range
+            # believes there is a gap when there is none.  This ensures that
+            # cur_point is set to something > rr.max when it is one of the
+            # problematic strings ending in 'Z', 'z', or '9', all of whose
+            # successors sort less than them.
+            rr.max + rr.max[-1]
+          else
+            self_is_continuous ? rr.max : rr.max.succ
+          end
       end
+      # Add any gap between the last of the ranges and the end of self.
+      if cur_point <= max
+        gaps << (cur_point..max)
+      end
+      gaps
     end
 
     # Within this range return an Array of Ranges representing the overlaps
@@ -90,31 +113,34 @@ module FatCore
     # @param ranges [Array<Range>] ranges to search for overlaps
     # @return [Array<Range>] overlaps with ranges but inside this Range
     def overlaps(ranges)
-      if ranges.empty? || spanned_by?(ranges)
-        []
-      else
-        ranges = ranges.sort_by(&:min)
-        overlaps = []
-        cur_point = nil
-        ranges.each do |rr|
-          # Skip ranges outside of self
-          next if rr.max < min || rr.min > max
+      return [] if ranges.empty?
 
-          # Initialize cur_point to max of first range
-          if cur_point.nil?
-            cur_point = rr.max
-            next
-          end
-          # We are on the second or later range
-          if rr.min < cur_point
-            start_point = rr.min
-            end_point = cur_point
-            overlaps << (start_point..end_point)
-          end
+      msg = "#{ranges.first.min.class} range incompatible with #{min.class} Range"
+      raise ArgumentError, msg unless compatible?(ranges)
+
+      return [] if spanned_by?(ranges)
+
+      ranges = ranges.sort_by(&:min)
+      overlaps = []
+      cur_point = nil
+      ranges.each do |rr|
+        # Skip ranges outside of self
+        next if rr.max < min || rr.min > max
+
+        # Initialize cur_point to max of first range
+        if cur_point.nil?
           cur_point = rr.max
+          next
         end
-        overlaps
+        # We are on the second or later range
+        if rr.min < cur_point
+          start_point = rr.min
+          end_point = cur_point
+          overlaps << (start_point..end_point)
+        end
+        cur_point = rr.max
       end
+      overlaps
     end
 
     # Return a Range that represents the intersection between this range and the
@@ -193,12 +219,22 @@ module FatCore
     #
     # @return [String]
     def tex_quote
-      to_s.tex_quote
+      if min.respond_to?(:tex_quote)
+        minq = min.tex_quote
+      else
+        minq = min.to_s
+      end
+      if max.respond_to?(:tex_quote)
+        maxq = max.tex_quote
+      else
+        maxq = max.to_s
+      end
+      "(#{minq}..#{maxq})"
     end
 
     # @group Queries
 
-    # Is self on the left of and contiguous to other?  Whether one range is
+    # Is other on the left of and contiguous to self?  Whether one range is
     # "contiguous" to another has two cases:
     #
     # 1. If the elements of the Range on the left respond to the #succ method
@@ -219,14 +255,14 @@ module FatCore
     # @param other [Range] other range to test for contiguity
     # @return [Boolean] is self left_contiguous with other
     def left_contiguous?(other)
-      if max.respond_to?(:succ)
-        max.succ == other.min
+      if other.max.respond_to?(:succ)
+        other.max.succ == min
       else
-        max == other.min
+        other.max == min
       end
     end
 
-    # Is self on the right of and contiguous to other?  Whether one range is
+    # Is other on the right of and contiguous to self?  Whether one range is
     # "contiguous" to another has two cases:
     #
     # 1. If the elements of the Range on the left respond to the #succ method
@@ -247,10 +283,10 @@ module FatCore
     # @param other [Range] other range to test for contiguity
     # @return [Boolean] is self right_contiguous with other
     def right_contiguous?(other)
-      if other.max.respond_to?(:succ)
-        other.max.succ == min
+      if max.respond_to?(:succ)
+        max.succ == other.min
       else
-        other.max == min
+        max == other.min
       end
     end
 
@@ -348,6 +384,11 @@ module FatCore
     # @param ranges [Array<Range>]
     # @return [Boolean]
     def spanned_by?(ranges)
+      return empty? if ranges.empty?
+
+      msg = "#{ranges.first.min.class} range incompatible with #{min.class} Range"
+      raise ArgumentError, msg unless compatible?(ranges)
+
       joined_range = nil
       ranges.sort.each do |r|
         unless joined_range
@@ -383,6 +424,16 @@ module FatCore
     # @return [Integer, -1, 0, 1] if self is less, equal, or greater than other
     def <=>(other)
       [min, max] <=> other.minmax
+    end
+
+    def compatible?(ranges)
+      numeric_ok = min.is_a?(Numeric) && max.is_a?(Numeric)
+      if numeric_ok
+        ranges.map.all? { |r| r.min.is_a?(Numeric) && r.max.is_a?(Numeric) }
+      else
+        self_class = min.class
+        ranges.map.all? { |r| r.min.is_a?(self_class) && r.max.is_a?(self_class) }
+      end
     end
 
     module ClassMethods
