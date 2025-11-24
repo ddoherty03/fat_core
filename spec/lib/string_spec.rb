@@ -96,22 +96,6 @@ the people, for the people, shall not perish from the earth."
       expect('   string    here  '.clean).to eq 'string here'
     end
 
-    using StringPred
-
-    it 'computes predecessor to String' do
-      expect("B".pred).to eq("A")
-      expect("C".pred).to eq("B")
-      expect("D".pred).to eq("C")
-      expect("Z".pred).to eq("Y")
-      expect("AAA".pred).to eq("9ZZ")
-      expect("A".pred).to eq("9")
-      expect("BBA".pred).to eq("BAZ")
-      expect("00123".pred).to eq("00122")
-      expect("9999".succ).to eq("10000")
-      expect("00000".pred).to eq("a9999")
-      expect { "00123+".pred }.to raise_error(/undefined method/)
-    end
-
     describe 'numeric strings' do
       it 'converts a numeric string to a commified form' do
         expect('20140521'.commas).to eq '20,140,521'

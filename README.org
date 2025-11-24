@@ -49,6 +49,8 @@ Ruby LOADPATH:
     - [[#bigdecimal-inspect][BigDecimal ~#inspect~]]
     - [[#enumerable][Enumerable]]
       - [[#method-each_with_flags][Method ~#each_with_flags~]]
+      - [[#method-groups_ofn][Method ~#groups_of(n)~]]
+      - [[#method-each_group_ofn][Method ~#each_group_of(n)~]]
     - [[#hash][Hash]]
       - [[#method-each_pair_with_flags][Method ~#each_pair_with_flags~]]
       - [[#method-delete_with_value-and-delete_with_value][Method ~#delete_with_value~ and ~#delete_with_value!~]]
@@ -71,11 +73,8 @@ Ruby LOADPATH:
       - [[#method-matches_with][Method ~#matches_with~]]
       - [[#method-entitle][Method ~#entitle~]]
       - [[#method-distance][Method ~#distance~]]
-      - [[#method-commasplaces][Method ~#commas(places)~]]
-      - [[#method-wrapwidth-hang][Method =#wrap(width, hang)=]]
-      - [[#method-as_sym][Method =#as_sym=]]
+      - [[#method-commansplaces][Method ~#commans(places)~]]
     - [[#symbol][Symbol]]
-      - [[#method-as_str][Method =#as_str=]]
     - [[#tex-quoting][TeX Quoting]]
 - [[#contributing][Contributing]]
 
@@ -297,6 +296,74 @@ these two cases specially without testing the index as in ~#each_with_index~.
 | Continue |  8, |
 | Continue | 13, |
 | Last     |  21 |
+#+end_example
+
+**** Method ~#groups_of(n)~
+This method returns the elements of the ~Enumerable~ in arrays of size ~n~.
+The last group will not be of full size if the size of the ~Enumerable~ is not
+evenly divisible ~n~.
+
+#+begin_src ruby :ruby ruby
+  require_relative 'lib/fat_core/enumerable'
+
+  result = []
+  abcs = ('A'..'Z').to_a
+  abcs.groups_of(4).each do |g|
+    result << g
+  end
+  result
+#+end_src
+
+#+begin_example
+| A | B | C | D |
+| E | F | G | H |
+| I | J | K | L |
+| M | N | O | P |
+| Q | R | S | T |
+| U | V | W | X |
+| Y | Z |   |   |
+#+end_example
+
+#+begin_src ruby :ruby ruby
+  require_relative 'lib/fat_core/enumerable'
+
+  result = []
+  abcs = ('A'..'Z').to_a
+  abcs.groups_of(5).each do |g|
+    result << g
+  end
+  result
+#+end_src
+
+#+begin_example
+| A | B | C | D | E |
+| F | G | H | I | J |
+| K | L | M | N | O |
+| P | Q | R | S | T |
+| U | V | W | X | Y |
+| Z |   |   |   |   |
+#+end_example
+
+**** Method ~#each_group_of(n)~
+This method yields each group returned by the ~groups_by~ method to the given
+block.
+
+#+begin_src ruby :ruby ruby
+  require_relative 'lib/fat_core/enumerable'
+
+  result = []
+  abcs = ('A'..'Z').to_a
+  abcs.each_group_of(7) do |g|
+    result << g
+  end
+  result
+#+end_src
+
+#+begin_example
+| A | B | C | D | E | F | G |
+| H | I | J | K | L | M | N |
+| O | P | Q | R | S | T | U |
+| V | W | X | Y | Z |   |   |
 #+end_example
 
 *** Hash
@@ -765,17 +832,18 @@ where the ~others~ overlap one another and thus are not contiguous.
 #+end_src
 
 #+begin_example
-|        Self | Others                              | Spanned By? | Gaps         | Overlaps |
-|-------------+-------------------------------------+-------------+--------------+----------|
-|       0..10 | [-1..5, 6..10]                      | true        | []           | []       |
-|       1..20 | [0..10, 11..20]                     | true        | []           | []       |
-|       1..20 | [0..15, 11..20]                     | false       | []           | [11..15] |
-|       1..20 | [0..10, 10..20]                     | false       | []           | []       |
-| 3.145..12.3 | [0.5..3.45, 3.45..10.5, 10.5..13.5] | true        | []           | []       |
-| 3.145..12.3 | [0.5..3.45, 3.45..10.5, 10.6..13.5] | false       | [10.5..10.6] | []       |
-|        a..z | ["a".."g", "h".."s", "t".."z"]      | true        | []           | []       |
-|        a..z | ["a".."g", "j".."s", "t".."z"]      | false       | ["h".."i"]   | []       |
+|        Self | Others                              | Spanned By? | Gaps                  | Overlaps |
+|-------------+-------------------------------------+-------------+-----------------------+----------|
+|       0..10 | [-1..5, 6..10]                      | true        | []                    | []       |
+|       1..20 | [0..10, 11..20]                     | true        | []                    | []       |
+|       1..20 | [0..15, 11..20]                     | false       | []                    | [11..15] |
+|       1..20 | [0..10, 10..20]                     | false       | []                    | []       |
+| 3.145..12.3 | [0.5..3.45, 3.45..10.5, 10.5..13.5] | true        | []                    | []       |
+| 3.145..12.3 | [0.5..3.45, 3.45..10.5, 10.6..13.5] | false       | [10.5..10.6]          | []       |
+|        a..z | ["a".."g", "h".."s", "t".."z"]      | true        | []                    | []       |
+|        a..z | ["a".."g", "j".."s", "t".."z"]      | false       | ["h".."i", "aa".."z"] | []       |
 #+end_example
+
 
 *** String
 FatCore::String has methods for performing matching of one string with another
@@ -941,7 +1009,7 @@ block size of 1 and a max distance of 10.
 | Smith   | Jones     | 5        |
 #+end_example
 
-**** Method ~#commas(places)~
+**** Method ~#commans(places)~
 When presenting numbers, it is common to want to add grouping digits to make
 the numbers more readable.  The ~commas(places)~ method does this be
 converting the number into a Float, rounding to places digits, then converting
@@ -974,142 +1042,14 @@ back to a ~String~ with grouping commas inserted.
 #+end_example
 
 
-**** Method =#wrap(width, hang)=
-This method wraps the string to a given width with an optional hanging indent
-for lines after the first.
-#+begin_src ruby
-  require_relative './lib/fat_core/string'
-
-  getty = <<~EOS
-  Four score and seven years ago our fathers brought forth on this continent,
-  a new nation, conceived in Liberty, and dedicated to the proposition that
-  all men are created equal.
-
-  Now we are engaged in a great civil war, testing whether that nation, or any
-  nation so conceived and so dedicated, can long endure.  We are met on a
-  great battle-field of that war.  We have come to dedicate a portion of that
-  field, as a final resting place for those who here gave their lives that
-  that nation might live.  It is altogether fitting and proper that we should
-  do this.
-
-  But, in a larger sense, we can not dedicate---we can not consecrate---we can
-  not hallow---this ground.  The brave men, living and dead, who struggled
-  here, have consecrated it, far above our poor power to add or detract.  The
-  world will little note, nor long remember what we say here, but it can never
-  forget what they did here.  It is for us the living, rather, to be dedicated
-  here to the unfinished work which they who fought here have thus far so
-  nobly advanced.  It is rather for us to be here dedicated to the great task
-  remaining before us---that from these honored dead we take increased
-  devotion to that cause for which they gave the last full measure of
-  devotion---that we here highly resolve that these dead shall not have died
-  in vain---that this nation, under God, shall have a new birth of
-  freedom---and that government of the people, by the people, for the people,
-  shall not perish from the earth.
-  EOS
-  getty.wrap(110, 3)
-#+end_src
-
-#+begin_example
-Four score and seven years ago our fathers brought forth on this continent, a new nation, conceived
-   in Liberty, and dedicated to the proposition that all men are created equal. Now we are engaged
-   in a great civil war, testing whether that nation, or any nation so conceived and so dedicated,
-   can long endure. We are met on a great battle-field of that war. We have come to dedicate
-   a portion of that field, as a final resting place for those who here gave their lives that
-   that nation might live. It is altogether fitting and proper that we should do this. But, in
-   a larger sense, we can not dedicate---we can not consecrate---we can not hallow---this ground.
-   The brave men, living and dead, who struggled here, have consecrated it, far above our poor
-   power to add or detract. The world will little note, nor long remember what we say here, but
-   it can never forget what they did here. It is for us the living, rather, to be dedicated here
-   to the unfinished work which they who fought here have thus far so nobly advanced. It is rather
-   for us to be here dedicated to the great task remaining before us---that from these honored
-   dead we take increased devotion to that cause for which they gave the last full measure of
-   devotion---that we here highly resolve that these dead shall not have died in vain---that this
-   nation, under God, shall have a new birth of freedom---and that government of the people, by
-   the people, for the people, shall not perish from the earth.
-#+end_example
-
-**** Method =#as_sym=
-Convert a ~String~ to a ~Symbol~ by converting all letters to lower-case,
-replacing hyphens and white space with a single underscore, and removing all
-non-alphanumeric characters:
-
-#+begin_src ruby
-  require_relative './lib/fat_core/string'
-
-  "   Hello-to-the      World!!!".as_sym
-#+end_src
-
-#+begin_example
-:hello_to_the_world
-#+end_example
-
 *** Symbol
-**** Method =#as_str=
-A quasi-inverse of ~String#as_sym~, convert a ~Symbol~ into a ~String~ by
-converting '_' to a hyphen, white-space into '_', and eliminate any
-non-alphanumeric characters.
-
-#+begin_src ruby
-  require_relative 'lib/fat_core/symbol'
-
-  :hello_to_the_world.as_str
-#+end_src
-
-#+begin_example
-hello-to-the-world
-#+end_example
 
 *** TeX Quoting
-The extensions for ~String~, ~Numeric~, ~Range~, ~Symbol~, and ~NilClass~
-provide a ~#tex_quote~ method for quoting the string version of an object so
-as to allow its inclusion in a TeX document while quoting characters such as
-'_', $' or '%' that have a special meaning for TeX.  At the same time it
-deploys TeX notation when special notation is available, for example, a
-~Rational~ is rendered as a fraction.
 
-#+begin_src ruby
-  require_relative 'lib/fat_core/all'
-  require 'date'
-
-  result = []
-  result << ['Class', 'Example', '#tex_quote']
-  result << nil
-  examples = [
-    "Save $100 or 14% on this Friday_Black",
-    58743.44,
-    Float::INFINITY,
-    Math::PI,
-    Complex(5, 3),
-    Complex(5.0, 3.0),
-    Rational(5, 3),
-    Rational(8.0, 17.0),
-    (Date.parse('2020-09-22')..Date.today),
-    (Math::E..Math::PI),
-    :four_score_and_7_years,
-    nil
-    ]
-  examples.each do |ex|
-    result << [ex.class, ex.to_s, ex.tex_quote.inspect]
-  end
-  result
-#+end_src
-
-#+begin_example
-| Class    | Example                               | #tex_quote                                    |
-|----------+---------------------------------------+-----------------------------------------------|
-| String   | Save $100 or 14% on this Friday_Black | "Save \\$100 or 14\\% on this Friday\\_Black" |
-| Float    | 58743.44                              | "58743.44"                                    |
-| Float    | Infinity                              | "$\\infty$"                                   |
-| Float    | 3.141592653589793                     | "$\\pi$"                                      |
-| Complex  | 5+3i                                  | "$5+3i$"                                      |
-| Complex  | 5.0+3.0i                              | "$5+3i$"                                      |
-| Rational | 5/3                                   | "$\\frac{5}{3}$"                              |
-| Rational | 8/17                                  | "$\\frac{8}{17}$"                             |
-| Range    | 2020-09-22..2025-11-24                | "(2020-09-22..2025-11-24)"                    |
-| Range    | 2.718281828459045..3.141592653589793  | "($e$..$\\pi$)"                               |
-| Symbol   | four_score_and_7_years                | "four\\_score\\_and\\_7\\_years"              |
-| NilClass |                                       | ""                                            |
-#+end_example
+Several of the extension, most notably 'fat_core/string', provides a
+~#tex_quote~ method for quoting the string version of an object so as to allow
+its inclusion in a TeX document and quote characters such as '$' or '%' that
+have a special meaning for TeX.
 
 
 * Contributing

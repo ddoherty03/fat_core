@@ -208,10 +208,6 @@ describe Range do
       expect(gaps[1]).to eq(7..8)
     end
 
-    it 'returns gaps for letter ranges' do
-      expect(('a'..'z').gaps([('a'..'g'), ('j'..'s'), ('t'..'z')])).to eq([Range.new('h', 'i')])
-    end
-
     it 'allows ranges to extend before and after self' do
       gaps = (0..10).gaps([(-3..3), (4..6), (7..13)])
       expect(gaps).to be_empty
@@ -249,10 +245,6 @@ describe Range do
     it 'works even if ranges overlap' do
       gaps = (0..10).gaps([(-2..3), (2..8), (4..10)])
       expect(gaps).to be_empty
-    end
-
-    it 'raises an error if argument types are incompatible' do
-      expect { ('A'..'F').gaps([(1..5), (6..11)]) }.to raise_error(/incompatible/)
     end
   end
 

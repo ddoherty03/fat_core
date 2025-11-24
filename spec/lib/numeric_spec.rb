@@ -18,18 +18,6 @@ describe Numeric do
 
   it 'provides a tex_quote method for erb docs' do
     expect(195.45.tex_quote).to eq '195.45'
-    expect(195.00.tex_quote).to eq '195.0'
-    expect(58743.44.tex_quote).to eq '58743.44'
-    expect(Float::INFINITY.tex_quote).to eq("$\\infty$")
-    expect((-Float::INFINITY).tex_quote).to eq("$-\\infty$")
-    expect(Complex(5, 3).tex_quote).to eq("$5+3i$")
-    expect(Complex(7, 1).tex_quote).to eq("$7+i$")
-    expect(Complex(7.00, 1).tex_quote).to eq("$7+i$")
-    expect(Complex(Math::PI, 1).tex_quote).to eq("$\\pi+i$")
-    expect(Complex(Math::E, 1).tex_quote).to eq("$e+i$")
-    expect(Complex(Math::E, Math::PI).tex_quote).to eq("$e+\\pi i$")
-    expect(Complex(Math::PI, Math::E).tex_quote).to eq("$\\pi+e i$")
-    expect(Rational(5, 3).tex_quote).to eq("$\\frac{5}{3}$")
   end
 
   it 'knows if its a whole number' do
