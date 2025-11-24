@@ -10,6 +10,9 @@
 # require 'fat_core/hash'
 # ```
 #
+
+require_relative 'enumerable'
+
 module FatCore
   # It provides a couple of methods for manipulating the keys of a Hash:
   # `#remap_keys` for translating the current set of keys to a new set provided by

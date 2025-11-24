@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'fat_core/string'
+require_relative 'string'
 
 module FatCore
   module Symbol
