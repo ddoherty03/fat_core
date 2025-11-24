@@ -62,21 +62,48 @@ module FatCore
 
     # @group Deletion
     #
-    # Remove from the hash all keys that have values == to given value or that
-    # include the given value if the hash has an Enumerable for a value
+    # Remove from the hash in place all keys that have values == to the given
+    # value or values.
+    #
+    # @example
+    #   h = { a: 1, b: 2, c: 3, d: 2, e: 1 }
+    #   h.delete_with_value!(2)
+    #   h  #=> { a: 1, c: 3, e: 1 }
+    #   h.delete_with_value!(1, 3)
+    #   h  #=> { b: 2, d: 2 }
+    #
+    # @param val [Object, Enumerable<Object>] value to test for
+    # @return [Hash] hash having entries === v or including v deleted
+    def delete_with_value!(*val)
+      val.each do |v|
+        keys_with_value(v).each do |k|
+          delete(k)
+        end
+      end
+      self
+    end
+
+    #
+    # Return a copy of the Hash a Hash with all keys that have values == to the
+    # given value or values.
     #
     # @example
     #   h = { a: 1, b: 2, c: 3, d: 2, e: 1 }
     #   h.delete_with_value(2) #=> { a: 1, c: 3, e: 1 }
-    #   h.delete_with_value([1, 3]) #=> { b: 2, d: 2 }
+    #   h => { a: 1, b: 2, c: 3, d: 2, e: 1 }
+    #   h.delete_with_value(1, 3) #=> { b: 2, d: 2 }
+    #   h => { a: 1, b: 2, c: 3, d: 2, e: 1 }
     #
     # @param val [Object, Enumerable<Object>] value to test for
     # @return [Hash] hash having entries === v or including v deleted
-    def delete_with_value(val)
-      keys_with_value(val).each do |k|
-        delete(k)
+    def delete_with_value(*val)
+      hsh = clone
+      val.each do |v|
+        hsh.keys_with_value(v).each do |k|
+          hsh.delete(k)
+        end
       end
-      self
+      hsh
     end
 
     # @group Key Manipulation
@@ -91,10 +118,12 @@ module FatCore
     #
     # @param val [Object, Enumerable<Object>] value to test for
     # @return [Array<Object>] the keys with value or values v
-    def keys_with_value(val)
+    def keys_with_value(*vals)
       keys = []
-      each_pair do |k, v|
-        keys << k if self[k] == val || (v.respond_to?(:include?) && v.include?(val))
+      vals.each do |val|
+        each_pair do |k, v|
+          keys << k if self[k] == val || (v.respond_to?(:include?) && v.include?(val))
+        end
       end
       keys
     end
@@ -139,7 +168,12 @@ module FatCore
     end
 
     def <<(other)
-      merge(other)
+      case other
+      when Hash
+        merge(other)
+      when Enumerable
+        merge(other.flatten.each_slice(2).to_h)
+      end
     end
   end
 end
