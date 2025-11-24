@@ -153,7 +153,54 @@ module FatCore
     # Quote self for use in TeX documents.  Since number components are not
     # special to TeX, this just applies `#to_s`
     def tex_quote
-      to_s.tex_quote
+      case self
+      when Float
+        if self == Float::INFINITY
+          "$\\infty$"
+        elsif self == -Float::INFINITY
+          "$-\\infty$"
+        elsif self == Math::PI
+          "$\\pi$"
+        elsif self == Math::E
+          "$e$"
+        else
+          to_s.tex_quote
+        end
+      when Rational
+        "$\\frac{#{numerator}}{#{denominator}}$"
+      when Complex
+        if imaginary.zero?
+          real.int_if_whole.tex_quote
+        elsif imaginary == 1.0
+          if real == Math::PI
+            "$\\pi+i$"
+          elsif real == Math::E
+            "$e+i$"
+          else
+            "$#{real.int_if_whole}+i$"
+          end
+        elsif imaginary == Math::PI
+          if real == Math::PI
+            "$\\pi+\\pi i$"
+          elsif real == Math::E
+            "$e+\\pi i$"
+          else
+            "$#{real.int_if_whole}+\\pi i$"
+          end
+        elsif imaginary == Math::E
+          if real == Math::PI
+            "$\\pi+e i$"
+          elsif real == Math::E
+            "$e+e i$"
+          else
+            "$#{real.int_if_whole}+e i$"
+          end
+        else
+          "$#{real.int_if_whole}+#{imaginary.int_if_whole}i$"
+        end
+      else
+        to_s.tex_quote
+      end
     end
   end
 end
