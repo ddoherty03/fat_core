@@ -1,3 +1,15 @@
+* Version 7.1.0
+** String
+- =String#fuzzy_match= make period, comma, asterisk, and apostrophes optional
+  in matcher instead of just deleting them and in the subject string replace
+  periods and commas with spaces so they still act as word separators.
+
+  Before ='WWW.WOLFRAM.COM'.fuzzy_match('www:wolfram')= would not match because
+  the periods were just eliminated so the matcher was looking for a word
+  starting with 'wolfram' but the subject string was converted to
+  'WWWWOLFRAMCOM' so no match.  Now it is converted to 'WWW WOLFRAM COM' so
+  the match succeeds.
+
 * Version 7.0.0 from Version 6.0.0
 ** Enumerable
 - Remove =#groups_of= as duplicative of =each_slice=
