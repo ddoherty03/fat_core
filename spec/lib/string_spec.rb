@@ -261,9 +261,24 @@ the people, for the people, shall not perish from the earth."
         expect('Hello, world'.fuzzy_match('ox')).to be_falsy
       end
 
-      it 'fuzzy matches space-separated parts' do
+      it 'replaces periods and commas with a space so they are still word separators' do
+        expect('WWW.WOLFRAM.COM'.fuzzy_match('wolf')).to be_truthy
+        expect('AMAZON,INC'.fuzzy_match('amazon inc')).to be_truthy
+      end
+
+      it 'modifies self by removing asterisks and apostrophes' do
+        expect('WWW*WOLFRAM*COM'.fuzzy_match('wolf')).to be_truthy
+        expect('E*TRADE'.fuzzy_match('etrade')).to be_truthy
+        expect('WWW*WOLFRAM*COM'.fuzzy_match(':wolf')).to be_falsy
+        expect('WWW.WOLFRAM.COM'.fuzzy_match('wolf')).to be_truthy
+        expect('AMAZON,INC'.fuzzy_match('amazon inc')).to be_truthy
+      end
+
+      it 'treats internal space as dot-star' do
         expect('Hello world'.fuzzy_match('hel wor')).to be_truthy
+        expect('Hello, world'.fuzzy_match('el or')).to be_truthy
         expect('Hello, world'.fuzzy_match('hel ox')).to be_falsy
+        expect('Hello, what is with the world?'.fuzzy_match('at wi or')).to be_truthy
       end
 
       it 'fuzzy matches colon-separated parts' do
@@ -311,10 +326,12 @@ the people, for the people, shall not perish from the earth."
         expect('Hello:world'.matches_with('/^h.*r/')).to eq('Hello:wor')
       end
 
-      it 'ignores periods, commas, and apostrophes when matching' do
+      it 'make periods, commas, and apostrophes optional when matching' do
         expect("St. Luke's".fuzzy_match('st lukes')).to eq('St Lukes')
-        expect('St Lukes'.fuzzy_match('st. luke\'s')).to eq('St Lukes')
+        expect("St. Luke's".fuzzy_match('st. luke\'s')).to eq('St Lukes')
+        expect("St Lukes".fuzzy_match('st. luke\'s')).to eq('St Lukes')
         expect('St Lukes, Inc.'.fuzzy_match('st luke inc')).to eq('St Lukes Inc')
+        expect('St Lukes, Inc.'.fuzzy_match('st lukes, inc')).to eq('St Lukes Inc')
         expect('E*TRADE'.fuzzy_match('etrade')).to eq('ETRADE')
         # Does not recognize non-alphanumerics as start of string.
         expect('The 1 Dollar Store'.fuzzy_match('1 stor')).to be_truthy

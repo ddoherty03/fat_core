@@ -801,22 +801,26 @@ matcher both the space and colon ':' have special meaning as shown below.
 
 1. Remove leading and trailing whitespace in the subject and the matcher
    and collapse its internal whitespace to a single space,
-2. Remove all periods, commas, apostrophes, and asterisks (the
-   punctuation characters) from both self and `matcher`,
-3. Treat internal ':stuff' or ' :stuff' in the matcher as the equivalent
+2. In the subject string replace periods and commas with a space (so
+   they still act as word separators) but remove apostrophes, and
+   asterisks so the user need not remember whether they were used when
+   forming the matcher.
+3. In the matcher, make any period, comma, asterisk, or apostrophe
+   optional for the same reason.
+4. Treat internal ':stuff' or ' :stuff' in the matcher as the equivalent
    of /\bstuff.*/ in a regular expression, that is, match any word
    starting with stuff in self,
-4. Treat internal 'stuff: ' in the matcher as the equivalent of /.*stuff\b/ in
+5. Treat internal 'stuff: ' in the matcher as the equivalent of /.*stuff\b/ in
    a regular expression, that is, match any word ending with stuff in self,
-5. A colon with no spaces around it is treated as belonging to the
+6. A colon with no spaces around it is treated as belonging to the
    following word, requiring it to start with it, so 'some:stuff'
    requires 'some' anywhere followed by a word beginning with 'stuff',
    i.e., /some.*\bstuff/i,
-6. Treat leading ':' in the matcher as anchoring the match to the
+7. Treat leading ':' in the matcher as anchoring the match to the
    beginning of the target string,
-7. Treat ending ':' in the matcher as anchoring the match to the
+8. Treat ending ':' in the matcher as anchoring the match to the
    end of the target string,
-8. Require each component to match some part of self, and
+9. Require each component to match some part of self, and
 
 #+begin_src ruby
   require_relative './lib/fat_core/string'
@@ -825,7 +829,7 @@ matcher both the space and colon ':' have special meaning as shown below.
   result << ['Self', 'Matcher', 'Match']
   result << nil
   subj = "St. Luke's Hospital"
-  matchers = ['st lukes', 'luk:hosp', 'st:spital', 'uk spital', 'st:laks', ':lukes', 's lukes', 'lukes:hospital']
+  matchers = ['st lukes', 'st. luke\'s', 'luk:hosp', 'st:spital', 'uk spital', 'st:laks', ':lukes', 's lukes', 'lukes:hospital']
   matchers.each do |m|
     result << [subj, m, subj.fuzzy_match(m)]
   end
@@ -836,6 +840,7 @@ matcher both the space and colon ':' have special meaning as shown below.
 | Self                | Matcher        | Match          |
 |---------------------+----------------+----------------|
 | St. Luke's Hospital | st lukes       | St Lukes       |
+| St. Luke's Hospital | st. luke's     | St Lukes       |
 | St. Luke's Hospital | luk:hosp       | Lukes Hosp     |
 | St. Luke's Hospital | st:spital      | nil            |
 | St. Luke's Hospital | uk spital      | ukes Hospital  |

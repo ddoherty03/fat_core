@@ -243,24 +243,28 @@ module FatCore
     #
     # 1. Remove leading and trailing whitespace in the subject and the matcher
     #    and collapse its internal whitespace to a single space,
-    # 2. Remove all periods, commas, apostrophes, and asterisks (the
-    #    punctuation characters) from both self and `matcher`,
-    # 3. Treat internal ':stuff' or ' :stuff' in the matcher as the equivalent
+    # 2. In the subject string replace periods and commas with a space (so
+    #    they still act as word separators) but remove apostrophes, and
+    #    asterisks so the user need not remember whether they were used when
+    #    forming the matcher.
+    # 3. In the matcher, make any period, comma, asterisk, or apostrophe
+    #    optional for the same reason.
+    # 4. Treat internal ':stuff' or ' :stuff' in the matcher as the equivalent
     #    of /\bstuff.*/ in a regular expression, that is, match any word
     #    starting with stuff in self,
-    # 4. Treat internal 'stuff: ' in the matcher as the equivalent
+    # 5. Treat internal 'stuff: ' in the matcher as the equivalent
     #    of /.*stuff\b/ in a regular expression, that is, match any word
     #    ending with stuff in self,
-    # 5. A colon with no spaces around it is treated as belonging to the
+    # 6. A colon with no spaces around it is treated as belonging to the
     #    following word, requiring it to start with it, so 'some:stuff'
     #    requires 'some' anywhere followed by a word beginning with 'stuff',
     #    i.e., /some.*\bstuff/i,
-    # 6. Treat leading ':' in the matcher as anchoring the match to the
+    # 7. Treat leading ':' in the matcher as anchoring the match to the
     #    beginning of the target string,
-    # 7. Treat ending ':' in the matcher as anchoring the match to the
+    # 8. Treat ending ':' in the matcher as anchoring the match to the
     #    end of the target string,
-    # 8. Require each component to match some part of self, and
-    # 9. Ignore case in the match
+    # 9. Require each component to match some part of self, and
+    # 10. Ignore case in the match
     #
     # @example
     #   "St. Luke's Hospital".fuzzy_match('st lukes') #=> 'St Lukes'
@@ -275,9 +279,12 @@ module FatCore
     # @return [String] the unpunctuated part of self that matched
     # @return [nil] if self did not match matcher
     def fuzzy_match(matcher)
-      # Remove periods, asterisks, commas, and apostrophes
-      matcher = matcher.clean.strip.gsub(/[\*.,']/, '')
-      target = clean.gsub(/[\*.,']/, '')
+      # Make asterisks, periods, commas, and apostrophes optional
+      matcher = matcher.clean.gsub(/[\*.,']/, '\0?')
+      # Replace periods and commas with a space (so they are still word
+      # separators, e.g. 'WWW.WOLFRAM' -> 'WWW WOLFRAM' and 'AMZON,INC.' ->
+      # 'AMAZON INC') and remove asterisks and apostrophes
+      target = gsub(/[.,]/, ' ').gsub(/[\*']/, '').clean
       regexp_string =
         if matcher.match?(/[: ]/)
           matcher.sub(/\A:/, "\\A").sub(/:\z/, "\\z")
