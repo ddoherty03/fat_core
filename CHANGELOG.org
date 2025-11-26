@@ -1,4 +1,4 @@
-* Version 7.1.0
+* Version 7.1.1
 ** String
 - =String#fuzzy_match= make period, comma, asterisk, and apostrophes optional
   in matcher instead of just deleting them and in the subject string replace
