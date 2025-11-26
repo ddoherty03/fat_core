@@ -21,7 +21,7 @@ YARD::Rake::YardocTask.new do |t|
 end
 
 RSpec::Core::RakeTask.new(:spec, :tag) do |t|
-  t.rspec_opts = '--tag ~online -f p'
+  t.rspec_opts = '--tag ~online -f d'
 end
 
 ########################################################################
