@@ -10,15 +10,15 @@ Gem::Specification.new do |spec|
   spec.email         = ['ded@ddoherty.net']
   spec.summary       = 'some useful core extensions'
   spec.description   = <<~DESC
-    Useful extensions to Date, String, Range and other classes
-    including useful Date extensions for dealing with US Federal
-    and New York Stock Exchange holidays and working days, a useful
+    Useful extensions to Enumerable and String, Range and other classes. A
     Enumerable#each_with_flags for flagging first and last items in the
-    iteration, (also for Hash), set operations on Ranges
+    iteration, operations on Ranges for testing contiguity, gaps in sets of
+    Ranges, and performing set operations on Ranges.  String#fuzzy_match
+    for user-friendly matchers to test for matching.
   DESC
   spec.homepage      = 'https://github.com/ddoherty03/fat_core.git'
   spec.license       = 'MIT'
-  spec.required_ruby_version = '>= 2.2.2'
+  spec.required_ruby_version = '>= 3.2.2'
   spec.metadata['yard.run'] = 'yri' # use "yard" to build full HTML docs.
 
   spec.files = %x[git ls-files -z].split("\x0")
