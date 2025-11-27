@@ -226,7 +226,10 @@ module FatCore
     # @see #fuzzy_match #fuzzy_match for the specifics of string matching
     # @see #as_regexp #as_regexp for conversion of `matcher` to regular expression
     def matches_with(matcher)
-      target = clean.gsub(/[\*.,']/, '')
+      # Replace periods and commas with a space (so they are still word
+      # separators, e.g. 'WWW.WOLFRAM' -> 'WWW WOLFRAM' and 'AMZON,INC.' ->
+      # 'AMAZON INC') and remove asterisks and apostrophes
+      target = gsub(/[.,]/, ' ').gsub(/[\*']/, '').clean
       if matcher.nil?
         nil
       elsif matcher.match?(%r{^\s*/})
