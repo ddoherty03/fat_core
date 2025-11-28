@@ -215,32 +215,6 @@ module FatCore
       DamerauLevenshtein.distance(self, other.to_s, 1, 10)
     end
 
-    # Test whether self matches the `matcher` treating `matcher` as a
-    # case-insensitive regular expression if it is of the form '/.../' or as a
-    # string to #fuzzy_match against otherwise.
-    #
-    # @param matcher [String] regexp if looks like /.../; #fuzzy_match pattern otherwise
-    # @return [nil] if no match
-    # @return [String] the matched portion of self, with punctuation stripped in
-    #   case of #fuzzy_match
-    # @see #fuzzy_match #fuzzy_match for the specifics of string matching
-    # @see #as_regexp #as_regexp for conversion of `matcher` to regular expression
-    def matches_with(matcher)
-      # Replace periods and commas with a space (so they are still word
-      # separators, e.g. 'WWW.WOLFRAM' -> 'WWW WOLFRAM' and 'AMZON,INC.' ->
-      # 'AMAZON INC') and remove asterisks and apostrophes
-      target = gsub(/[.,]/, ' ').gsub(/[\*']/, '').clean
-      if matcher.nil?
-        nil
-      elsif matcher.match?(%r{^\s*/})
-        re = matcher.as_regexp
-        md = target.match(re)
-        md[0] if md
-      else
-        to_s.fuzzy_match(matcher)
-      end
-    end
-
     # Return the matched portion of self, minus punctuation characters, if self
     # matches the string `matcher` using the following notion of matching:
     #
@@ -302,6 +276,28 @@ module FatCore
           match[0]
         end
       matched_text
+    end
+
+    # Test whether self matches the `matcher` treating `matcher` as a
+    # case-insensitive regular expression if it is of the form '/.../' or as a
+    # string to #fuzzy_match against otherwise.
+    #
+    # @param matcher [String] regexp if looks like /.../; #fuzzy_match pattern otherwise
+    # @return [nil] if no match
+    # @return [String] the matched portion of self, with punctuation stripped in
+    #   case of #fuzzy_match
+    # @see #fuzzy_match #fuzzy_match for the specifics of string matching
+    # @see #as_regexp #as_regexp for conversion of `matcher` to regular expression
+    def matches_with(matcher)
+      return if matcher.nil?
+
+      if matcher.match?(%r{^\s*/})
+        re = matcher.as_regexp
+        md = match(re)
+        md[0] if md
+      else
+        fuzzy_match(matcher)
+      end
     end
 
     # Convert a string of the form '/.../Iixm' to a regular

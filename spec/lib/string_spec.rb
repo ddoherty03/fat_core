@@ -372,15 +372,22 @@ the people, for the people, shall not perish from the earth."
         expect("St. Luke's Hospital".matches_with('lukes:hospital')).to eq('Lukes Hospital')
       end
 
-      it 'performs examples in documentation with regexes' do
-        expect("St. Luke's".matches_with('/st\s*lukes/')).to eq('St Lukes')
-        expect("St. Luke's Hospital".matches_with('/st lukes/')).to eq('St Lukes')
-        expect("St. Luke's Hospital".matches_with('/luk.*\bhosp/')).to eq('Lukes Hosp')
-        expect("St. Luke's Hospital".matches_with('/st(.*)spital\z/')).to eq('St Lukes Hospital')
+      it 'does not pre-condition the subject when regexes' do
+        expect("St. Luke's Hospital".matches_with('st:lukes')).to eq('St Lukes')
+        expect("St. Luke's Hospital".matches_with('lukes')).to eq('Lukes')
+        expect("St. Luke's".matches_with('/st.*luke\'s/')).to eq('St. Luke\'s')
+        expect("St. Luke's Hospital".matches_with('/st\\. luke/')).to eq('St. Luke')
+        expect("St. Luke's Hospital".matches_with('/luk.*\bhosp/')).to eq('Luke\'s Hosp')
+        expect("St. Luke's Hospital".matches_with('/st(.*)spital\z/')).to eq('St. Luke\'s Hospital')
         expect("St. Luke's Hospital".matches_with('/st spital/')).to be_nil
         expect("St. Luke's Hospital".matches_with('/st.*laks/')).to be_nil
         expect("St. Luke's Hospital".matches_with('/\Alukes/')).to be_nil
-        expect("St. Luke's Hospital".matches_with('/lukes hospital/')).to eq('Lukes Hospital')
+        expect("St. Luke's Hospital".matches_with('/luke.*hospital/')).to eq('Luke\'s Hospital')
+      end
+
+      it 'makes the regex case insensitive unless option I given' do
+        expect("St. Luke's Hospital".matches_with('/LUKE/')).to eq('Luke')
+        expect("St. Luke's Hospital".matches_with('/LUKE/I')).to be_nil
       end
     end
   end
