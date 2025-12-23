@@ -3,7 +3,6 @@
 require 'active_support/core_ext/object/blank'
 require 'active_support/core_ext/object/deep_dup'
 
-
 # Gem Overview (extracted from README.org by gem_docs)
 #
 #
