@@ -17,4 +17,5 @@ group :development do
   gem 'rake'
   gem 'rspec'
   gem 'simplecov'
+  gem 'gem_docs'
 end
