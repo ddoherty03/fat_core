@@ -13,17 +13,12 @@
 
 * Version
 #+begin_src ruby
-  require_relative './lib/fat_core/version'
   "Current version is: #{FatCore::VERSION}"
 #+end_src
 
 #+RESULTS:
 #+begin_example
 Current version is: 7.1.3
-#+end_example
-
-#+begin_example
-Current version is: 7.0.0
 #+end_example
 
 * Introduction
@@ -78,8 +73,8 @@ Or, you can require them all:
 Many of these have little that is of general interest, but there are a few
 goodies.
 
-*** Array
-**** Method ~#comma_join(sep: nil, last_sep: nil, two_sep: nil)~
+** Array
+*** Method ~#comma_join(sep: nil, last_sep: nil, two_sep: nil)~
 Convert this array into a single string by (1) applying ~#to_s~ to each
 element and (2) joining the elements with the string given by the ~sep:~
 parameter. By default the sep parameter is ', '.
@@ -101,8 +96,6 @@ default.
 If the input array is empty, ~#comma_join~ returns an empty string.
 
 #+begin_src ruby
-  require_relative 'lib/fat_core/array'
-
   %w{hammers nails glue bolts}.comma_join
 #+end_src
 
@@ -111,13 +104,7 @@ If the input array is empty, ~#comma_join~ returns an empty string.
 hammers, nails, glue, and bolts
 #+end_example
 
-#+begin_example
-hammers, nails, glue, and bolts
-#+end_example
-
 #+begin_src ruby
-  require_relative 'lib/fat_core/array'
-
   %w{hammers nails}.comma_join
 #+end_src
 
@@ -126,15 +113,9 @@ hammers, nails, glue, and bolts
 hammers and nails
 #+end_example
 
-#+begin_example
-hammers and nails
-#+end_example
-
 And, if you are ideologically opposed to the Oxford comma:
 
 #+begin_src ruby
-  require_relative 'lib/fat_core/array'
-
   %w{hammers nails glue bolts}.comma_join(last_sep: ' and ')
 #+end_src
 
@@ -143,16 +124,10 @@ And, if you are ideologically opposed to the Oxford comma:
 hammers, nails, glue and bolts
 #+end_example
 
-#+begin_example
-hammers, nails, glue and bolts
-#+end_example
-
-**** Method ~#last_i~
+*** Method ~#last_i~
 Return the index of the last element of the Array.
 
 #+begin_src ruby
-  require_relative 'lib/fat_core/array'
-
   %w{hammers nails glue bolts}.last_i
 #+end_src
 
@@ -161,19 +136,13 @@ Return the index of the last element of the Array.
 3
 #+end_example
 
-#+begin_example
-3
-#+end_example
-
-**** Method ~#intersect_with_dups~
+*** Method ~#intersect_with_dups~
 Return a new Array that is the intersection of this Array with all ~others~,
 but without removing duplicates as the ~Array#&~ method does. All items of
 this Array are included in the result but only if they also appear in all of
 the other Arrays.
 
 #+begin_src ruby
-  require_relative 'lib/fat_core/array'
-
   a = %w{hammers nails glue bolts nails}
   b = %w{nails fingers knuckles nails}
   a.intersect_with_dups(b)
@@ -184,19 +153,13 @@ the other Arrays.
 | nails | nails |
 #+end_example
 
-#+begin_example
-| nails | nails |
-#+end_example
-
-**** Method ~diff_with_dups~
+*** Method ~diff_with_dups~
 Return an Array that is the difference between this Array and =other=, but
 without removing duplicates as the Array#- method does. All items of this
 Array are included in the result /unless/ they also appear in any of the
 =other= Arrays.
 
 #+begin_src ruby
-  require_relative 'lib/fat_core/array'
-
   a = %w{hammers nails glue bolts hammers nails}
   b = %w{nails fingers knuckles nails}
   a.diff_with_dups(b)
@@ -207,17 +170,11 @@ Array are included in the result /unless/ they also appear in any of the
 | hammers | glue | bolts | hammers |
 #+end_example
 
-#+begin_example
-| hammers | glue | bolts | hammers |
-#+end_example
-
-*** BigDecimal ~#inspect~
+** BigDecimal ~#inspect~
 ~FatCore~ provides nothing but a better ~#inspect~ method for the ~BigDecimal~
 class since the default inspect method is not very readable.
 
 #+begin_src ruby
-  require_relative 'lib/fat_core/bigdecimal'
-
   BigDecimal('2.1718281828').inspect
 #+end_src
 
@@ -226,15 +183,11 @@ class since the default inspect method is not very readable.
 2.1718281828
 #+end_example
 
-#+begin_example
-2.1718281828
-#+end_example
-
 Without ~FatCore~, the result is  "0.2718281828e1", forcing you to interpret
 the exponent to understand where the decimal place is.
 
-*** Enumerable
-**** Method ~#each_with_flags~
+** Enumerable
+*** Method ~#each_with_flags~
 ~FatCore::Enumerable~ extends ~Enumerable~ with the ~#each_with_flags~ method
 that yields the elements of the ~Enumerable~ but also yields two booleans,
 ~first~ and ~last~ that are set to ~true~ on respectively, the first and last
@@ -242,8 +195,6 @@ element of the Enumerable and ~false~ otherwise.  This makes it easy to treat
 these two cases specially without testing the index as in ~#each_with_index~.
 
 #+begin_src ruby
-  require_relative 'lib/fat_core/enumerable'
-
   result = []
   fibs = %w{1, 1, 2, 3, 5, 8, 13, 21}
   fibs.each_with_flags do |f, first, last|
@@ -271,28 +222,15 @@ these two cases specially without testing the index as in ~#each_with_index~.
 | Last     |  21 |
 #+end_example
 
-#+begin_example
-| Start    |  1, |
-| Continue |  1, |
-| Continue |  2, |
-| Continue |  3, |
-| Continue |  5, |
-| Continue |  8, |
-| Continue | 13, |
-| Last     |  21 |
-#+end_example
-
-*** Hash
+** Hash
 FatCore::Hash extends the Hash class with some useful methods.
 
-**** Method ~#each_pair_with_flags~
+*** Method ~#each_pair_with_flags~
 As with the extension for ~Enumerables~, ~FatCore~ provides a method for
 enumerating the key-value pair of the ~Hash~ with flags that are set ~true~
 for the first and last elements but ~false~ otherwise:
 
 #+begin_src ruby
-  require_relative './lib/fat_core/hash'
-
   h = {'Chaucer' => 'Cantebury Tales', 'Shakespeare' => 'The Merchant of Venice',
        'Austen' => 'Pride and Prejudice', 'C. Brontë' => 'Jane Eyre',
        'E. Brontë' => 'Wuthering Heights' }
@@ -324,23 +262,11 @@ for the first and last elements but ~false~ otherwise:
 | End      | E. Brontë   | Wuthering Heights      |
 #+end_example
 
-#+begin_example
-| Position | Author      | Novel                  |
-|----------+-------------+------------------------|
-| Begin    | Chaucer     | Cantebury Tales        |
-| Middle   | Shakespeare | The Merchant of Venice |
-| Middle   | Austen      | Pride and Prejudice    |
-| Middle   | C. Brontë   | Jane Eyre              |
-| End      | E. Brontë   | Wuthering Heights      |
-#+end_example
-
-**** Method ~#delete_with_value~ and ~#delete_with_value!~
+*** Method ~#delete_with_value~ and ~#delete_with_value!~
 This method modifies a ~Hash~ by deleting the key-value pairs when the value
 equals the given value or values:
 
 #+begin_src ruby :results output
-  require_relative './lib/fat_core/hash'
-
   h = { a: 1, b: 2, c: 3, d: 2, e: 1 }
   h.delete_with_value!(2)
   puts h
@@ -349,7 +275,6 @@ equals the given value or values:
 #+RESULTS:
 #+begin_example
 => false
-=> false
 => {:a=>1, :b=>2, :c=>3, :d=>2, :e=>1}
 => {:a=>1, :c=>3, :e=>1}
 {:a=>1, :c=>3, :e=>1}
@@ -357,15 +282,9 @@ equals the given value or values:
 :org_babel_ruby_eoe
 #+end_example
 
-#+begin_example
-{:a=>1, :c=>3, :e=>1}
-#+end_example
-
 You can supply multiple values for deletion:
 
 #+begin_src ruby :results output
-  require_relative './lib/fat_core/hash'
-
   h = { a: 1, b: 2, c: 3, d: 2, e: 1 }
   h.delete_with_value!(1, 3)
   puts h
@@ -374,7 +293,6 @@ You can supply multiple values for deletion:
 #+RESULTS:
 #+begin_example
 => false
-=> false
 => {:a=>1, :b=>2, :c=>3, :d=>2, :e=>1}
 => {:b=>2, :d=>2}
 {:b=>2, :d=>2}
@@ -382,15 +300,9 @@ You can supply multiple values for deletion:
 :org_babel_ruby_eoe
 #+end_example
 
-#+begin_example
-{:b=>2, :d=>2}
-#+end_example
-
 The non-bang method returns a clone of the Hash with the given deletions made:
 
 #+begin_src ruby :results output
-  require_relative './lib/fat_core/hash'
-
   h = { a: 1, b: 2, c: 3, d: 2, e: 1 }
   h2 = h.delete_with_value(1, 3)
   puts h
@@ -400,7 +312,6 @@ The non-bang method returns a clone of the Hash with the given deletions made:
 #+RESULTS:
 #+begin_example
 => false
-=> false
 => {:a=>1, :b=>2, :c=>3, :d=>2, :e=>1}
 => {:b=>2, :d=>2}
 {:a=>1, :b=>2, :c=>3, :d=>2, :e=>1}
@@ -410,136 +321,82 @@ The non-bang method returns a clone of the Hash with the given deletions made:
 :org_babel_ruby_eoe
 #+end_example
 
-#+begin_example
-{:a=>1, :b=>2, :c=>3, :d=>2, :e=>1}
-{:b=>2, :d=>2}
-#+end_example
-
-**** Method ~#keys_with_value~
+*** Method ~#keys_with_value~
 Return an ~Array~ of keys of the ~Hash~ with a value ~==~ to the given value
 or values.
 
-#+begin_src ruby :results output
-  require_relative './lib/fat_core/hash'
-
+#+begin_src ruby :results value code
   h = { a: 1, b: 2, c: 3, d: 2, e: 1 }
-  puts h.keys_with_value(1).inspect
-  puts h.keys_with_value(2, 3).inspect
+  h.keys_with_value(1).inspect
 #+end_src
 
 #+RESULTS:
 #+begin_example
-=> false
-=> false
-=> {:a=>1, :b=>2, :c=>3, :d=>2, :e=>1}
-[:a, :e]
-=> nil
-[:b, :d, :c]
-=> nil
-:org_babel_ruby_eoe
+"[:a, :e]"
 #+end_example
 
+#+begin_src ruby :results value code
+  h = { a: 1, b: 2, c: 3, d: 2, e: 1 }
+  h.keys_with_value(2, 3).inspect
+#+end_src
+
+#+RESULTS:
 #+begin_example
-[:a, :e]
-[:b, :d, :c]
+"[:b, :d, :c]"
 #+end_example
 
-**** Method ~#remap_keys~
+*** Method ~#remap_keys~
 This method pre-dates the new ~#transform_keys~ method now available for
 ~Hash~, but it is kept as an alternative.  It takes a ~Hash~ as an argument
 that maps existing keys to their replacement in the resulting ~Hash~.  The
 original ~Hash~ is not effected.
 
-#+begin_src ruby :results output
+#+begin_src ruby :results value code
   require_relative './lib/fat_core/hash'
 
   h = { a: 1, b: 2, c: 3, d: 2, e: 1 }
-  puts h.remap_keys({:a => :A, :b => :B}).inspect
+  h.remap_keys({:a => :A, :b => :B}).inspect
 #+end_src
 
 #+RESULTS:
 #+begin_example
-=> false
-=> false
-=> {:a=>1, :b=>2, :c=>3, :d=>2, :e=>1}
-{:A=>1, :B=>2, :c=>3, :d=>2, :e=>1}
-=> nil
-:org_babel_ruby_eoe
-#+end_example
-
-#+begin_example
-{:A=>1, :B=>2, :c=>3, :d=>2, :e=>1}
+"{:A=>1, :B=>2, :c=>3, :d=>2, :e=>1}"
 #+end_example
 
 These days, a more systematic job could be done with ~#transform_keys~:
-#+begin_src ruby :results output
+#+begin_src ruby :results value code
   h = { a: 1, b: 2, c: 3, d: 2, e: 1 }
-  puts h.transform_keys { |k| k.to_s.upcase.to_sym }.inspect
+  h.transform_keys { |k| k.to_s.upcase.to_sym }.inspect
 #+end_src
 
 #+RESULTS:
 #+begin_example
-=> false
-=> {:a=>1, :b=>2, :c=>3, :d=>2, :e=>1}
-{:A=>1, :B=>2, :C=>3, :D=>2, :E=>1}
-=> nil
-:org_babel_ruby_eoe
+"{:A=>1, :B=>2, :C=>3, :D=>2, :E=>1}"
 #+end_example
 
-#+begin_example
-{:A=>1, :B=>2, :C=>3, :D=>2, :E=>1}
-#+end_example
-
-**** Method ~#replace_keys~
+*** Method ~#replace_keys~
 A wholesale replacement of the existing keys can be done with this method:
 
-#+begin_src ruby :results output
-  require_relative './lib/fat_core/hash'
-
+#+begin_src ruby :results value code
   h = { a: 1, b: 2, c: 3, d: 2, e: 1 }
-  puts h
-  puts h.replace_keys([:z, :y, :x, :w, :v]).inspect
+  h.replace_keys([:z, :y, :x, :w, :v]).inspect
 #+end_src
 
 #+RESULTS:
 #+begin_example
-=> false
-=> false
-=> {:a=>1, :b=>2, :c=>3, :d=>2, :e=>1}
-{:a=>1, :b=>2, :c=>3, :d=>2, :e=>1}
-=> nil
-{:z=>1, :y=>2, :x=>3, :w=>2, :v=>1}
-=> nil
-:org_babel_ruby_eoe
+"{:z=>1, :y=>2, :x=>3, :w=>2, :v=>1}"
 #+end_example
 
-#+begin_example
-{:a=>1, :b=>2, :c=>3, :d=>2, :e=>1}
-{:z=>1, :y=>2, :x=>3, :w=>2, :v=>1}
-#+end_example
-
-**** Alias ~#merge~ to ~<<~
+*** Alias ~#merge~ to ~<<~
 Finally, ~FatCore~ adds the "shovel" operator as an alias for ~#merge~ to
 provide a pretty way to represent the merger of the right ~Hash~ into the left
 ~Hash~:
 
-#+begin_src ruby :results output
-  require_relative './lib/fat_core/hash'
-
-  h = {a: 'A', b: 'B', c: 'C'} << {c: 'CC', d: 'DD'} << {d: 'DDD', e: 'EEE'}
-  puts h
+#+begin_src ruby :results value code
+  {a: 'A', b: 'B', c: 'C'} << {c: 'CC', d: 'DD'} << {d: 'DDD', e: 'EEE'}
 #+end_src
 
 #+RESULTS:
-#+begin_example
-=> false
-=> false
-=> {:a=>"A", :b=>"B", :c=>"CC", :d=>"DDD", :e=>"EEE"}
-{:a=>"A", :b=>"B", :c=>"CC", :d=>"DDD", :e=>"EEE"}
-=> nil
-:org_babel_ruby_eoe
-#+end_example
-
 #+begin_example
 {:a=>"A", :b=>"B", :c=>"CC", :d=>"DDD", :e=>"EEE"}
 #+end_example
@@ -548,9 +405,8 @@ It groups values into pairs and applies the ~#to_h~ method to the right-hand
 argument if it is an ~Enumerable~, so it also works if the right-hand argument
 is an ~Array~ or ~Enumerable~:
 
-#+begin_src ruby :results output
+#+begin_src ruby :results value code
   require 'fileutils'
-  require_relative './lib/fat_core/hash'
 
   FileUtils.mkdir_p('./tmp')
   ff = File.open('./tmp/junk', 'w')
@@ -562,53 +418,40 @@ is an ~Array~ or ~Enumerable~:
       {d: 'DDD', e: 'EEE'} <<
       ff.readlines.map(&:chomp) <<
       [[:h, 'HHHHH'], [:j, 'JJJJJ']]
-  # h.transform_keys!(&:to_sym)
   ff.close
   FileUtils.rm_rf('./tmp/junk')
-  puts h
+  h
 #+end_src
 
 #+RESULTS:
 #+begin_example
-=> false
-=> false
-=> false
-=> ["./tmp"]
-=> #<File:./tmp/junk>
-=> 14
-=> nil
-=> #<File:./tmp/junk>
-=> {:a=>"A",
- :b=>"B",
- :c=>"CC",
- :d=>"DDD",
- :e=>"EEE",
- "f"=>"FFFF",
- "g"=>"GGGG",
- :h=>"HHHHH",
- :j=>"JJJJJ"}
-=> nil
-=> ["./tmp/junk"]
-{:a=>"A", :b=>"B", :c=>"CC", :d=>"DDD", :e=>"EEE", "f"=>"FFFF", "g"=>"GGGG", :h=>"HHHHH", :j=>"JJJJJ"}
-=> nil
-:org_babel_ruby_eoe
-#+end_example
-
-#+begin_example
 {:a=>"A", :b=>"B", :c=>"CC", :d=>"DDD", :e=>"EEE", "f"=>"FFFF", "g"=>"GGGG", :h=>"HHHHH", :j=>"JJJJJ"}
 #+end_example
 
-*** Numeric
-**** Method ~#signum~
+** Numeric
+FatCore::Numeric has methods for inserting grouping commas into a number
+(~#commas~ and ~#group~), for converting seconds to HH:MM:SS.dd format
+(~#secs_to_hms~), for testing for integrality (~#whole?~ and ~#int_if_whole~),
+and testing for sign (~#signum~).
+
+*** Method ~#signum~
 Return ~-1~ for negative numbers, ~0~ for zero, and ~+1~ for positive numbers.
 This is sometimes handy.
 
-**** Method ~#commas(places = nil)~
+#+begin_src ruby :results value code
+[-55.signum, 0.signum, 55.signum]
+#+end_src
+
+#+RESULTS:
+#+begin_example
+[-1, 0, 1]
+#+end_example
+
+*** Method ~#commas(places = nil)~
 To get s ~String~ representation of a ~Numeric~ with grouping commas inserted,
 ~FatCore~ provides the ~#commas~ method:
 
 #+begin_src ruby
-  require_relative 'lib/fat_core/numeric'
   result = []
   result << ['N', 'Places', 'N.commas(places)']
   result << nil
@@ -643,37 +486,11 @@ To get s ~String~ representation of a ~Numeric~ with grouping commas inserted,
 | 16236565468798.668 | 5      | 16,236,565,468,798.66800 |
 #+end_example
 
-#+begin_example
-|                  N | Places |         N.commas(places) |
-|--------------------+--------+--------------------------|
-|            3.14159 | 0      |                        3 |
-|            3.14159 | 3      |                    3.142 |
-|            3.14159 | 5      |                  3.14159 |
-|        2.718281828 | 0      |                        3 |
-|        2.718281828 | 3      |                    2.718 |
-|        2.718281828 | 5      |                  2.71828 |
-|             100000 | 0      |                  100,000 |
-|             100000 | 3      |              100,000.000 |
-|             100000 | 5      |            100,000.00000 |
-|             0.0059 | 0      |                        0 |
-|             0.0059 | 3      |                    0.006 |
-|             0.0059 | 5      |                  0.00590 |
-| 16236565468798.668 | 0      |       16,236,565,468,799 |
-| 16236565468798.668 | 3      |   16,236,565,468,798.668 |
-| 16236565468798.668 | 5      | 16,236,565,468,798.66800 |
-#+end_example
-
-FatCore::Numeric has methods for inserting grouping commas into a number
-(~#commas~ and ~#group~), for converting seconds to HH:MM:SS.dd format
-(~#secs_to_hms~), for testing for integrality (~#whole?~ and ~#int_if_whole~), and
-testing for sign (~#signum~).
-
-**** Methods ~#whole?~ and ~#int_if_whole~
+*** Methods ~#whole?~ and ~#int_if_whole~
 At times it is useful to know if a Float or BigDecimal can be converted to an
 ~Integer~ without losing precision.
 
 #+begin_src ruby
-  require_relative 'lib/fat_core/numeric'
   result = []
   result << ['N', '#whole?', '#int_if_whole', 'Classes']
   result << nil
@@ -695,23 +512,12 @@ At times it is useful to know if a Float or BigDecimal can be converted to an
 | 16236565468798.668 | false   | 16236565468798.668 | Float -> Float     |
 #+end_example
 
-#+begin_example
-|                  N | #whole? |      #int_if_whole | Classes            |
-|--------------------+---------+--------------------+--------------------|
-|            3.14159 | false   |            3.14159 | Float -> Float     |
-|                3.0 | true    |                  3 | Float -> Integer   |
-|             100000 | true    |             100000 | Integer -> Integer |
-|             0.0059 | false   |             0.0059 | Float -> Float     |
-| 16236565468798.668 | false   | 16236565468798.668 | Float -> Float     |
-#+end_example
-
-**** Method ~#secs_to_hms~
+*** Method ~#secs_to_hms~
 This method converts a numeric representing a number of seconds or an angle in
 degrees to a ~String~ of the form "HH:MM:SS" representing the same quantity in
-hours, minutes, and seconds.
+hours (or degrees), minutes, and seconds.
 
 #+begin_src ruby
-  require_relative 'lib/fat_core/numeric'
   result = []
   result << ['N', 'HH:MM:SS']
   result << nil
@@ -733,18 +539,7 @@ hours, minutes, and seconds.
 | 565.4861999999999 | 00:09:25.48 |
 #+end_example
 
-#+begin_example
-|                 N | HH:MM:SS    |
-|-------------------+-------------|
-|          85777.66 | 23:49:37.66 |
-|            959.66 | 00:15:59.66 |
-|          -1198.33 | -1:40:01.67 |
-|                 0 | 00:00:00    |
-| 565.4861999999999 | 00:09:25.48 |
-#+end_example
-
-
-*** Range
+** Range
 ~FatCore~ can also extend the Range class with several useful methods that
 emphasize coverage of one range by one or more others (~#spanned_by?~ and
 ~#gaps~), contiguity of Ranges to one another (~#contiguous?~,
@@ -755,7 +550,7 @@ which combines fat_core's extended Range class with its extended Date class to
 make a useful Period class for date ranges, and you may find fat_core's
 extended Range class likewise useful.
 
-**** Methods ~#contiguous~, ~#left_contiguous~, ~#right_contiguous~
+*** Methods ~#contiguous~, ~#left_contiguous~, ~#right_contiguous~
 These methods determine whether the subject ~Range~ are "contiguous" with
 another ~Range~ on the left, right, or either side.  The notion of contiguity
 is different for ~Ranges~ whose min and max values respond to the ~#succ~
@@ -765,7 +560,6 @@ the max value of the left ~Range~ must equal the min value of the right
 ~Range~.
 
 #+begin_src ruby
-  require_relative 'lib/fat_core/range'
   require 'date'
 
   result = []
@@ -803,26 +597,11 @@ the max value of the left ~Range~ must equal the min value of the right
 | 1963-11-22..1964-11-03 | 1964-11-28..2025-12-23 | false       | false  | false |
 #+end_example
 
-#+begin_example
-|                   Self |                  Other | Contiguous? | Right? | Left? |
-|------------------------+------------------------+-------------+--------+-------|
-|                  0..10 |                 11..12 | true        | true   | false |
-|                 11..20 |                  0..10 | true        | false  | true  |
-|                  0..10 |                 15..20 | false       | false  | false |
-|            3.145..12.3 |             0.5..3.145 | true        | false  | true  |
-|            3.146..12.3 |             0.5..3.145 | false       | false  | false |
-|                   a..q |                   r..z | true        | true   | false |
-|                   a..q |                   s..z | false       | false  | false |
-| 1963-11-22..1964-11-03 | 1964-11-04..2025-11-22 | true        | true   | false |
-| 1963-11-22..1964-11-03 | 1964-11-28..2025-11-22 | false       | false  | false |
-#+end_example
-
-**** Method ~#join(other)~
+*** Method ~#join(other)~
 If ~self~ is contiguous with ~other~, return a new ~Range~ that splices the
 two ~Range~s into one ~Range~.
 
 #+begin_src ruby
-  require_relative 'lib/fat_core/range'
   require 'date'
 
   result = []
@@ -860,22 +639,7 @@ two ~Range~s into one ~Range~.
 | 1963-11-22..1964-11-03 | 1964-11-28..2025-12-23 | false       |                        |
 #+end_example
 
-#+begin_example
-|                   Self |                  Other | Contiguous? |                 Joined |
-|------------------------+------------------------+-------------+------------------------|
-|                  0..10 |                 11..12 | true        |                  0..12 |
-|                 11..20 |                  0..10 | true        |                  0..20 |
-|                  0..10 |                 15..20 | false       |                        |
-|            3.145..12.3 |             0.5..3.145 | true        |              0.5..12.3 |
-|            3.146..12.3 |             0.5..3.145 | false       |                        |
-|                   a..q |                   r..z | true        |                   a..z |
-|                   a..q |                   s..z | false       |                        |
-| 1963-11-22..1964-11-03 | 1964-11-04..2025-11-22 | true        | 1963-11-22..2025-11-22 |
-| 1963-11-22..1964-11-03 | 1964-11-28..2025-11-22 | false       |                        |
-#+end_example
-
-
-**** Method ~#spanned_by?(others)~
+*** Method ~#spanned_by?(others)~
 A set of ~Ranges~ "spans" a given ~Range~ if the set is contiguous and fully
 covers the given ~Range~ with no overlaps and no gaps.  A set that over-covers
 the given ~Range~ is still considered to span it, even though it is wider than
@@ -883,7 +647,6 @@ the given ~Range~.  In other words, a set spans the given ~Range~ if the set
 can be joined and the given ~Range~ is within the joined ~Range~.
 
 #+begin_src ruby
-  require_relative 'lib/fat_core/range'
   require 'date'
 
   result = []
@@ -917,26 +680,13 @@ can be joined and the given ~Range~ is within the joined ~Range~.
 |        a..z | ["a".."g", "j".."s", "t".."z"]      | false       |
 #+end_example
 
-#+begin_example
-|        Self | Others                              | Spanned By? |
-|-------------+-------------------------------------+-------------|
-|       0..10 | [-1..5, 6..10]                      | true        |
-|       1..20 | [0..10, 11..20]                     | true        |
-|       1..20 | [0..10, 10..20]                     | false       |
-| 3.145..12.3 | [0.5..3.45, 3.45..10.5, 10.5..13.5] | true        |
-| 3.145..12.3 | [0.5..3.45, 3.45..10.5, 10.6..13.5] | false       |
-|        a..z | ["a".."g", "h".."s", "t".."z"]      | true        |
-|        a..z | ["a".."g", "j".."s", "t".."z"]      | false       |
-#+end_example
-
-**** Methods ~#gaps(others)~, ~#overlaps(others)~
+*** Methods ~#gaps(others)~, ~#overlaps(others)~
 When the set of other ~Ranges~ does not span the given ~Range~, these methods
 return an set of ~Ranges~ that represent the portions of the given ~Range~ no
 covered by the ~others~, the "gaps", or the points within the given ~Range~
 where the ~others~ overlap one another and thus are not contiguous.
 
 #+begin_src ruby
-  require_relative 'lib/fat_core/range'
   require 'date'
 
   result = []
@@ -972,20 +722,7 @@ where the ~others~ overlap one another and thus are not contiguous.
 |        a..z | ["a".."g", "j".."s", "t".."z"]      | false       | ["h".."i"]   | []       |
 #+end_example
 
-#+begin_example
-|        Self | Others                              | Spanned By? | Gaps         | Overlaps |
-|-------------+-------------------------------------+-------------+--------------+----------|
-|       0..10 | [-1..5, 6..10]                      | true        | []           | []       |
-|       1..20 | [0..10, 11..20]                     | true        | []           | []       |
-|       1..20 | [0..15, 11..20]                     | false       | []           | [11..15] |
-|       1..20 | [0..10, 10..20]                     | false       | []           | []       |
-| 3.145..12.3 | [0.5..3.45, 3.45..10.5, 10.5..13.5] | true        | []           | []       |
-| 3.145..12.3 | [0.5..3.45, 3.45..10.5, 10.6..13.5] | false       | [10.5..10.6] | []       |
-|        a..z | ["a".."g", "h".."s", "t".."z"]      | true        | []           | []       |
-|        a..z | ["a".."g", "j".."s", "t".."z"]      | false       | ["h".."i"]   | []       |
-#+end_example
-
-*** String
+** String
 FatCore::String has methods for performing matching of one string with another
 (~#matches_with~, ~#fuzzy_match~), for converting a string to title-case as
 might by used in the title of a book (~#entitle~), for converting a String
@@ -994,7 +731,7 @@ into a useable Symbol (~#as_sym~) and vice-versa (~#as_str~ also
 cleaning up errant spaces (~#clean~), and computing the Damerau-Levenshtein
 distance between strings (~#distance~). And several others.
 
-**** Method ~#fuzzy_match~
+*** Method ~#fuzzy_match~
 The ~#fuzzy_match~ method determines whether the subject string matches the
 given "matcher" string, which provides a simple syntax that allows a limited
 kind of pattern matching.  If there is a match, it returns the matched portion
@@ -1031,8 +768,6 @@ matcher both the space and colon ':' have special meaning as shown below.
 9. Require each component to match some part of self, and
 
 #+begin_src ruby
-  require_relative './lib/fat_core/string'
-
   result = []
   result << ['Self', 'Matcher', 'Match']
   result << nil
@@ -1059,21 +794,7 @@ matcher both the space and colon ':' have special meaning as shown below.
 | St. Luke's Hospital | lukes:hospital | Lukes Hospital |
 #+end_example
 
-#+begin_example
-| Self                | Matcher        | Match          |
-|---------------------+----------------+----------------|
-| St. Luke's Hospital | st lukes       | St Lukes       |
-| St. Luke's Hospital | st. luke's     | St Lukes       |
-| St. Luke's Hospital | luk:hosp       | Lukes Hosp     |
-| St. Luke's Hospital | st:spital      | nil            |
-| St. Luke's Hospital | uk spital      | ukes Hospital  |
-| St. Luke's Hospital | st:laks        | nil            |
-| St. Luke's Hospital | :lukes         | nil            |
-| St. Luke's Hospital | s lukes        | St Lukes       |
-| St. Luke's Hospital | lukes:hospital | Lukes Hospital |
-#+end_example
-
-**** Method ~#matches_with~
+*** Method ~#matches_with~
 The ~#matches_with(matcher)~ method allows the use of either a regular
 expression or fuzzy matching as described above depending on whether the
 matcher is enclosed in '/' characters.  It also returns the matched portion of
@@ -1082,8 +803,6 @@ case insensitive by default and commas, apostrophes, and periods are removed
 from the subject string before matching.
 
 #+begin_src ruby
-  require_relative './lib/fat_core/string'
-
   result = []
   result << ['Self', 'Matcher', 'Match']
   result << nil
@@ -1109,20 +828,7 @@ from the subject string before matching.
 | St. Luke's Hospital | /lukes hospital\z/ | nil         |
 #+end_example
 
-#+begin_example
-| Self                | Matcher            | Match          |
-|---------------------+--------------------+----------------|
-| St. Luke's Hospital | st lukes           | St Lukes       |
-| St. Luke's Hospital | /luk.*hosp/        | Lukes Hosp     |
-| St. Luke's Hospital | st:spital          | nil            |
-| St. Luke's Hospital | /u.*s\b/           | ukes           |
-| St. Luke's Hospital | st:laks            | nil            |
-| St. Luke's Hospital | :lukes             | nil            |
-| St. Luke's Hospital | s lukes            | St Lukes       |
-| St. Luke's Hospital | /lukes hospital\z/ | Lukes Hospital |
-#+end_example
-
-**** Method ~#entitle~
+*** Method ~#entitle~
 For a string meant to serve as the title of a book, song, or other item, there
 are certain rules in English as to which words should be capitalized and which
 should be put in lower case.  "PROFILES IN courage" should be rendered
@@ -1131,8 +837,6 @@ capitalized unless it starts the title: "in the HEAT OF THE NIght" should be
 something like "In the Heat of the Night".
 
 #+begin_src ruby
-    require_relative './lib/fat_core/string'
-
     result = []
     result << ['Self', 'Entitled']
     result << nil
@@ -1155,25 +859,12 @@ something like "In the Heat of the Night".
 | lucy in the sky with diamonds | Lucy in the Sky With Diamonds |
 #+end_example
 
-#+begin_example
-| Self                          | Entitled                      |
-|-------------------------------+-------------------------------|
-| PROFILES IN courage           | Profiles in Courage           |
-| in the HEAT OF THE NIght      | In the Heat of the Night      |
-| a day in the life             | A Day in the Life             |
-| FROM HERE TO ETERNITY         | From Here to Eternity         |
-| lucy in the sky with diamonds | Lucy in the Sky With Diamonds |
-#+end_example
-
-
-**** Method ~#distance~
+*** Method ~#distance~
 ~FatCore~ provides ~distance~ as a simple wrapper around the
 Damerau-Levenshtein distance function in ~damerau-levenshtein~ gem, using a
 block size of 1 and a max distance of 10.
 
 #+begin_src ruby
-  require_relative './lib/fat_core/string'
-
   result = []
   result << ['Word1', 'Word2', 'Distance']
   result << nil
@@ -1195,25 +886,13 @@ block size of 1 and a max distance of 10.
 | Smith   | Jones     | 5        |
 #+end_example
 
-#+begin_example
-| Word1   | Word2     | Distance |
-|---------+-----------+----------|
-| Shelf   | Shell     | 1        |
-| Shelf   | Shall     | 2        |
-| Doherty | Daughtery | 5        |
-| Doherty | Dorrit    | 4        |
-| Smith   | Jones     | 5        |
-#+end_example
-
-**** Method ~#commas(places)~
+*** Method ~#commas(places)~
 When presenting numbers, it is common to want to add grouping digits to make
 the numbers more readable.  The ~commas(places)~ method does this be
 converting the number into a Float, rounding to places digits, then converting
 back to a ~String~ with grouping commas inserted.
 
 #+begin_src ruby
-  require_relative './lib/fat_core/string'
-
   result = []
   result << ['N', 'Places', 'With Commas']
   result << nil
@@ -1238,25 +917,10 @@ back to a ~String~ with grouping commas inserted.
 |         +3.14159e3 | 2      |          3,141.59 |
 #+end_example
 
-#+begin_example
-|                  N | Places |       With Commas |
-|--------------------+--------+-------------------|
-| 798964655.66541325 | 3      |   798,964,655.665 |
-| 798964655.66541325 | 0      |       798,964,656 |
-| 798964655.66541325 | 5      | 798,964,655.66541 |
-|            3.14159 | 3      |             3.142 |
-|          3.14159e6 | 3      |     3,141,590.000 |
-|         -3.14159e4 | 2      |        -31,415.90 |
-|         +3.14159e3 | 2      |          3,141.59 |
-#+end_example
-
-
-**** Method =#wrap(width, hang)=
+*** Method =#wrap(width, hang)=
 This method wraps the string to a given width with an optional hanging indent
 for lines after the first.
 #+begin_src ruby
-  require_relative './lib/fat_core/string'
-
   getty = <<~EOS
   Four score and seven years ago our fathers brought forth on this continent,
   a new nation, conceived in Liberty, and dedicated to the proposition that
@@ -1306,33 +970,61 @@ Four score and seven years ago our fathers brought forth on this continent, a ne
    the people, for the people, shall not perish from the earth.
 #+end_example
 
+#+begin_src ruby
+getty.wrap(40, 2)
+#+end_src
+
+#+RESULTS:
 #+begin_example
-Four score and seven years ago our fathers brought forth on this continent, a new nation, conceived
-   in Liberty, and dedicated to the proposition that all men are created equal. Now we are engaged
-   in a great civil war, testing whether that nation, or any nation so conceived and so dedicated,
-   can long endure. We are met on a great battle-field of that war. We have come to dedicate
-   a portion of that field, as a final resting place for those who here gave their lives that
-   that nation might live. It is altogether fitting and proper that we should do this. But, in
-   a larger sense, we can not dedicate---we can not consecrate---we can not hallow---this ground.
-   The brave men, living and dead, who struggled here, have consecrated it, far above our poor
-   power to add or detract. The world will little note, nor long remember what we say here, but
-   it can never forget what they did here. It is for us the living, rather, to be dedicated here
-   to the unfinished work which they who fought here have thus far so nobly advanced. It is rather
-   for us to be here dedicated to the great task remaining before us---that from these honored
-   dead we take increased devotion to that cause for which they gave the last full measure of
-   devotion---that we here highly resolve that these dead shall not have died in vain---that this
-   nation, under God, shall have a new birth of freedom---and that government of the people, by
-   the people, for the people, shall not perish from the earth.
+Four score and seven years ago our
+  fathers brought forth on this continent,
+  a new nation, conceived in Liberty,
+  and dedicated to the proposition that
+  all men are created equal. Now we
+  are engaged in a great civil war,
+  testing whether that nation, or any
+  nation so conceived and so dedicated,
+  can long endure. We are met on a
+  great battle-field of that war. We
+  have come to dedicate a portion of
+  that field, as a final resting place
+  for those who here gave their lives
+  that that nation might live. It is
+  altogether fitting and proper that
+  we should do this. But, in a larger
+  sense, we can not dedicate---we can
+  not consecrate---we can not hallow---this
+  ground. The brave men, living and
+  dead, who struggled here, have consecrated
+  it, far above our poor power to
+  add or detract. The world will little
+  note, nor long remember what we say
+  here, but it can never forget what
+  they did here. It is for us the
+  living, rather, to be dedicated here
+  to the unfinished work which they
+  who fought here have thus far so
+  nobly advanced. It is rather for
+  us to be here dedicated to the great
+  task remaining before us---that from
+  these honored dead we take increased
+  devotion to that cause for which
+  they gave the last full measure of
+  devotion---that we here highly resolve
+  that these dead shall not have died
+  in vain---that this nation, under
+  God, shall have a new birth of freedom---and
+  that government of the people, by
+  the people, for the people, shall
+  not perish from the earth.
 #+end_example
 
-**** Method =#as_sym=
+*** Method =#as_sym=
 Convert a ~String~ to a ~Symbol~ by converting all letters to lower-case,
 replacing hyphens and white space with a single underscore, and removing all
 non-alphanumeric characters:
 
 #+begin_src ruby
-  require_relative './lib/fat_core/string'
-
   "   Hello-to-the      World!!!".as_sym
 #+end_src
 
@@ -1341,19 +1033,13 @@ non-alphanumeric characters:
 :hello_to_the_world
 #+end_example
 
-#+begin_example
-:hello_to_the_world
-#+end_example
-
-*** Symbol
-**** Method =#as_str=
+** Symbol
+*** Method =#as_str=
 A quasi-inverse of ~String#as_sym~, convert a ~Symbol~ into a ~String~ by
 converting '_' to a hyphen, white-space into '_', and eliminate any
 non-alphanumeric characters.
 
 #+begin_src ruby
-  require_relative 'lib/fat_core/symbol'
-
   :hello_to_the_world.as_str
 #+end_src
 
@@ -1362,11 +1048,7 @@ non-alphanumeric characters.
 hello-to-the-world
 #+end_example
 
-#+begin_example
-hello-to-the-world
-#+end_example
-
-*** TeX Quoting
+** TeX Quoting
 The extensions for ~String~, ~Numeric~, ~Range~, ~Symbol~, and ~NilClass~
 provide a ~#tex_quote~ method for quoting the string version of an object so
 as to allow its inclusion in a TeX document while quoting characters such as
@@ -1375,7 +1057,6 @@ deploys TeX notation when special notation is available, for example, a
 ~Rational~ is rendered as a fraction.
 
 #+begin_src ruby
-  require_relative 'lib/fat_core/all'
   require 'date'
 
   result = []
@@ -1418,24 +1099,6 @@ deploys TeX notation when special notation is available, for example, a
 | Symbol   | four_score_and_7_years                | "four\\_score\\_and\\_7\\_years"              |
 | NilClass |                                       | ""                                            |
 #+end_example
-
-#+begin_example
-| Class    | Example                               | #tex_quote                                    |
-|----------+---------------------------------------+-----------------------------------------------|
-| String   | Save $100 or 14% on this Friday_Black | "Save \\$100 or 14\\% on this Friday\\_Black" |
-| Float    | 58743.44                              | "58743.44"                                    |
-| Float    | Infinity                              | "$\\infty$"                                   |
-| Float    | 3.141592653589793                     | "$\\pi$"                                      |
-| Complex  | 5+3i                                  | "$5+3i$"                                      |
-| Complex  | 5.0+3.0i                              | "$5+3i$"                                      |
-| Rational | 5/3                                   | "$\\frac{5}{3}$"                              |
-| Rational | 8/17                                  | "$\\frac{8}{17}$"                             |
-| Range    | 2020-09-22..2025-11-24                | "(2020-09-22..2025-11-24)"                    |
-| Range    | 2.718281828459045..3.141592653589793  | "($e$..$\\pi$)"                               |
-| Symbol   | four_score_and_7_years                | "four\\_score\\_and\\_7\\_years"              |
-| NilClass |                                       | ""                                            |
-#+end_example
-
 
 * Contributing
 
