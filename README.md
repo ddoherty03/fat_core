@@ -1,0 +1,1149 @@
+- [Version](#org08c6b2b)
+- [Introduction](#orgb409533)
+- [Installation](#orgaf78cdb)
+- [Usage](#orgf4c03d5)
+  - [Array](#orgbf0d7bd)
+    - [Method `#comma_join(sep: nil, last_sep: nil, two_sep: nil)`](#org90333a0)
+    - [Method `#last_i`](#orgb5ec8fa)
+    - [Method `#intersect_with_dups`](#orgf3a31e0)
+    - [Method `diff_with_dups`](#orgf688358)
+  - [BigDecimal `#inspect`](#org228439a)
+  - [Enumerable](#orge4cd549)
+    - [Method `#each_with_flags`](#org218cc08)
+  - [Hash](#org4084cd2)
+    - [Method `#each_pair_with_flags`](#org9e037a0)
+    - [Method `#delete_with_value` and `#delete_with_value!`](#orgcec1c9f)
+    - [Method `#keys_with_value`](#org3176095)
+    - [Method `#remap_keys`](#org1bb322c)
+    - [Method `#replace_keys`](#org2422b59)
+    - [Alias `#merge` to `<<`](#orge127ca3)
+  - [Numeric](#orgb88ac7a)
+    - [Method `#signum`](#org6aa4188)
+    - [Method `#commas(places = nil)`](#orgde0a606)
+    - [Methods `#whole?` and `#int_if_whole`](#org75d311a)
+    - [Method `#secs_to_hms`](#org3851f2e)
+  - [Range](#orgd1d148c)
+    - [Methods `#contiguous`, `#left_contiguous`, `#right_contiguous`](#org8dc3396)
+    - [Method `#join(other)`](#org8506473)
+    - [Method `#spanned_by?(others)`](#org3044e74)
+    - [Methods `#gaps(others)`, `#overlaps(others)`](#org8967329)
+  - [String](#org84af932)
+    - [Method `#fuzzy_match`](#org671518d)
+    - [Method `#matches_with`](#orgab3712d)
+    - [Method `#entitle`](#org2bd68b6)
+    - [Method `#distance`](#org0a7545f)
+    - [Method `#commas(places)`](#org8fb72b8)
+    - [Method `#wrap(width, hang)`](#org41c2b2a)
+    - [Method `#as_sym`](#org7bf4d84)
+  - [Symbol](#org1972fd9)
+    - [Method `#as_str`](#org047797a)
+  - [TeX Quoting](#org00f166a)
+- [Contributing](#org2046bbe)
+
+[![CI](https://github.com/ddoherty03/fat_core/actions/workflows/ruby.yml/badge.svg?branch=master)](https://github.com/ddoherty03/fat_core/actions/workflows/ruby.yml)
+
+
+<a id="org08c6b2b"></a>
+
+# Version
+
+```ruby
+"Current version is: #{FatCore::VERSION}"
+```
+
+```
+Current version is: 7.1.3
+```
+
+
+<a id="orgb409533"></a>
+
+# Introduction
+
+`fat-core` is somewhat of a grab bag of core class extensions that I have found useful across several projects. It's higgeldy-piggeldy nature reflects the fact that none of them are important enough to deserve a gem of their own, but nonetheless need to be collected in one place to reduce redundancy across projects and provide a focused place to develop and test them.
+
+
+<a id="orgaf78cdb"></a>
+
+# Installation
+
+Add this line to your application's Gemfile:
+
+```ruby
+gem 'fat_core'
+```
+
+And then execute:
+
+```sh
+$ bundle
+```
+
+Or install it yourself as:
+
+```sh
+$ gem install fat_core
+```
+
+
+<a id="orgf4c03d5"></a>
+
+# Usage
+
+You can extend classes individually by requiring the corresponding file:
+
+```ruby
+require 'fat_core/array'
+require 'fat_core/bigdecimal'
+require 'fat_core/enumerable'
+require 'fat_core/hash'
+require 'fat_core/kernel'
+require 'fat_core/numeric'
+require 'fat_core/range'
+require 'fat_core/string'
+require 'fat_core/symbol'
+```
+
+Or, you can require them all:
+
+```ruby
+require 'fat_core/all'
+```
+
+Many of these have little that is of general interest, but there are a few goodies.
+
+
+<a id="orgbf0d7bd"></a>
+
+## Array
+
+
+<a id="org90333a0"></a>
+
+### Method `#comma_join(sep: nil, last_sep: nil, two_sep: nil)`
+
+Convert this array into a single string by (1) applying `#to_s` to each element and (2) joining the elements with the string given by the `sep:` parameter. By default the sep parameter is ', '.
+
+You may use a different separation string in the case when there are only two items in the list by supplying a `two_sep` parameter.
+
+You may also supply a difference separation string to separate the second-last and last items in the array by supplying a `last_sep:` parameter.
+
+By default, the sep parameter is the string ', ', the `two_sep` is ' and ', and the `last_sep` is ', and ', all of which makes for a well-punctuated English clause.
+
+If `sep` is given, the other two parameters are set to its value by default. If `last_sep` is given, `two_sep` takes its value by default.
+
+If the input array is empty, `#comma_join` returns an empty string.
+
+```ruby
+%w{hammers nails glue bolts}.comma_join
+```
+
+```
+hammers, nails, glue, and bolts
+```
+
+```ruby
+%w{hammers nails}.comma_join
+```
+
+```
+hammers and nails
+```
+
+And, if you are ideologically opposed to the Oxford comma:
+
+```ruby
+%w{hammers nails glue bolts}.comma_join(last_sep: ' and ')
+```
+
+```
+hammers, nails, glue and bolts
+```
+
+
+<a id="orgb5ec8fa"></a>
+
+### Method `#last_i`
+
+Return the index of the last element of the Array.
+
+```ruby
+%w{hammers nails glue bolts}.last_i
+```
+
+```
+3
+```
+
+
+<a id="orgf3a31e0"></a>
+
+### Method `#intersect_with_dups`
+
+Return a new Array that is the intersection of this Array with all `others`, but without removing duplicates as the `Array#&` method does. All items of this Array are included in the result but only if they also appear in all of the other Arrays.
+
+```ruby
+a = %w{hammers nails glue bolts nails}
+b = %w{nails fingers knuckles nails}
+a.intersect_with_dups(b)
+```
+
+```
+| nails | nails |
+```
+
+
+<a id="orgf688358"></a>
+
+### Method `diff_with_dups`
+
+Return an Array that is the difference between this Array and `other`, but without removing duplicates as the Array#- method does. All items of this Array are included in the result *unless* they also appear in any of the `other` Arrays.
+
+```ruby
+a = %w{hammers nails glue bolts hammers nails}
+b = %w{nails fingers knuckles nails}
+a.diff_with_dups(b)
+```
+
+```
+| hammers | glue | bolts | hammers |
+```
+
+
+<a id="org228439a"></a>
+
+## BigDecimal `#inspect`
+
+`FatCore` provides nothing but a better `#inspect` method for the `BigDecimal` class since the default inspect method is not very readable.
+
+```ruby
+BigDecimal('2.1718281828').inspect
+```
+
+```
+2.1718281828
+```
+
+Without `FatCore`, the result is "0.2718281828e1", forcing you to interpret the exponent to understand where the decimal place is.
+
+
+<a id="orge4cd549"></a>
+
+## Enumerable
+
+
+<a id="org218cc08"></a>
+
+### Method `#each_with_flags`
+
+`FatCore::Enumerable` extends `Enumerable` with the `#each_with_flags` method that yields the elements of the `Enumerable` but also yields two booleans, `first` and `last` that are set to `true` on respectively, the first and last element of the Enumerable and `false` otherwise. This makes it easy to treat these two cases specially without testing the index as in `#each_with_index`.
+
+```ruby
+result = []
+fibs = %w{1, 1, 2, 3, 5, 8, 13, 21}
+fibs.each_with_flags do |f, first, last|
+  result <<
+    if first
+      ["Start", f]
+    elsif last
+      ["Last", f]
+    else
+      ["Continue", f]
+    end
+end
+result
+```
+
+```
+| Start    |  1, |
+| Continue |  1, |
+| Continue |  2, |
+| Continue |  3, |
+| Continue |  5, |
+| Continue |  8, |
+| Continue | 13, |
+| Last     |  21 |
+```
+
+
+<a id="org4084cd2"></a>
+
+## Hash
+
+FatCore::Hash extends the Hash class with some useful methods.
+
+
+<a id="org9e037a0"></a>
+
+### Method `#each_pair_with_flags`
+
+As with the extension for `Enumerables`, `FatCore` provides a method for enumerating the key-value pair of the `Hash` with flags that are set `true` for the first and last elements but `false` otherwise:
+
+```ruby
+h = {'Chaucer' => 'Cantebury Tales', 'Shakespeare' => 'The Merchant of Venice',
+     'Austen' => 'Pride and Prejudice', 'C. Brontë' => 'Jane Eyre',
+     'E. Brontë' => 'Wuthering Heights' }
+result = []
+result << ['Position', 'Author', 'Novel']
+result << nil
+h.each_pair_with_flags do |k, v, first, last|
+  pos=
+    if first
+      'Begin'
+    elsif last
+      'End'
+    else
+      'Middle'
+    end
+  result << [pos, k, v]
+end
+result
+```
+
+```
+| Position | Author      | Novel                  |
+|----------+-------------+------------------------|
+| Begin    | Chaucer     | Cantebury Tales        |
+| Middle   | Shakespeare | The Merchant of Venice |
+| Middle   | Austen      | Pride and Prejudice    |
+| Middle   | C. Brontë   | Jane Eyre              |
+| End      | E. Brontë   | Wuthering Heights      |
+```
+
+
+<a id="orgcec1c9f"></a>
+
+### Method `#delete_with_value` and `#delete_with_value!`
+
+This method modifies a `Hash` by deleting the key-value pairs when the value equals the given value or values:
+
+```ruby
+h = { a: 1, b: 2, c: 3, d: 2, e: 1 }
+h.delete_with_value!(2)
+puts h
+```
+
+```
+=> false
+=> {:a=>1, :b=>2, :c=>3, :d=>2, :e=>1}
+=> {:a=>1, :c=>3, :e=>1}
+{:a=>1, :c=>3, :e=>1}
+=> nil
+:org_babel_ruby_eoe
+```
+
+You can supply multiple values for deletion:
+
+```ruby
+h = { a: 1, b: 2, c: 3, d: 2, e: 1 }
+h.delete_with_value!(1, 3)
+puts h
+```
+
+```
+=> false
+=> {:a=>1, :b=>2, :c=>3, :d=>2, :e=>1}
+=> {:b=>2, :d=>2}
+{:b=>2, :d=>2}
+=> nil
+:org_babel_ruby_eoe
+```
+
+The non-bang method returns a clone of the Hash with the given deletions made:
+
+```ruby
+h = { a: 1, b: 2, c: 3, d: 2, e: 1 }
+h2 = h.delete_with_value(1, 3)
+puts h
+puts h2
+```
+
+```
+=> false
+=> {:a=>1, :b=>2, :c=>3, :d=>2, :e=>1}
+=> {:b=>2, :d=>2}
+{:a=>1, :b=>2, :c=>3, :d=>2, :e=>1}
+=> nil
+{:b=>2, :d=>2}
+=> nil
+:org_babel_ruby_eoe
+```
+
+
+<a id="org3176095"></a>
+
+### Method `#keys_with_value`
+
+Return an `Array` of keys of the `Hash` with a value `==` to the given value or values.
+
+```ruby
+h = { a: 1, b: 2, c: 3, d: 2, e: 1 }
+h.keys_with_value(1).inspect
+```
+
+```
+"[:a, :e]"
+```
+
+```ruby
+h = { a: 1, b: 2, c: 3, d: 2, e: 1 }
+h.keys_with_value(2, 3).inspect
+```
+
+```
+"[:b, :d, :c]"
+```
+
+
+<a id="org1bb322c"></a>
+
+### Method `#remap_keys`
+
+This method pre-dates the new `#transform_keys` method now available for `Hash`, but it is kept as an alternative. It takes a `Hash` as an argument that maps existing keys to their replacement in the resulting `Hash`. The original `Hash` is not effected.
+
+```ruby
+require_relative './lib/fat_core/hash'
+
+h = { a: 1, b: 2, c: 3, d: 2, e: 1 }
+h.remap_keys({:a => :A, :b => :B}).inspect
+```
+
+```
+"{:A=>1, :B=>2, :c=>3, :d=>2, :e=>1}"
+```
+
+These days, a more systematic job could be done with `#transform_keys`:
+
+```ruby
+h = { a: 1, b: 2, c: 3, d: 2, e: 1 }
+h.transform_keys { |k| k.to_s.upcase.to_sym }.inspect
+```
+
+```
+"{:A=>1, :B=>2, :C=>3, :D=>2, :E=>1}"
+```
+
+
+<a id="org2422b59"></a>
+
+### Method `#replace_keys`
+
+A wholesale replacement of the existing keys can be done with this method:
+
+```ruby
+h = { a: 1, b: 2, c: 3, d: 2, e: 1 }
+h.replace_keys([:z, :y, :x, :w, :v]).inspect
+```
+
+```
+"{:z=>1, :y=>2, :x=>3, :w=>2, :v=>1}"
+```
+
+
+<a id="orge127ca3"></a>
+
+### Alias `#merge` to `<<`
+
+Finally, `FatCore` adds the "shovel" operator as an alias for `#merge` to provide a pretty way to represent the merger of the right `Hash` into the left `Hash`:
+
+```ruby
+{a: 'A', b: 'B', c: 'C'} << {c: 'CC', d: 'DD'} << {d: 'DDD', e: 'EEE'}
+```
+
+```
+{:a=>"A", :b=>"B", :c=>"CC", :d=>"DDD", :e=>"EEE"}
+```
+
+It groups values into pairs and applies the `#to_h` method to the right-hand argument if it is an `Enumerable`, so it also works if the right-hand argument is an `Array` or `Enumerable`:
+
+```ruby
+require 'fileutils'
+
+FileUtils.mkdir_p('./tmp')
+ff = File.open('./tmp/junk', 'w')
+ff.write("f\n", "FFFF\n", "g\n", "GGGG\n")
+ff.close
+ff = File.open('./tmp/junk', 'r')
+h = {a: 'A', b: 'B', c: 'C'} <<
+    [:c, 'CC', :d, 'DD'] <<
+    {d: 'DDD', e: 'EEE'} <<
+    ff.readlines.map(&:chomp) <<
+    [[:h, 'HHHHH'], [:j, 'JJJJJ']]
+ff.close
+FileUtils.rm_rf('./tmp/junk')
+h
+```
+
+```
+{:a=>"A", :b=>"B", :c=>"CC", :d=>"DDD", :e=>"EEE", "f"=>"FFFF", "g"=>"GGGG", :h=>"HHHHH", :j=>"JJJJJ"}
+```
+
+
+<a id="orgb88ac7a"></a>
+
+## Numeric
+
+FatCore::Numeric has methods for inserting grouping commas into a number (`#commas` and `#group`), for converting seconds to HH:MM:SS.dd format (`#secs_to_hms`), for testing for integrality (`#whole?` and `#int_if_whole`), and testing for sign (`#signum`).
+
+
+<a id="org6aa4188"></a>
+
+### Method `#signum`
+
+Return `-1` for negative numbers, `0` for zero, and `+1` for positive numbers. This is sometimes handy.
+
+```ruby
+[-55.signum, 0.signum, 55.signum]
+```
+
+```
+[-1, 0, 1]
+```
+
+
+<a id="orgde0a606"></a>
+
+### Method `#commas(places = nil)`
+
+To get s `String` representation of a `Numeric` with grouping commas inserted, `FatCore` provides the `#commas` method:
+
+```ruby
+result = []
+result << ['N', 'Places', 'N.commas(places)']
+result << nil
+nums = [3.14159, 2.718281828, 100000, 0.0059, 16236565468798.66877]
+places = [0, 3, 5]
+nums.each do |n|
+  places.each do |pl|
+  result << [n, pl, n.commas(pl)]
+  end
+end
+result
+```
+
+```
+|                  N | Places |         N.commas(places) |
+|--------------------+--------+--------------------------|
+|            3.14159 | 0      |                        3 |
+|            3.14159 | 3      |                    3.142 |
+|            3.14159 | 5      |                  3.14159 |
+|        2.718281828 | 0      |                        3 |
+|        2.718281828 | 3      |                    2.718 |
+|        2.718281828 | 5      |                  2.71828 |
+|             100000 | 0      |                  100,000 |
+|             100000 | 3      |              100,000.000 |
+|             100000 | 5      |            100,000.00000 |
+|             0.0059 | 0      |                        0 |
+|             0.0059 | 3      |                    0.006 |
+|             0.0059 | 5      |                  0.00590 |
+| 16236565468798.668 | 0      |       16,236,565,468,799 |
+| 16236565468798.668 | 3      |   16,236,565,468,798.668 |
+| 16236565468798.668 | 5      | 16,236,565,468,798.66800 |
+```
+
+
+<a id="org75d311a"></a>
+
+### Methods `#whole?` and `#int_if_whole`
+
+At times it is useful to know if a Float or BigDecimal can be converted to an `Integer` without losing precision.
+
+```ruby
+result = []
+result << ['N', '#whole?', '#int_if_whole', 'Classes']
+result << nil
+nums = [3.14159, 3.000000, 100000, 0.0059, 16236565468798.66877]
+nums.each do |n|
+  result << [n, n.whole?, n.int_if_whole, "#{n.class} -> #{n.int_if_whole.class}"]
+end
+result
+```
+
+```
+|                  N | #whole? |      #int_if_whole | Classes            |
+|--------------------+---------+--------------------+--------------------|
+|            3.14159 | false   |            3.14159 | Float -> Float     |
+|                3.0 | true    |                  3 | Float -> Integer   |
+|             100000 | true    |             100000 | Integer -> Integer |
+|             0.0059 | false   |             0.0059 | Float -> Float     |
+| 16236565468798.668 | false   | 16236565468798.668 | Float -> Float     |
+```
+
+
+<a id="org3851f2e"></a>
+
+### Method `#secs_to_hms`
+
+This method converts a numeric representing a number of seconds or an angle in degrees to a `String` of the form "HH:MM:SS" representing the same quantity in hours (or degrees), minutes, and seconds.
+
+```ruby
+result = []
+result << ['N', 'HH:MM:SS']
+result << nil
+nums = [85777.66, 959.66, -1198.33, 0, 3.14159 * 180]
+nums.each do |n|
+  result << [n, n.secs_to_hms]
+end
+result
+```
+
+```
+|                 N | HH:MM:SS    |
+|-------------------+-------------|
+|          85777.66 | 23:49:37.66 |
+|            959.66 | 00:15:59.66 |
+|          -1198.33 | -1:40:01.67 |
+|                 0 | 00:00:00    |
+| 565.4861999999999 | 00:09:25.48 |
+```
+
+
+<a id="orgd1d148c"></a>
+
+## Range
+
+`FatCore` can also extend the Range class with several useful methods that emphasize coverage of one range by one or more others (`#spanned_by?` and `#gaps`), contiguity of Ranges to one another (`#contiguous?`, `#left_contiguous?`, and `#right_contiguous?`, `#join`), and the testing of overlaps between ranges (`#overlaps?`, `#overlaps_among?`). These are put to good use in the 'fat\_period' (<https://github.com/ddoherty03/fat_period>) gem, which combines fat\_core's extended Range class with its extended Date class to make a useful Period class for date ranges, and you may find fat\_core's extended Range class likewise useful.
+
+
+<a id="org8dc3396"></a>
+
+### Methods `#contiguous`, `#left_contiguous`, `#right_contiguous`
+
+These methods determine whether the subject `Range` are "contiguous" with another `Range` on the left, right, or either side. The notion of contiguity is different for `Ranges` whose min and max values respond to the `#succ` method: if they do, "contiguity" only requires that the `#succ` of the max value of the left range equal the min value of the right `Range`; otherwise the max value of the left `Range` must equal the min value of the right `Range`.
+
+```ruby
+require 'date'
+
+result = []
+result << ["Self", "Other", "Contiguous?", "Right?", "Left?"]
+result << nil
+pairs = [
+  [(0..10), (11..12)],
+  [(11..20), (0..10)],
+  [(0..10), (15..20)],
+  [(3.145..12.3), (0.5..3.145)],
+  [(3.146..12.3), (0.5..3.145)],
+  [('a'..'q'), ('r'..'z')],
+  [('a'..'q'), ('s'..'z')],
+  [(Date.parse('1963-11-22')..Date.parse('1964-11-03')), (Date.parse('1964-11-04')..Date.today)],
+  [(Date.parse('1963-11-22')..Date.parse('1964-11-03')), (Date.parse('1964-11-28')..Date.today)]
+]
+pairs.each do |r1, r2|
+  result << [r1.to_s, r2.to_s, r1.contiguous?(r2), r1.right_contiguous?(r2), r1.left_contiguous?(r2)]
+end
+result
+```
+
+```
+|                   Self |                  Other | Contiguous? | Right? | Left? |
+|------------------------+------------------------+-------------+--------+-------|
+|                  0..10 |                 11..12 | true        | true   | false |
+|                 11..20 |                  0..10 | true        | false  | true  |
+|                  0..10 |                 15..20 | false       | false  | false |
+|            3.145..12.3 |             0.5..3.145 | true        | false  | true  |
+|            3.146..12.3 |             0.5..3.145 | false       | false  | false |
+|                   a..q |                   r..z | true        | true   | false |
+|                   a..q |                   s..z | false       | false  | false |
+| 1963-11-22..1964-11-03 | 1964-11-04..2025-12-23 | true        | true   | false |
+| 1963-11-22..1964-11-03 | 1964-11-28..2025-12-23 | false       | false  | false |
+```
+
+
+<a id="org8506473"></a>
+
+### Method `#join(other)`
+
+If `self` is contiguous with `other`, return a new `Range` that splices the two `Range~s into one ~Range`.
+
+```ruby
+require 'date'
+
+result = []
+result << ["Self", "Other", "Contiguous?", "Joined"]
+result << nil
+pairs = [
+  [(0..10), (11..12)],
+  [(11..20), (0..10)],
+  [(0..10), (15..20)],
+  [(3.145..12.3), (0.5..3.145)],
+  [(3.146..12.3), (0.5..3.145)],
+  [('a'..'q'), ('r'..'z')],
+  [('a'..'q'), ('s'..'z')],
+  [(Date.parse('1963-11-22')..Date.parse('1964-11-03')), (Date.parse('1964-11-04')..Date.today)],
+  [(Date.parse('1963-11-22')..Date.parse('1964-11-03')), (Date.parse('1964-11-28')..Date.today)]
+]
+pairs.each do |r1, r2|
+  result << [r1.to_s, r2.to_s, r1.contiguous?(r2), "#{r1.join(r2)}"]
+end
+result
+```
+
+```
+|                   Self |                  Other | Contiguous? |                 Joined |
+|------------------------+------------------------+-------------+------------------------|
+|                  0..10 |                 11..12 | true        |                  0..12 |
+|                 11..20 |                  0..10 | true        |                  0..20 |
+|                  0..10 |                 15..20 | false       |                        |
+|            3.145..12.3 |             0.5..3.145 | true        |              0.5..12.3 |
+|            3.146..12.3 |             0.5..3.145 | false       |                        |
+|                   a..q |                   r..z | true        |                   a..z |
+|                   a..q |                   s..z | false       |                        |
+| 1963-11-22..1964-11-03 | 1964-11-04..2025-12-23 | true        | 1963-11-22..2025-12-23 |
+| 1963-11-22..1964-11-03 | 1964-11-28..2025-12-23 | false       |                        |
+```
+
+
+<a id="org3044e74"></a>
+
+### Method `#spanned_by?(others)`
+
+A set of `Ranges` "spans" a given `Range` if the set is contiguous and fully covers the given `Range` with no overlaps and no gaps. A set that over-covers the given `Range` is still considered to span it, even though it is wider than the given `Range`. In other words, a set spans the given `Range` if the set can be joined and the given `Range` is within the joined `Range`.
+
+```ruby
+require 'date'
+
+result = []
+result << ["Self", "Others", "Spanned By?"]
+result << nil
+pairs = [
+  [(0..10), [(-1..5), (6..10)]],
+  [(1..20), [(0..10), (11..20)]],
+  [(1..20), [(0..10), (10..20)]],
+  [(3.145..12.3), [(0.5..3.45), (3.45..10.5), (10.5..13.5)]],
+  [(3.145..12.3), [(0.5..3.45), (3.45..10.5), (10.6..13.5)]],
+  [('a'..'z'), [('a'..'g'), ('h'..'s'), ('t'..'z')]],
+  [('a'..'z'), [('a'..'g'), ('j'..'s'), ('t'..'z')]],
+]
+pairs.each do |r, others|
+  result << ["#{r}", "#{others}", r.spanned_by?(others)]
+end
+result
+```
+
+```
+|        Self | Others                              | Spanned By? |
+|-------------+-------------------------------------+-------------|
+|       0..10 | [-1..5, 6..10]                      | true        |
+|       1..20 | [0..10, 11..20]                     | true        |
+|       1..20 | [0..10, 10..20]                     | false       |
+| 3.145..12.3 | [0.5..3.45, 3.45..10.5, 10.5..13.5] | true        |
+| 3.145..12.3 | [0.5..3.45, 3.45..10.5, 10.6..13.5] | false       |
+|        a..z | ["a".."g", "h".."s", "t".."z"]      | true        |
+|        a..z | ["a".."g", "j".."s", "t".."z"]      | false       |
+```
+
+
+<a id="org8967329"></a>
+
+### Methods `#gaps(others)`, `#overlaps(others)`
+
+When the set of other `Ranges` does not span the given `Range`, these methods return an set of `Ranges` that represent the portions of the given `Range` no covered by the `others`, the "gaps", or the points within the given `Range` where the `others` overlap one another and thus are not contiguous.
+
+```ruby
+require 'date'
+
+result = []
+result << ["Self", "Others", "Spanned By?", "Gaps", "Overlaps"]
+result << nil
+pairs = [
+  [(0..10), [(-1..5), (6..10)]],
+  [(1..20), [(0..10), (11..20)]],
+  [(1..20), [(0..15), (11..20)]],
+  [(1..20), [(0..10), (10..20)]],
+  [(3.145..12.3), [(0.5..3.45), (3.45..10.5), (10.5..13.5)]],
+  [(3.145..12.3), [(0.5..3.45), (3.45..10.5), (10.6..13.5)]],
+  [('a'..'z'), [('a'..'g'), ('h'..'s'), ('t'..'z')]],
+  [('a'..'z'), [('a'..'g'), ('j'..'s'), ('t'..'z')]],
+]
+pairs.each do |r, others|
+  result << ["#{r}", "#{others}", r.spanned_by?(others), "#{r.gaps(others)}", "#{r.overlaps(others)}"]
+end
+result
+```
+
+```
+|        Self | Others                              | Spanned By? | Gaps         | Overlaps |
+|-------------+-------------------------------------+-------------+--------------+----------|
+|       0..10 | [-1..5, 6..10]                      | true        | []           | []       |
+|       1..20 | [0..10, 11..20]                     | true        | []           | []       |
+|       1..20 | [0..15, 11..20]                     | false       | []           | [11..15] |
+|       1..20 | [0..10, 10..20]                     | false       | []           | []       |
+| 3.145..12.3 | [0.5..3.45, 3.45..10.5, 10.5..13.5] | true        | []           | []       |
+| 3.145..12.3 | [0.5..3.45, 3.45..10.5, 10.6..13.5] | false       | [10.5..10.6] | []       |
+|        a..z | ["a".."g", "h".."s", "t".."z"]      | true        | []           | []       |
+|        a..z | ["a".."g", "j".."s", "t".."z"]      | false       | ["h".."i"]   | []       |
+```
+
+
+<a id="org84af932"></a>
+
+## String
+
+FatCore::String has methods for performing matching of one string with another (`#matches_with`, `#fuzzy_match`), for converting a string to title-case as might by used in the title of a book (`#entitle`), for converting a String into a useable Symbol (`#as_sym`) and vice-versa (`#as_str` also `Symbol#as_str`), for wrapping with an optional hanging indent (`#wrap`), cleaning up errant spaces (`#clean`), and computing the Damerau-Levenshtein distance between strings (`#distance`). And several others.
+
+
+<a id="org671518d"></a>
+
+### Method `#fuzzy_match`
+
+The `#fuzzy_match` method determines whether the subject string matches the given "matcher" string, which provides a simple syntax that allows a limited kind of pattern matching. If there is a match, it returns the matched portion of self, minus punctuation characters, if self matches the string, and returns nil otherwise.
+
+What makes this handy is that a user trying to match by memory can be loose about case, punctuation, and spaces, and still find desired matches. In the matcher both the space and colon ':' have special meaning as shown below.
+
+`#fuzzy_match(matcher)` uses the following rules for matching:
+
+1.  Remove leading and trailing whitespace in the subject and the matcher and collapse its internal whitespace to a single space,
+2.  In the subject string replace periods and commas with a space (so they still act as word separators) but remove apostrophes, and asterisks so the user need not remember whether they were used when forming the matcher.
+3.  In the matcher, make any period, comma, asterisk, or apostrophe optional for the same reason.
+4.  Treat internal ':stuff' or ' :stuff' in the matcher as the equivalent of *\bstuff.\** in a regular expression, that is, match any word starting with stuff in self,
+5.  Treat internal 'stuff: ' in the matcher as the equivalent of *.\*stuff\b* in a regular expression, that is, match any word ending with stuff in self,
+6.  A colon with no spaces around it is treated as belonging to the following word, requiring it to start with it, so 'some:stuff' requires 'some' anywhere followed by a word beginning with 'stuff', i.e., /some.\*\bstuff/i,
+7.  Treat leading ':' in the matcher as anchoring the match to the beginning of the target string,
+8.  Treat ending ':' in the matcher as anchoring the match to the end of the target string,
+9.  Require each component to match some part of self, and
+
+```ruby
+result = []
+result << ['Self', 'Matcher', 'Match']
+result << nil
+subj = "St. Luke's Hospital"
+matchers = ['st lukes', 'st. luke\'s', 'luk:hosp', 'st:spital', 'uk spital', 'st:laks', ':lukes', 's lukes', 'lukes:hospital']
+matchers.each do |m|
+  result << [subj, m, subj.fuzzy_match(m)]
+end
+result
+```
+
+```
+| Self                | Matcher        | Match          |
+|---------------------+----------------+----------------|
+| St. Luke's Hospital | st lukes       | St Lukes       |
+| St. Luke's Hospital | st. luke's     | St Lukes       |
+| St. Luke's Hospital | luk:hosp       | Lukes Hosp     |
+| St. Luke's Hospital | st:spital      | nil            |
+| St. Luke's Hospital | uk spital      | ukes Hospital  |
+| St. Luke's Hospital | st:laks        | nil            |
+| St. Luke's Hospital | :lukes         | nil            |
+| St. Luke's Hospital | s lukes        | St Lukes       |
+| St. Luke's Hospital | lukes:hospital | Lukes Hospital |
+```
+
+
+<a id="orgab3712d"></a>
+
+### Method `#matches_with`
+
+The `#matches_with(matcher)` method allows the use of either a regular expression or fuzzy matching as described above depending on whether the matcher is enclosed in '/' characters. It also returns the matched portion of `self` or nil if there is no match. Even when a regex is given, the match is case insensitive by default and commas, apostrophes, and periods are removed from the subject string before matching.
+
+```ruby
+result = []
+result << ['Self', 'Matcher', 'Match']
+result << nil
+subj = "St. Luke's Hospital"
+matchers = ['st lukes', '/luk.*hosp/', 'st:spital', '/u.*s\b/', 'st:laks', ':lukes', 's lukes', '/lukes hospital\z/']
+matchers.each do |m|
+  result << [subj, m, subj.matches_with(m)]
+end
+result
+```
+
+```
+| Self                | Matcher            | Match       |
+|---------------------+--------------------+-------------|
+| St. Luke's Hospital | st lukes           | St Lukes    |
+| St. Luke's Hospital | /luk.*hosp/        | Luke's Hosp |
+| St. Luke's Hospital | st:spital          | nil         |
+| St. Luke's Hospital | /u.*s\b/           | uke's       |
+| St. Luke's Hospital | st:laks            | nil         |
+| St. Luke's Hospital | :lukes             | nil         |
+| St. Luke's Hospital | s lukes            | St Lukes    |
+| St. Luke's Hospital | /lukes hospital\z/ | nil         |
+```
+
+
+<a id="org2bd68b6"></a>
+
+### Method `#entitle`
+
+For a string meant to serve as the title of a book, song, or other item, there are certain rules in English as to which words should be capitalized and which should be put in lower case. "PROFILES IN courage" should be rendered "Profiles in Courage" for example. The preposition "in" is typically not capitalized unless it starts the title: "in the HEAT OF THE NIght" should be something like "In the Heat of the Night".
+
+```ruby
+result = []
+result << ['Self', 'Entitled']
+result << nil
+titles = ['PROFILES IN courage', 'in the HEAT OF THE NIght', 'a day in the life', 'FROM HERE TO ETERNITY',
+         'lucy in the sky with diamonds']
+titles.each do |t|
+  result << [t, t.entitle]
+end
+result
+```
+
+```
+| Self                          | Entitled                      |
+|-------------------------------+-------------------------------|
+| PROFILES IN courage           | Profiles in Courage           |
+| in the HEAT OF THE NIght      | In the Heat of the Night      |
+| a day in the life             | A Day in the Life             |
+| FROM HERE TO ETERNITY         | From Here to Eternity         |
+| lucy in the sky with diamonds | Lucy in the Sky With Diamonds |
+```
+
+
+<a id="org0a7545f"></a>
+
+### Method `#distance`
+
+`FatCore` provides `distance` as a simple wrapper around the Damerau-Levenshtein distance function in `damerau-levenshtein` gem, using a block size of 1 and a max distance of 10.
+
+```ruby
+result = []
+result << ['Word1', 'Word2', 'Distance']
+result << nil
+pairs = [['Shelf', 'Shell'], ['Shelf', 'Shall'], ['Doherty', 'Daughtery'], ['Doherty', 'Dorrit'], ['Smith', 'Jones']]
+pairs.each do |w1, w2|
+  result << [w1, w2, w1.distance(w2)]
+end
+result
+```
+
+```
+| Word1   | Word2     | Distance |
+|---------+-----------+----------|
+| Shelf   | Shell     | 1        |
+| Shelf   | Shall     | 2        |
+| Doherty | Daughtery | 5        |
+| Doherty | Dorrit    | 4        |
+| Smith   | Jones     | 5        |
+```
+
+
+<a id="org8fb72b8"></a>
+
+### Method `#commas(places)`
+
+When presenting numbers, it is common to want to add grouping digits to make the numbers more readable. The `commas(places)` method does this be converting the number into a Float, rounding to places digits, then converting back to a `String` with grouping commas inserted.
+
+```ruby
+result = []
+result << ['N', 'Places', 'With Commas']
+result << nil
+nums_places = [["798964655.66541325", 3], ["798964655.66541325", 0], ["798964655.66541325", 5], ["3.14159", 3],
+             ["3.14159e6", 3], ["-3.14159e4", 2], ["+3.14159e3", 2]]
+nums_places.each do |n, p|
+  result << [n, p, n.commas(p)]
+end
+result
+```
+
+```
+|                  N | Places |       With Commas |
+|--------------------+--------+-------------------|
+| 798964655.66541325 | 3      |   798,964,655.665 |
+| 798964655.66541325 | 0      |       798,964,656 |
+| 798964655.66541325 | 5      | 798,964,655.66541 |
+|            3.14159 | 3      |             3.142 |
+|          3.14159e6 | 3      |     3,141,590.000 |
+|         -3.14159e4 | 2      |        -31,415.90 |
+|         +3.14159e3 | 2      |          3,141.59 |
+```
+
+
+<a id="org41c2b2a"></a>
+
+### Method `#wrap(width, hang)`
+
+This method wraps the string to a given width with an optional hanging indent for lines after the first.
+
+```ruby
+getty = <<~EOS
+Four score and seven years ago our fathers brought forth on this continent,
+a new nation, conceived in Liberty, and dedicated to the proposition that
+all men are created equal.
+
+Now we are engaged in a great civil war, testing whether that nation, or any
+nation so conceived and so dedicated, can long endure.  We are met on a
+great battle-field of that war.  We have come to dedicate a portion of that
+field, as a final resting place for those who here gave their lives that
+that nation might live.  It is altogether fitting and proper that we should
+do this.
+
+But, in a larger sense, we can not dedicate---we can not consecrate---we can
+not hallow---this ground.  The brave men, living and dead, who struggled
+here, have consecrated it, far above our poor power to add or detract.  The
+world will little note, nor long remember what we say here, but it can never
+forget what they did here.  It is for us the living, rather, to be dedicated
+here to the unfinished work which they who fought here have thus far so
+nobly advanced.  It is rather for us to be here dedicated to the great task
+remaining before us---that from these honored dead we take increased
+devotion to that cause for which they gave the last full measure of
+devotion---that we here highly resolve that these dead shall not have died
+in vain---that this nation, under God, shall have a new birth of
+freedom---and that government of the people, by the people, for the people,
+shall not perish from the earth.
+EOS
+getty.wrap(110, 3)
+```
+
+```
+Four score and seven years ago our fathers brought forth on this continent, a new nation, conceived
+   in Liberty, and dedicated to the proposition that all men are created equal. Now we are engaged
+   in a great civil war, testing whether that nation, or any nation so conceived and so dedicated,
+   can long endure. We are met on a great battle-field of that war. We have come to dedicate
+   a portion of that field, as a final resting place for those who here gave their lives that
+   that nation might live. It is altogether fitting and proper that we should do this. But, in
+   a larger sense, we can not dedicate---we can not consecrate---we can not hallow---this ground.
+   The brave men, living and dead, who struggled here, have consecrated it, far above our poor
+   power to add or detract. The world will little note, nor long remember what we say here, but
+   it can never forget what they did here. It is for us the living, rather, to be dedicated here
+   to the unfinished work which they who fought here have thus far so nobly advanced. It is rather
+   for us to be here dedicated to the great task remaining before us---that from these honored
+   dead we take increased devotion to that cause for which they gave the last full measure of
+   devotion---that we here highly resolve that these dead shall not have died in vain---that this
+   nation, under God, shall have a new birth of freedom---and that government of the people, by
+   the people, for the people, shall not perish from the earth.
+```
+
+```ruby
+getty.wrap(40, 2)
+```
+
+```
+Four score and seven years ago our
+  fathers brought forth on this continent,
+  a new nation, conceived in Liberty,
+  and dedicated to the proposition that
+  all men are created equal. Now we
+  are engaged in a great civil war,
+  testing whether that nation, or any
+  nation so conceived and so dedicated,
+  can long endure. We are met on a
+  great battle-field of that war. We
+  have come to dedicate a portion of
+  that field, as a final resting place
+  for those who here gave their lives
+  that that nation might live. It is
+  altogether fitting and proper that
+  we should do this. But, in a larger
+  sense, we can not dedicate---we can
+  not consecrate---we can not hallow---this
+  ground. The brave men, living and
+  dead, who struggled here, have consecrated
+  it, far above our poor power to
+  add or detract. The world will little
+  note, nor long remember what we say
+  here, but it can never forget what
+  they did here. It is for us the
+  living, rather, to be dedicated here
+  to the unfinished work which they
+  who fought here have thus far so
+  nobly advanced. It is rather for
+  us to be here dedicated to the great
+  task remaining before us---that from
+  these honored dead we take increased
+  devotion to that cause for which
+  they gave the last full measure of
+  devotion---that we here highly resolve
+  that these dead shall not have died
+  in vain---that this nation, under
+  God, shall have a new birth of freedom---and
+  that government of the people, by
+  the people, for the people, shall
+  not perish from the earth.
+```
+
+
+<a id="org7bf4d84"></a>
+
+### Method `#as_sym`
+
+Convert a `String` to a `Symbol` by converting all letters to lower-case, replacing hyphens and white space with a single underscore, and removing all non-alphanumeric characters:
+
+```ruby
+"   Hello-to-the      World!!!".as_sym
+```
+
+```
+:hello_to_the_world
+```
+
+
+<a id="org1972fd9"></a>
+
+## Symbol
+
+
+<a id="org047797a"></a>
+
+### Method `#as_str`
+
+A quasi-inverse of `String#as_sym`, convert a `Symbol` into a `String` by converting '<span class="underline">' to a hyphen, white-space into '</span>', and eliminate any non-alphanumeric characters.
+
+```ruby
+:hello_to_the_world.as_str
+```
+
+```
+hello-to-the-world
+```
+
+
+<a id="org00f166a"></a>
+
+## TeX Quoting
+
+The extensions for `String`, `Numeric`, `Range`, `Symbol`, and `NilClass` provide a `#tex_quote` method for quoting the string version of an object so as to allow its inclusion in a TeX document while quoting characters such as '\_', $' or '%' that have a special meaning for TeX. At the same time it deploys TeX notation when special notation is available, for example, a `Rational` is rendered as a fraction.
+
+```ruby
+require 'date'
+
+result = []
+result << ['Class', 'Example', '#tex_quote']
+result << nil
+examples = [
+  "Save $100 or 14% on this Friday_Black",
+  58743.44,
+  Float::INFINITY,
+  Math::PI,
+  Complex(5, 3),
+  Complex(5.0, 3.0),
+  Rational(5, 3),
+  Rational(8.0, 17.0),
+  (Date.parse('2020-09-22')..Date.today),
+  (Math::E..Math::PI),
+  :four_score_and_7_years,
+  nil
+  ]
+examples.each do |ex|
+  result << [ex.class, ex.to_s, ex.tex_quote.inspect]
+end
+result
+```
+
+```
+| Class    | Example                               | #tex_quote                                    |
+|----------+---------------------------------------+-----------------------------------------------|
+| String   | Save $100 or 14% on this Friday_Black | "Save \\$100 or 14\\% on this Friday\\_Black" |
+| Float    | 58743.44                              | "58743.44"                                    |
+| Float    | Infinity                              | "$\\infty$"                                   |
+| Float    | 3.141592653589793                     | "$\\pi$"                                      |
+| Complex  | 5+3i                                  | "$5+3i$"                                      |
+| Complex  | 5.0+3.0i                              | "$5+3i$"                                      |
+| Rational | 5/3                                   | "$\\frac{5}{3}$"                              |
+| Rational | 8/17                                  | "$\\frac{8}{17}$"                             |
+| Range    | 2020-09-22..2025-12-23                | "(2020-09-22..2025-12-23)"                    |
+| Range    | 2.718281828459045..3.141592653589793  | "($e$..$\\pi$)"                               |
+| Symbol   | four_score_and_7_years                | "four\\_score\\_and\\_7\\_years"              |
+| NilClass |                                       | ""                                            |
+```
+
+
+<a id="org2046bbe"></a>
+
+# Contributing
+
+1.  Fork it (<http://github.com/ddoherty03/fat_core/fork> )
+2.  Create your feature branch (`git checkout -b my-new-feature`)
+3.  Commit your changes (`git commit -am 'Add some feature'`)
+4.  Push to the branch (`git push origin my-new-feature`)
+5.  Create new Pull Request
