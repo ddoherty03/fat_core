@@ -8,6 +8,9 @@ require_relative 'numeric'
 
 module FatCore
   module String
+    UPPERS = ('A'..'Z').to_a
+    REGEXP_META_CHARACTERS = "\\$()*+.<>?[]^{|}".chars.freeze
+
     # @group Transforming
     # :section: Transforming
 
@@ -93,21 +96,28 @@ module FatCore
       r.gsub('XzXzXcbXzXzX', '\\}')
     end
 
-    UPPERS = ('A'..'Z').to_a
-    REGEXP_META_CHARACTERS = "\\$()*+.<>?[]^{|}".chars.freeze
+    # Rather than truncate a String to make it fit a given length, this method
+    # removes characters from the middle of the string to make it fit the
+    # given size.  This is often preferable to truncating at the end or
+    # beginning of a String because the most important information is often at
+    # the start or end of a String.  By default the missing middle is
+    # indicated by a single '~' character, but you can set it to any string,
+    # even the empty string with the `ellipsis:` parameter.
+    def gut(max_size, ellipsis: '~', squeeze: nil)
+      return self if size <= max_size
 
-    private
-
-    def upper?
-      UPPERS.include?(self[0])
+      s =
+        if squeeze
+          tr(squeeze, '')
+        else
+          self
+        end
+      chars_to_cut = (s.size - max_size) + ellipsis.size
+      chars_to_keep = s.size - chars_to_cut
+      start_chars = chars_to_keep / 2 + (chars_to_keep.odd? ? 1 : 0)
+      end_chars = chars_to_keep - start_chars
+      s[0..start_chars - 1] + ellipsis + s[-end_chars..-1]
     end
-
-    # Return true if all the letters in self are upper case
-    def all_upper?
-      tr('^A-Za-z', '').split('').all? { |c| ('A'..'Z').to_a.include? c }
-    end
-
-    public
 
     # Return self capitalized according to the conventions for capitalizing
     # titles of books or articles. Tries to follow the rules of the University
@@ -371,6 +381,17 @@ module FatCore
       return self unless clean&.match?(numeric_re)
 
       to_f.commas(places)
+    end
+
+    private
+
+    def upper?
+      UPPERS.include?(self[0])
+    end
+
+    # Return true if all the letters in self are upper case
+    def all_upper?
+      tr('^A-Za-z', '').split('').all? { |c| ('A'..'Z').to_a.include? c }
     end
 
     module ClassMethods

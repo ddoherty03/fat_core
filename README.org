@@ -1,15 +1,15 @@
 #+TITLE: FatCore Guide
 #+OPTIONS: toc:5
 #+PROPERTY: header-args:ruby :results value :colnames no :hlines yes :exports both :dir "./"
-#+PROPERTY: header-args:ruby+ :wrap example :session fat_core_session :eval yes
-#+PROPERTY: header-args:ruby+ :prologue "$:.unshift('./lib') unless $:.first == './lib'; require 'fat_core'"
+#+PROPERTY: header-args:ruby+ :wrap example :eval yes
+#+PROPERTY: header-args:ruby+ :prologue "$:.unshift('./lib') unless $:.first == './lib'; require 'fat_core/all'; nil"
+#+PROPERTY: header-args:ruby+ :session fat_core_session :ruby "bundle exec irb"
 #+PROPERTY: header-args:sh :exports code :eval no
 #+PROPERTY: header-args:bash :exports code :eval no
 
 #+BEGIN_EXPORT markdown
 [![CI](https://github.com/ddoherty03/fat_core/actions/workflows/ruby.yml/badge.svg?branch=master)](https://github.com/ddoherty03/fat_core/actions/workflows/ruby.yml)
 #+END_EXPORT
-
 
 * Version
 #+begin_src ruby
@@ -66,9 +66,14 @@ You can extend classes individually by requiring the corresponding file:
 
 Or, you can require them all:
 
-#+begin_SRC ruby :eval no
+#+begin_SRC ruby
   require 'fat_core/all'
 #+end_SRC
+
+#+RESULTS:
+#+begin_example
+false
+#+end_example
 
 Many of these have little that is of general interest, but there are a few
 goodies.
@@ -144,13 +149,13 @@ the other Arrays.
 
 #+begin_src ruby
   a = %w{hammers nails glue bolts nails}
-  b = %w{nails fingers knuckles nails}
+  b = %w{nails fingers bolts knuckles nails}
   a.intersect_with_dups(b)
 #+end_src
 
 #+RESULTS:
 #+begin_example
-| nails | nails |
+| nails | bolts | nails |
 #+end_example
 
 *** Method ~diff_with_dups~
@@ -274,12 +279,7 @@ equals the given value or values:
 
 #+RESULTS:
 #+begin_example
-=> false
-=> {:a=>1, :b=>2, :c=>3, :d=>2, :e=>1}
-=> {:a=>1, :c=>3, :e=>1}
 {:a=>1, :c=>3, :e=>1}
-=> nil
-:org_babel_ruby_eoe
 #+end_example
 
 You can supply multiple values for deletion:
@@ -292,12 +292,7 @@ You can supply multiple values for deletion:
 
 #+RESULTS:
 #+begin_example
-=> false
-=> {:a=>1, :b=>2, :c=>3, :d=>2, :e=>1}
-=> {:b=>2, :d=>2}
 {:b=>2, :d=>2}
-=> nil
-:org_babel_ruby_eoe
 #+end_example
 
 The non-bang method returns a clone of the Hash with the given deletions made:
@@ -311,14 +306,8 @@ The non-bang method returns a clone of the Hash with the given deletions made:
 
 #+RESULTS:
 #+begin_example
-=> false
-=> {:a=>1, :b=>2, :c=>3, :d=>2, :e=>1}
-=> {:b=>2, :d=>2}
 {:a=>1, :b=>2, :c=>3, :d=>2, :e=>1}
-=> nil
 {:b=>2, :d=>2}
-=> nil
-:org_babel_ruby_eoe
 #+end_example
 
 *** Method ~#keys_with_value~
@@ -593,8 +582,8 @@ the max value of the left ~Range~ must equal the min value of the right
 |            3.146..12.3 |             0.5..3.145 | false       | false  | false |
 |                   a..q |                   r..z | true        | true   | false |
 |                   a..q |                   s..z | false       | false  | false |
-| 1963-11-22..1964-11-03 | 1964-11-04..2025-12-23 | true        | true   | false |
-| 1963-11-22..1964-11-03 | 1964-11-28..2025-12-23 | false       | false  | false |
+| 1963-11-22..1964-11-03 | 1964-11-04..2026-05-29 | true        | true   | false |
+| 1963-11-22..1964-11-03 | 1964-11-28..2026-05-29 | false       | false  | false |
 #+end_example
 
 *** Method ~#join(other)~
@@ -635,8 +624,8 @@ two ~Range~s into one ~Range~.
 |            3.146..12.3 |             0.5..3.145 | false       |                        |
 |                   a..q |                   r..z | true        |                   a..z |
 |                   a..q |                   s..z | false       |                        |
-| 1963-11-22..1964-11-03 | 1964-11-04..2025-12-23 | true        | 1963-11-22..2025-12-23 |
-| 1963-11-22..1964-11-03 | 1964-11-28..2025-12-23 | false       |                        |
+| 1963-11-22..1964-11-03 | 1964-11-04..2026-05-29 | true        | 1963-11-22..2026-05-29 |
+| 1963-11-22..1964-11-03 | 1964-11-28..2026-05-29 | false       |                        |
 #+end_example
 
 *** Method ~#spanned_by?(others)~
@@ -723,6 +712,7 @@ where the ~others~ overlap one another and thus are not contiguous.
 #+end_example
 
 ** String
+
 FatCore::String has methods for performing matching of one string with another
 (~#matches_with~, ~#fuzzy_match~), for converting a string to title-case as
 might by used in the title of a book (~#entitle~), for converting a String
@@ -917,7 +907,7 @@ back to a ~String~ with grouping commas inserted.
 |         +3.14159e3 | 2      |          3,141.59 |
 #+end_example
 
-*** Method =#wrap(width, hang)=
+*** Method ~#wrap(width, hang)~
 This method wraps the string to a given width with an optional hanging indent
 for lines after the first.
 #+begin_src ruby
@@ -1019,7 +1009,7 @@ Four score and seven years ago our
   not perish from the earth.
 #+end_example
 
-*** Method =#as_sym=
+*** Method ~#as_sym~
 Convert a ~String~ to a ~Symbol~ by converting all letters to lower-case,
 replacing hyphens and white space with a single underscore, and removing all
 non-alphanumeric characters:
@@ -1033,7 +1023,74 @@ non-alphanumeric characters:
 :hello_to_the_world
 #+end_example
 
+*** Method ~gut~
+Very often one wants to truncate a string to a given size, but it is often the
+case that the most important parts of a string are at the beginning and the
+end.  The ~#gut(size)~ method returns a sting of length ~size~ by removing
+content from the middle of the string and leaving as much as possible at the
+two ends.
+
+#+begin_src ruby
+  result = []
+  result << ['Self', 'Gutted']
+  result << nil
+  strings = ["/usr/bin/fallacious", "Class A Common Stock", 'PROFILES IN courage', 'in the HEAT OF THE NIght', 'a day in the life', 'FROM HERE TO ETERNITY',
+             'lucy in the sky with diamonds']
+  strings.each do |t|
+    result << [t, t.gut(15)]
+  end
+  result
+#+end_src
+
+#+RESULTS:
+#+begin_example
+| Self                          | Gutted          |
+|-------------------------------+-----------------|
+| /usr/bin/fallacious           | /usr/bi~lacious |
+| Class A Common Stock          | Class A~n Stock |
+| PROFILES IN courage           | PROFILE~courage |
+| in the HEAT OF THE NIght      | in the ~E NIght |
+| a day in the life             | a day i~he life |
+| FROM HERE TO ETERNITY         | FROM HE~TERNITY |
+| lucy in the sky with diamonds | lucy in~iamonds |
+#+end_example
+
+By default, the deleted middle part is replace with the tilde character, but
+with the ellipsis parameter, you can make it whatever you want:
+
+#+begin_src ruby
+'Class A Common Stock'.gut(15, ellipsis: '...')
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Class ... Stock
+#+end_example
+
+Including, nothing at all:
+
+#+begin_src ruby
+'Class A Common Stock'.gut(15, ellipsis: '')
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Class A n Stock
+#+end_example
+
+And, you can optionally squeeze out spaces or other characters with the
+
+#+begin_src ruby
+'Class A Common Stock'.gut(16, ellipsis: '', squeeze: ' ')
+#+end_src
+
+#+RESULTS:
+#+begin_example
+ClassAComonStock
+#+end_example
+
 ** Symbol
+
 *** Method =#as_str=
 A quasi-inverse of ~String#as_sym~, convert a ~Symbol~ into a ~String~ by
 converting '_' to a hyphen, white-space into '_', and eliminate any
@@ -1049,6 +1106,7 @@ hello-to-the-world
 #+end_example
 
 ** TeX Quoting
+
 The extensions for ~String~, ~Numeric~, ~Range~, ~Symbol~, and ~NilClass~
 provide a ~#tex_quote~ method for quoting the string version of an object so
 as to allow its inclusion in a TeX document while quoting characters such as
@@ -1094,7 +1152,7 @@ deploys TeX notation when special notation is available, for example, a
 | Complex  | 5.0+3.0i                              | "$5+3i$"                                      |
 | Rational | 5/3                                   | "$\\frac{5}{3}$"                              |
 | Rational | 8/17                                  | "$\\frac{8}{17}$"                             |
-| Range    | 2020-09-22..2025-12-23                | "(2020-09-22..2025-12-23)"                    |
+| Range    | 2020-09-22..2026-05-29                | "(2020-09-22..2026-05-29)"                    |
 | Range    | 2.718281828459045..3.141592653589793  | "($e$..$\\pi$)"                               |
 | Symbol   | four_score_and_7_years                | "four\\_score\\_and\\_7\\_years"              |
 | NilClass |                                       | ""                                            |

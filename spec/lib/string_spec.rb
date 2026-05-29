@@ -158,6 +158,15 @@ the people, for the people, shall not perish from the earth."
       end
     end
 
+    it 'guts a string in the middle' do
+      expect('hello'.gut(10)).to eq('hello')
+      expect('helloworld'.gut(6)).to eq('hel~ld')
+      expect('Class A Common Stock'.gut(15)).to eq("Class A~n Stock")
+      expect('Class A Common Stock'.gut(15, ellipsis: '...')).to eq("Class ... Stock")
+      expect('Class A Common Stock'.gut(15, ellipsis: '')).to eq("Class A n Stock")
+      expect('Class A Common Stock'.gut(16, ellipsis: '', squeeze: ' ')).to eq("ClassAComonStock")
+    end
+
     it 'converts a string to a regular expression' do
       # Ignores case by default
       re = "/hello((\s+)(world))?/".as_regexp

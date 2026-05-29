@@ -1,49 +1,50 @@
-- [Version](#org08c6b2b)
-- [Introduction](#orgb409533)
-- [Installation](#orgaf78cdb)
-- [Usage](#orgf4c03d5)
-  - [Array](#orgbf0d7bd)
-    - [Method `#comma_join(sep: nil, last_sep: nil, two_sep: nil)`](#org90333a0)
-    - [Method `#last_i`](#orgb5ec8fa)
-    - [Method `#intersect_with_dups`](#orgf3a31e0)
-    - [Method `diff_with_dups`](#orgf688358)
-  - [BigDecimal `#inspect`](#org228439a)
-  - [Enumerable](#orge4cd549)
-    - [Method `#each_with_flags`](#org218cc08)
-  - [Hash](#org4084cd2)
-    - [Method `#each_pair_with_flags`](#org9e037a0)
-    - [Method `#delete_with_value` and `#delete_with_value!`](#orgcec1c9f)
-    - [Method `#keys_with_value`](#org3176095)
-    - [Method `#remap_keys`](#org1bb322c)
-    - [Method `#replace_keys`](#org2422b59)
-    - [Alias `#merge` to `<<`](#orge127ca3)
-  - [Numeric](#orgb88ac7a)
-    - [Method `#signum`](#org6aa4188)
-    - [Method `#commas(places = nil)`](#orgde0a606)
-    - [Methods `#whole?` and `#int_if_whole`](#org75d311a)
-    - [Method `#secs_to_hms`](#org3851f2e)
-  - [Range](#orgd1d148c)
-    - [Methods `#contiguous`, `#left_contiguous`, `#right_contiguous`](#org8dc3396)
-    - [Method `#join(other)`](#org8506473)
-    - [Method `#spanned_by?(others)`](#org3044e74)
-    - [Methods `#gaps(others)`, `#overlaps(others)`](#org8967329)
-  - [String](#org84af932)
-    - [Method `#fuzzy_match`](#org671518d)
-    - [Method `#matches_with`](#orgab3712d)
-    - [Method `#entitle`](#org2bd68b6)
-    - [Method `#distance`](#org0a7545f)
-    - [Method `#commas(places)`](#org8fb72b8)
-    - [Method `#wrap(width, hang)`](#org41c2b2a)
-    - [Method `#as_sym`](#org7bf4d84)
-  - [Symbol](#org1972fd9)
-    - [Method `#as_str`](#org047797a)
-  - [TeX Quoting](#org00f166a)
-- [Contributing](#org2046bbe)
+- [Version](#org706993f)
+- [Introduction](#org8e3de1e)
+- [Installation](#orge71ccdc)
+- [Usage](#org1ef61a0)
+  - [Array](#orgfc24a05)
+    - [Method `#comma_join(sep: nil, last_sep: nil, two_sep: nil)`](#org779ed95)
+    - [Method `#last_i`](#org07f787c)
+    - [Method `#intersect_with_dups`](#org0d2857b)
+    - [Method `diff_with_dups`](#org83423fa)
+  - [BigDecimal `#inspect`](#orgf77f8a1)
+  - [Enumerable](#orgdce8ffe)
+    - [Method `#each_with_flags`](#org166e57c)
+  - [Hash](#org1e11773)
+    - [Method `#each_pair_with_flags`](#org0bd20b9)
+    - [Method `#delete_with_value` and `#delete_with_value!`](#org4dc0aa1)
+    - [Method `#keys_with_value`](#org605ad55)
+    - [Method `#remap_keys`](#orgdde4b0b)
+    - [Method `#replace_keys`](#org7603809)
+    - [Alias `#merge` to `<<`](#orgadf50ea)
+  - [Numeric](#org3918509)
+    - [Method `#signum`](#org6abf375)
+    - [Method `#commas(places = nil)`](#org00c3e90)
+    - [Methods `#whole?` and `#int_if_whole`](#orgb844d6f)
+    - [Method `#secs_to_hms`](#orgfd1b851)
+  - [Range](#org7a70260)
+    - [Methods `#contiguous`, `#left_contiguous`, `#right_contiguous`](#orgdd06e2c)
+    - [Method `#join(other)`](#org28a7d95)
+    - [Method `#spanned_by?(others)`](#org5d367a6)
+    - [Methods `#gaps(others)`, `#overlaps(others)`](#orga33fd47)
+  - [String](#orgbd1bd5e)
+    - [Method `#fuzzy_match`](#org63111cb)
+    - [Method `#matches_with`](#orgdae93bf)
+    - [Method `#entitle`](#org1a5d1e4)
+    - [Method `#distance`](#orgd671ee5)
+    - [Method `#commas(places)`](#orgfdd51bd)
+    - [Method `#wrap(width, hang)`](#org826950e)
+    - [Method `#as_sym`](#orgc017d90)
+    - [Method `gut`](#org3459d99)
+  - [Symbol](#org2241c53)
+    - [Method `#as_str`](#orgf2478cc)
+  - [TeX Quoting](#org5620bc3)
+- [Contributing](#orgfe2e72b)
 
 [![CI](https://github.com/ddoherty03/fat_core/actions/workflows/ruby.yml/badge.svg?branch=master)](https://github.com/ddoherty03/fat_core/actions/workflows/ruby.yml)
 
 
-<a id="org08c6b2b"></a>
+<a id="org706993f"></a>
 
 # Version
 
@@ -56,14 +57,14 @@ Current version is: 7.1.3
 ```
 
 
-<a id="orgb409533"></a>
+<a id="org8e3de1e"></a>
 
 # Introduction
 
 `fat-core` is somewhat of a grab bag of core class extensions that I have found useful across several projects. It's higgeldy-piggeldy nature reflects the fact that none of them are important enough to deserve a gem of their own, but nonetheless need to be collected in one place to reduce redundancy across projects and provide a focused place to develop and test them.
 
 
-<a id="orgaf78cdb"></a>
+<a id="orge71ccdc"></a>
 
 # Installation
 
@@ -86,7 +87,7 @@ $ gem install fat_core
 ```
 
 
-<a id="orgf4c03d5"></a>
+<a id="org1ef61a0"></a>
 
 # Usage
 
@@ -110,15 +111,19 @@ Or, you can require them all:
 require 'fat_core/all'
 ```
 
+```
+false
+```
+
 Many of these have little that is of general interest, but there are a few goodies.
 
 
-<a id="orgbf0d7bd"></a>
+<a id="orgfc24a05"></a>
 
 ## Array
 
 
-<a id="org90333a0"></a>
+<a id="org779ed95"></a>
 
 ### Method `#comma_join(sep: nil, last_sep: nil, two_sep: nil)`
 
@@ -161,7 +166,7 @@ hammers, nails, glue and bolts
 ```
 
 
-<a id="orgb5ec8fa"></a>
+<a id="org07f787c"></a>
 
 ### Method `#last_i`
 
@@ -176,7 +181,7 @@ Return the index of the last element of the Array.
 ```
 
 
-<a id="orgf3a31e0"></a>
+<a id="org0d2857b"></a>
 
 ### Method `#intersect_with_dups`
 
@@ -184,16 +189,16 @@ Return a new Array that is the intersection of this Array with all `others`, but
 
 ```ruby
 a = %w{hammers nails glue bolts nails}
-b = %w{nails fingers knuckles nails}
+b = %w{nails fingers bolts knuckles nails}
 a.intersect_with_dups(b)
 ```
 
 ```
-| nails | nails |
+| nails | bolts | nails |
 ```
 
 
-<a id="orgf688358"></a>
+<a id="org83423fa"></a>
 
 ### Method `diff_with_dups`
 
@@ -210,7 +215,7 @@ a.diff_with_dups(b)
 ```
 
 
-<a id="org228439a"></a>
+<a id="orgf77f8a1"></a>
 
 ## BigDecimal `#inspect`
 
@@ -227,12 +232,12 @@ BigDecimal('2.1718281828').inspect
 Without `FatCore`, the result is "0.2718281828e1", forcing you to interpret the exponent to understand where the decimal place is.
 
 
-<a id="orge4cd549"></a>
+<a id="orgdce8ffe"></a>
 
 ## Enumerable
 
 
-<a id="org218cc08"></a>
+<a id="org166e57c"></a>
 
 ### Method `#each_with_flags`
 
@@ -266,14 +271,14 @@ result
 ```
 
 
-<a id="org4084cd2"></a>
+<a id="org1e11773"></a>
 
 ## Hash
 
 FatCore::Hash extends the Hash class with some useful methods.
 
 
-<a id="org9e037a0"></a>
+<a id="org0bd20b9"></a>
 
 ### Method `#each_pair_with_flags`
 
@@ -311,7 +316,7 @@ result
 ```
 
 
-<a id="orgcec1c9f"></a>
+<a id="org4dc0aa1"></a>
 
 ### Method `#delete_with_value` and `#delete_with_value!`
 
@@ -324,12 +329,7 @@ puts h
 ```
 
 ```
-=> false
-=> {:a=>1, :b=>2, :c=>3, :d=>2, :e=>1}
-=> {:a=>1, :c=>3, :e=>1}
 {:a=>1, :c=>3, :e=>1}
-=> nil
-:org_babel_ruby_eoe
 ```
 
 You can supply multiple values for deletion:
@@ -341,12 +341,7 @@ puts h
 ```
 
 ```
-=> false
-=> {:a=>1, :b=>2, :c=>3, :d=>2, :e=>1}
-=> {:b=>2, :d=>2}
 {:b=>2, :d=>2}
-=> nil
-:org_babel_ruby_eoe
 ```
 
 The non-bang method returns a clone of the Hash with the given deletions made:
@@ -359,18 +354,12 @@ puts h2
 ```
 
 ```
-=> false
-=> {:a=>1, :b=>2, :c=>3, :d=>2, :e=>1}
-=> {:b=>2, :d=>2}
 {:a=>1, :b=>2, :c=>3, :d=>2, :e=>1}
-=> nil
 {:b=>2, :d=>2}
-=> nil
-:org_babel_ruby_eoe
 ```
 
 
-<a id="org3176095"></a>
+<a id="org605ad55"></a>
 
 ### Method `#keys_with_value`
 
@@ -395,7 +384,7 @@ h.keys_with_value(2, 3).inspect
 ```
 
 
-<a id="org1bb322c"></a>
+<a id="orgdde4b0b"></a>
 
 ### Method `#remap_keys`
 
@@ -424,7 +413,7 @@ h.transform_keys { |k| k.to_s.upcase.to_sym }.inspect
 ```
 
 
-<a id="org2422b59"></a>
+<a id="org7603809"></a>
 
 ### Method `#replace_keys`
 
@@ -440,7 +429,7 @@ h.replace_keys([:z, :y, :x, :w, :v]).inspect
 ```
 
 
-<a id="orge127ca3"></a>
+<a id="orgadf50ea"></a>
 
 ### Alias `#merge` to `<<`
 
@@ -479,14 +468,14 @@ h
 ```
 
 
-<a id="orgb88ac7a"></a>
+<a id="org3918509"></a>
 
 ## Numeric
 
 FatCore::Numeric has methods for inserting grouping commas into a number (`#commas` and `#group`), for converting seconds to HH:MM:SS.dd format (`#secs_to_hms`), for testing for integrality (`#whole?` and `#int_if_whole`), and testing for sign (`#signum`).
 
 
-<a id="org6aa4188"></a>
+<a id="org6abf375"></a>
 
 ### Method `#signum`
 
@@ -501,7 +490,7 @@ Return `-1` for negative numbers, `0` for zero, and `+1` for positive numbers. T
 ```
 
 
-<a id="orgde0a606"></a>
+<a id="org00c3e90"></a>
 
 ### Method `#commas(places = nil)`
 
@@ -542,7 +531,7 @@ result
 ```
 
 
-<a id="org75d311a"></a>
+<a id="orgb844d6f"></a>
 
 ### Methods `#whole?` and `#int_if_whole`
 
@@ -570,7 +559,7 @@ result
 ```
 
 
-<a id="org3851f2e"></a>
+<a id="orgfd1b851"></a>
 
 ### Method `#secs_to_hms`
 
@@ -598,14 +587,14 @@ result
 ```
 
 
-<a id="orgd1d148c"></a>
+<a id="org7a70260"></a>
 
 ## Range
 
 `FatCore` can also extend the Range class with several useful methods that emphasize coverage of one range by one or more others (`#spanned_by?` and `#gaps`), contiguity of Ranges to one another (`#contiguous?`, `#left_contiguous?`, and `#right_contiguous?`, `#join`), and the testing of overlaps between ranges (`#overlaps?`, `#overlaps_among?`). These are put to good use in the 'fat\_period' (<https://github.com/ddoherty03/fat_period>) gem, which combines fat\_core's extended Range class with its extended Date class to make a useful Period class for date ranges, and you may find fat\_core's extended Range class likewise useful.
 
 
-<a id="org8dc3396"></a>
+<a id="orgdd06e2c"></a>
 
 ### Methods `#contiguous`, `#left_contiguous`, `#right_contiguous`
 
@@ -644,12 +633,12 @@ result
 |            3.146..12.3 |             0.5..3.145 | false       | false  | false |
 |                   a..q |                   r..z | true        | true   | false |
 |                   a..q |                   s..z | false       | false  | false |
-| 1963-11-22..1964-11-03 | 1964-11-04..2025-12-23 | true        | true   | false |
-| 1963-11-22..1964-11-03 | 1964-11-28..2025-12-23 | false       | false  | false |
+| 1963-11-22..1964-11-03 | 1964-11-04..2026-05-29 | true        | true   | false |
+| 1963-11-22..1964-11-03 | 1964-11-28..2026-05-29 | false       | false  | false |
 ```
 
 
-<a id="org8506473"></a>
+<a id="org28a7d95"></a>
 
 ### Method `#join(other)`
 
@@ -688,12 +677,12 @@ result
 |            3.146..12.3 |             0.5..3.145 | false       |                        |
 |                   a..q |                   r..z | true        |                   a..z |
 |                   a..q |                   s..z | false       |                        |
-| 1963-11-22..1964-11-03 | 1964-11-04..2025-12-23 | true        | 1963-11-22..2025-12-23 |
-| 1963-11-22..1964-11-03 | 1964-11-28..2025-12-23 | false       |                        |
+| 1963-11-22..1964-11-03 | 1964-11-04..2026-05-29 | true        | 1963-11-22..2026-05-29 |
+| 1963-11-22..1964-11-03 | 1964-11-28..2026-05-29 | false       |                        |
 ```
 
 
-<a id="org3044e74"></a>
+<a id="org5d367a6"></a>
 
 ### Method `#spanned_by?(others)`
 
@@ -733,7 +722,7 @@ result
 ```
 
 
-<a id="org8967329"></a>
+<a id="orga33fd47"></a>
 
 ### Methods `#gaps(others)`, `#overlaps(others)`
 
@@ -775,14 +764,14 @@ result
 ```
 
 
-<a id="org84af932"></a>
+<a id="orgbd1bd5e"></a>
 
 ## String
 
 FatCore::String has methods for performing matching of one string with another (`#matches_with`, `#fuzzy_match`), for converting a string to title-case as might by used in the title of a book (`#entitle`), for converting a String into a useable Symbol (`#as_sym`) and vice-versa (`#as_str` also `Symbol#as_str`), for wrapping with an optional hanging indent (`#wrap`), cleaning up errant spaces (`#clean`), and computing the Damerau-Levenshtein distance between strings (`#distance`). And several others.
 
 
-<a id="org671518d"></a>
+<a id="org63111cb"></a>
 
 ### Method `#fuzzy_match`
 
@@ -829,7 +818,7 @@ result
 ```
 
 
-<a id="orgab3712d"></a>
+<a id="orgdae93bf"></a>
 
 ### Method `#matches_with`
 
@@ -861,7 +850,7 @@ result
 ```
 
 
-<a id="org2bd68b6"></a>
+<a id="org1a5d1e4"></a>
 
 ### Method `#entitle`
 
@@ -890,7 +879,7 @@ result
 ```
 
 
-<a id="org0a7545f"></a>
+<a id="orgd671ee5"></a>
 
 ### Method `#distance`
 
@@ -918,7 +907,7 @@ result
 ```
 
 
-<a id="org8fb72b8"></a>
+<a id="orgfdd51bd"></a>
 
 ### Method `#commas(places)`
 
@@ -949,7 +938,7 @@ result
 ```
 
 
-<a id="org41c2b2a"></a>
+<a id="org826950e"></a>
 
 ### Method `#wrap(width, hang)`
 
@@ -1053,7 +1042,7 @@ Four score and seven years ago our
 ```
 
 
-<a id="org7bf4d84"></a>
+<a id="orgc017d90"></a>
 
 ### Method `#as_sym`
 
@@ -1068,12 +1057,73 @@ Convert a `String` to a `Symbol` by converting all letters to lower-case, replac
 ```
 
 
-<a id="org1972fd9"></a>
+<a id="org3459d99"></a>
+
+### Method `gut`
+
+Very often one wants to truncate a string to a given size, but it is often the case that the most important parts of a string are at the beginning and the end. The `#gut(size)` method returns a sting of length `size` by removing content from the middle of the string and leaving as much as possible at the two ends.
+
+```ruby
+result = []
+result << ['Self', 'Gutted']
+result << nil
+strings = ["/usr/bin/fallacious", "Class A Common Stock", 'PROFILES IN courage', 'in the HEAT OF THE NIght', 'a day in the life', 'FROM HERE TO ETERNITY',
+           'lucy in the sky with diamonds']
+strings.each do |t|
+  result << [t, t.gut(15)]
+end
+result
+```
+
+```
+| Self                          | Gutted          |
+|-------------------------------+-----------------|
+| /usr/bin/fallacious           | /usr/bi~lacious |
+| Class A Common Stock          | Class A~n Stock |
+| PROFILES IN courage           | PROFILE~courage |
+| in the HEAT OF THE NIght      | in the ~E NIght |
+| a day in the life             | a day i~he life |
+| FROM HERE TO ETERNITY         | FROM HE~TERNITY |
+| lucy in the sky with diamonds | lucy in~iamonds |
+```
+
+By default, the deleted middle part is replace with the tilde character, but with the ellipsis parameter, you can make it whatever you want:
+
+```ruby
+'Class A Common Stock'.gut(15, ellipsis: '...')
+```
+
+```
+Class ... Stock
+```
+
+Including, nothing at all:
+
+```ruby
+'Class A Common Stock'.gut(15, ellipsis: '')
+```
+
+```
+Class A n Stock
+```
+
+And, you can optionally squeeze out spaces or other characters with the
+
+```ruby
+'Class A Common Stock'.gut(16, ellipsis: '', squeeze: ' ')
+```
+
+```
+ClassAComonStock
+```
+
+
+<a id="org2241c53"></a>
 
 ## Symbol
 
 
-<a id="org047797a"></a>
+<a id="orgf2478cc"></a>
 
 ### Method `#as_str`
 
@@ -1088,7 +1138,7 @@ hello-to-the-world
 ```
 
 
-<a id="org00f166a"></a>
+<a id="org5620bc3"></a>
 
 ## TeX Quoting
 
@@ -1131,14 +1181,14 @@ result
 | Complex  | 5.0+3.0i                              | "$5+3i$"                                      |
 | Rational | 5/3                                   | "$\\frac{5}{3}$"                              |
 | Rational | 8/17                                  | "$\\frac{8}{17}$"                             |
-| Range    | 2020-09-22..2025-12-23                | "(2020-09-22..2025-12-23)"                    |
+| Range    | 2020-09-22..2026-05-29                | "(2020-09-22..2026-05-29)"                    |
 | Range    | 2.718281828459045..3.141592653589793  | "($e$..$\\pi$)"                               |
 | Symbol   | four_score_and_7_years                | "four\\_score\\_and\\_7\\_years"              |
 | NilClass |                                       | ""                                            |
 ```
 
 
-<a id="org2046bbe"></a>
+<a id="orgfe2e72b"></a>
 
 # Contributing
 
