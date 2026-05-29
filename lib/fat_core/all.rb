@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require_relative '../fat_core'
 require_relative 'array'
 require_relative 'bigdecimal'
 require_relative 'enumerable'
