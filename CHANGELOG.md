@@ -1,0 +1,97 @@
+- [Version 7.3.0](#org5f61e5a)
+  - [String](#org633deb6)
+- [Version 7.1.1](#org003674c)
+  - [String](#org5df7dd5)
+- [Version 7.0.0 from Version 6.0.0](#org3aecf27)
+  - [Enumerable](#orgff23338)
+  - [Hash](#org408609b)
+  - [Numeric](#org138cd73)
+  - [Range](#orgdebd7ac)
+  - [String](#org075bb7e)
+  - [Kernel](#org545d137)
+
+
+<a id="org5f61e5a"></a>
+
+# Version 7.3.0
+
+
+<a id="org633deb6"></a>
+
+## String
+
+Another visit to String#fuzzy\_match to ensure that a subject string is matched by its own matcher. This bug got tickled when 'Amazon.com' failed to match 'Amazon.com', which just isn't right.
+
+
+<a id="org003674c"></a>
+
+# Version 7.1.1
+
+
+<a id="org5df7dd5"></a>
+
+## String
+
+-   `String#fuzzy_match` make period, comma, asterisk, and apostrophes optional in matcher instead of just deleting them and in the subject string replace periods and commas with spaces so they still act as word separators.
+    
+    Before `'WWW.WOLFRAM.COM'.fuzzy_match('www:wolfram')` would not match because the periods were just eliminated so the matcher was looking for a word starting with 'wolfram' but the subject string was converted to 'WWWWOLFRAMCOM' so no match. Now it is converted to 'WWW WOLFRAM COM' so the match succeeds.
+
+
+<a id="org3aecf27"></a>
+
+# Version 7.0.0 from Version 6.0.0
+
+
+<a id="orgff23338"></a>
+
+## Enumerable
+
+-   Remove `#groups_of` as duplicative of `each_slice`
+
+
+<a id="org408609b"></a>
+
+## Hash
+
+-   Rename `delete_with_value` to `delete_with_values!` to make it clear that the Hash is modified in place,
+-   Add `delete_with_value` as a non-mutating variant
+-   Change arg to `keys_with_value(vals)` to allow variable arguments for multiple values instead of requiring an Array,
+-   Allow `<<` operator to merge any `Enumerable` as well as a `Hash`
+
+
+<a id="org138cd73"></a>
+
+## Numeric
+
+-   Enhance `#tex_quote` to put special numbers such as `Math::PI`, `Math::E`, and `Float::INFINITY` in TeX notation, so, e.g., Complex(Math::E, Math:PI).tex\_quote will render to "$\\pi+e i$", Rationals will be rendered as fractions, etc.
+
+
+<a id="orgdebd7ac"></a>
+
+## Range
+
+-   `Range#gaps` now better handles Ranges with countable endpoints that need `:succ` and `:pred` methods,
+-   `tex_quote` applies `#tex_quote` to endpoints if they respond to a `#tex_quote` method,
+-   Check argument Ranges to `#gaps`, `#spanned_by?`, and `#overlaps` for compatibility with the subject Range,
+
+
+<a id="org075bb7e"></a>
+
+## String
+
+-   `String#fuzzy_match` changes the semantics of the string matcher argument:
+    1.  an internal ':' preceded and followed by non-whitespace now only applies to the word following it to indicate that the word must be a word boundary, so 'hel:wor' matches 'Shell worms' as well as 'Hello, world'.
+    2.  an internal ':' preceded by whitespace but followed by non-whitespace is also treated as requiring a word boundary for the following word but not the preceding word, as in 1, so 'hel :wor'
+    3.  but an internal ':' preceded by non-whitespace but followed by whitespace requires a word boundary after the preceding word, so 'hel: wor'
+    4.  a lone matcher now allows a match anywhere in the subject text regardless of boundaries; the prior version added a word boundary restriction to the bare matcher, so before 'zz' would not match "Pizza" since 'zz' did not occur at the end of word, but now 'zz' will match "Pizza". Rule 3 above allows putting a boundary restriction on the matcher with 'zz: ' as before.
+    5.  Leading and trailing ':' continue to require the text to occur at the beginning or end, respectively, of the subject string, so ':hel' and 'ld:' match "Hello, world" but ':wor' and 'wor:' do not.
+-   `String#number` no longer considers a hex number with a decimal point to be in the form of a number
+-   provide a :pred method in a refinement accesses with 'using StringPred
+-   `String#entitle` no longer tries to detect general acronyms for upper case handling since it was unreliable. Thus, `"ibm corporation".enetitle` becomers "Ibm Corporation" rather than "IBM corporation."
+
+
+<a id="org545d137"></a>
+
+## Kernel
+
+-   removed the `Kernel.time_it` method since Benchmark already does this better.

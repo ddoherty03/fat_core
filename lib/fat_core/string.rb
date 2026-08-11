@@ -225,33 +225,32 @@ module FatCore
       DamerauLevenshtein.distance(self, other.to_s, 1, 10)
     end
 
-    # Return the matched portion of self, minus punctuation characters, if self
-    # matches the string `matcher` using the following notion of matching:
+    # Return the matched portion of self, with fuzzy-match punctuation normalized,
+    # if self matches `matcher` using the following rules:
     #
-    # 1. Remove leading and trailing whitespace in the subject and the matcher
-    #    and collapse its internal whitespace to a single space,
-    # 2. In the subject string replace periods and commas with a space (so
-    #    they still act as word separators) but remove apostrophes, and
-    #    asterisks so the user need not remember whether they were used when
-    #    forming the matcher.
-    # 3. In the matcher, make any period, comma, asterisk, or apostrophe
-    #    optional for the same reason.
-    # 4. Treat internal ':stuff' or ' :stuff' in the matcher as the equivalent
-    #    of /\bstuff.*/ in a regular expression, that is, match any word
-    #    starting with stuff in self,
-    # 5. Treat internal 'stuff: ' in the matcher as the equivalent
-    #    of /.*stuff\b/ in a regular expression, that is, match any word
-    #    ending with stuff in self,
-    # 6. A colon with no spaces around it is treated as belonging to the
-    #    following word, requiring it to start with it, so 'some:stuff'
-    #    requires 'some' anywhere followed by a word beginning with 'stuff',
-    #    i.e., /some.*\bstuff/i,
-    # 7. Treat leading ':' in the matcher as anchoring the match to the
-    #    beginning of the target string,
-    # 8. Treat ending ':' in the matcher as anchoring the match to the
-    #    end of the target string,
-    # 9. Require each component to match some part of self, and
-    # 10. Ignore case in the match
+    # 1. Remove leading and trailing whitespace in the subject and matcher and
+    #    collapse internal whitespace to a single space.
+    # 2. In ordinary fuzzy matching, treat periods and commas between non-space
+    #    characters as word separators.  Otherwise ignore periods and commas.
+    #    Ignore apostrophes and asterisks, so the matcher need not reproduce
+    #    those punctuation characters exactly.
+    # 3. Escape regular-expression metacharacters in an ordinary matcher.  A
+    #    matcher enclosed in '/' characters is instead treated as a regular
+    #    expression and matched against the original, unnormalized subject.
+    # 4. Treat internal ':stuff' or ' :stuff' in an ordinary matcher as the
+    #    equivalent of /\bstuff.*/, that is, match a word beginning with stuff.
+    # 5. Treat internal 'stuff: ' as the equivalent of /stuff\b.*/, that is,
+    #    require stuff to end at a word boundary and then match anything after it.
+    # 6. A colon with no spaces around it belongs to the following component, so
+    #    'some:stuff' requires 'some' followed somewhere by a word beginning with
+    #    'stuff', i.e. /some.*\bstuff/i.
+    # 7. Treat a leading ':' as anchoring the match to the beginning of the
+    #    normalized subject.
+    # 8. Treat a trailing ':' as anchoring the match to the end of the normalized
+    #    subject.
+    # 9. Require each component of an ordinary matcher to match some part of the
+    #    subject, in order.
+    # 10. Ignore case in both fuzzy and regular-expression matching.
     #
     # @example
     #   "St. Luke's Hospital".fuzzy_match('st lukes') #=> 'St Lukes'
@@ -261,28 +260,23 @@ module FatCore
     #   "St. Luke's Hospital".fuzzy_match('st:laks') #=> nil
     #   "St. Luke's Hospital".fuzzy_match(':lukes') #=> nil
     #   "St. Luke's Hospital".fuzzy_match('lukes:hospital:') #=> 'Lukes Hospital'
+    #   "Amazon.com".fuzzy_match('Amazon.com') #=> 'Amazon com'
+    #   "Price is $12.50".fuzzy_match('/\$12\.50/') #=> '$12.50'
     #
-    # @param matcher [String] pattern to test against where ':' is wildcard
-    # @return [String] the unpunctuated part of self that matched
-    # @return [nil] if self did not match matcher
+    # @param matcher [String] fuzzy matcher, or a regular expression enclosed in /
+    # @return [String] the portion of the subject that matched
+    # @return [nil] if the subject did not match
     def fuzzy_match(matcher)
-      # Make asterisks, periods, commas, and apostrophes optional
-      matcher = matcher.clean.gsub(/[\*.,']/, '\0?')
-      # Replace periods and commas with a space (so they are still word
-      # separators, e.g. 'WWW.WOLFRAM' -> 'WWW WOLFRAM' and 'AMZON,INC.' ->
-      # 'AMAZON INC') and remove asterisks and apostrophes
-      target = gsub(/[.,]/, ' ').gsub(/[\*']/, '').clean
-      regexp_string =
-        if matcher.match?(/[: ]/)
-          matcher.sub(/\A:/, "\\A").sub(/:\z/, "\\z")
-            .gsub(/:\s+/, "\\b.*").gsub(':', ".*\\b")
-            .gsub(/\s+/, ".*")
-        else
-          Regexp.escape(matcher)
-        end
-      regexp = /#{regexp_string}/i
+      if matcher.match?(%r{\A/.*/\z})
+        regexp = Regexp.new(matcher[1...-1], Regexp::IGNORECASE)
+        subject = self
+      else
+        subject = fuzzy_match_clean(self)
+        matcher = fuzzy_match_clean(matcher)
+        regexp = Regexp.new(fuzzy_match_regexp(matcher), Regexp::IGNORECASE)
+      end
       matched_text =
-        if (match = regexp.match(target))
+        if (match = regexp.match(subject))
           match[0]
         end
       matched_text
@@ -384,6 +378,37 @@ module FatCore
     end
 
     private
+
+    def fuzzy_match_regexp(matcher)
+      start_anchor = matcher.start_with?(':')
+      end_anchor = matcher.end_with?(':')
+      matcher = matcher.delete_prefix(':') if start_anchor
+      matcher = matcher.delete_suffix(':') if end_anchor
+      parts = matcher.split(/(:\s+|:|\s+)/)
+      regexp_string = parts.map { |part|
+        case part
+        when /\A:\s+\z/
+          "\\b.*"
+        when ':'
+          ".*\\b"
+        when /\A\s+\z/
+          '.*'
+        else
+          Regexp.escape(part)
+        end
+      }.join
+      regexp_string = "\\A#{regexp_string}" if start_anchor
+      regexp_string = "#{regexp_string}\\z" if end_anchor
+      regexp_string
+    end
+
+    def fuzzy_match_clean(string)
+      string
+        .clean
+        .gsub(/(?<=\S)[.,](?=\S)/, ' ')
+        .gsub(/[.,*']/, '')
+        .clean
+    end
 
     def upper?
       UPPERS.include?(self[0])

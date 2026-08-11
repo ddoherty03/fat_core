@@ -1,3 +1,8 @@
+* Version 7.3.0
+** String
+Another visit to String#fuzzy_match to ensure that a subject string is matched
+by its own matcher.  This bug got tickled when 'Amazon.com' failed to match
+'Amazon.com', which just isn't right.
 * Version 7.1.1
 ** String
 - =String#fuzzy_match= make period, comma, asterisk, and apostrophes optional

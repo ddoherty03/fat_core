@@ -270,6 +270,49 @@ the people, for the people, shall not perish from the earth."
         expect('Hello, world'.fuzzy_match('ox')).to be_falsy
       end
 
+      it 'matches an exact match' do
+        expect('Amazon.com'.fuzzy_match('Amazon.com')).to be_truthy
+        expect('Hello:world'.fuzzy_match('Hello:world')).to be_truthy
+        expect('2+2=4'.fuzzy_match('2+2=4')).to be_truthy
+        expect('Whodunnit?'.fuzzy_match('Whodunnit?')).to be_truthy
+        expect('(I like (lisp))'.fuzzy_match('(I like (lisp))')).to be_truthy
+        # expect('Price is $12.50'.fuzzy_match('Price is $12.50')).to be_truthy
+        expect('foo[bar]'.fuzzy_match('foo[bar]')).to be_truthy
+        expect('a^b'.fuzzy_match('a^b')).to be_truthy
+        expect('foo|bar'.fuzzy_match('foo|bar')).to be_truthy
+        expect('path\\name'.fuzzy_match('path\\name')).to be_truthy
+        expect('Acme Co., Inc.'.fuzzy_match('Acme Co., Inc.')).to be_truthy
+        expect("St. Luke's Hospital".fuzzy_match("St. Luke's Hospital")).to be_truthy
+        expect('E*TRADE'.fuzzy_match('E*TRADE')).to be_truthy
+      end
+
+      it 'fuzzy matches ordinary strings against themselves' do
+        [
+          'Amazon.com',
+          'Amazon, Inc.',
+          'St. Luke\'s Hospital',
+          'E*TRADE',
+          'WWW.WOLFRAM.COM',
+          'Smith, Jones & Brown',
+          'Acme Co., Inc.',
+          'Hello, world.',
+        ].each do |string|
+          expect(string.fuzzy_match(string)).to be_truthy
+        end
+      end
+
+      it 'escapes regexp special characters in ordinary matchers' do
+        expect('Price is $12.50'.fuzzy_match('Price is $12.50')).to be_truthy
+        expect('Use a+b'.fuzzy_match('Use a+b')).to be_truthy
+        expect('Maybe yes?'.fuzzy_match('Maybe yes?')).to be_truthy
+        expect('Pick (one)'.fuzzy_match('Pick (one)')).to be_truthy
+      end
+
+      it 'honors regexp special characters in slash-delimited matchers' do
+        expect('Hello world'.fuzzy_match('/^hello.*world$/')).to be_truthy
+        expect('Hello world'.fuzzy_match('/^world/')).to be_falsy
+      end
+
       it 'replaces periods and commas with a space so they are still word separators' do
         expect('WWW.WOLFRAM.COM'.fuzzy_match('wolf')).to be_truthy
         expect('AMAZON,INC'.fuzzy_match('amazon inc')).to be_truthy
@@ -290,10 +333,14 @@ the people, for the people, shall not perish from the earth."
         expect('Hello, what is with the world?'.fuzzy_match('at wi or')).to be_truthy
       end
 
+      it 'does not normalize the subject for regexp matchers' do
+        expect('Price is $12.50'.fuzzy_match('/\\$12\\.50/')).to eq('$12.50')
+        expect('Price is $12.50'.fuzzy_match('/\\$12 50/')).to be_nil
+      end
+
       it 'fuzzy matches colon-separated parts' do
         expect('Hello:world'.fuzzy_match('hel:wor')).to be_truthy
         expect('Hello:world'.fuzzy_match('hel :wor')).to be_truthy
-        expect('Hello:world'.fuzzy_match('hel: wor')).to be_falsy
         expect('Hello:world'.fuzzy_match('hel:orld')).to be_falsy
         expect("Hello, 'world'".fuzzy_match('hel:wor')).to be_truthy
         expect('Hello "world"'.fuzzy_match('hel:world')).to be_truthy
@@ -310,6 +357,8 @@ the people, for the people, shall not perish from the earth."
         expect('Hello, what is with the world?'.fuzzy_match('llo: th: :wor')).to be_truthy
         expect('Hello:world'.fuzzy_match('llox: ')).to be_falsy
         expect('Hello, what=+&is (with) the world?'.fuzzy_match('at: ith: the')).to be_truthy
+        # A colon at the end of a word in the matcher should require a word-boundary there.
+        expect('Hello:world'.fuzzy_match('hel: wor')).to be_falsy
       end
 
       it 'requires end-anchor for ending colon' do
@@ -342,9 +391,8 @@ the people, for the people, shall not perish from the earth."
         expect('St Lukes, Inc.'.fuzzy_match('st luke inc')).to eq('St Lukes Inc')
         expect('St Lukes, Inc.'.fuzzy_match('st lukes, inc')).to eq('St Lukes Inc')
         expect('E*TRADE'.fuzzy_match('etrade')).to eq('ETRADE')
-        # Does not recognize non-alphanumerics as start of string.
         expect('The 1 Dollar Store'.fuzzy_match('1 stor')).to be_truthy
-        expect('The $1 Dollar Store'.fuzzy_match('$1 stor')).to be_falsy
+        expect('The $1 Dollar Store'.fuzzy_match('$1 stor')).to be_truthy
       end
 
       it 'performs examples in documentation' do
