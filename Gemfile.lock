@@ -46,7 +46,7 @@ GEM
     diff-lcs (1.6.2)
     docile (1.4.1)
     drb (2.2.3)
-    erb (6.0.1)
+    erb (6.0.1.1)
     gem_docs (0.2.0)
       rake
       yard
