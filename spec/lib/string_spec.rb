@@ -246,12 +246,26 @@ the people, for the people, shall not perish from the earth."
     end
 
     it 'computes its Levenshtein distance from another string' do
-      expect('Something'.distance('Smoething')).to eq 1
+      expect('Something'.distance('Smoething')).to eq 2
       expect('Something'.distance('meSothing')).to eq 4
       expect('SomethingElse'.distance('Encyclopedia')).to eq 11
       expect('SomethingElseUnrelated'.distance('EncyclopediaBritanica'))
         .to eq 11
       expect('SomethingElseUnrelated'.distance('EncyclopediaBritanica')).to eq 11
+    end
+
+    it 'handles identical, empty, Unicode, and non-string inputs' do
+      expect('same'.distance('same')).to eq 0
+      expect(''.distance('abc')).to eq 3
+      expect('abc'.distance('')).to eq 3
+      expect('café'.distance('cafe')).to eq 1
+      expect('123'.distance(123)).to eq 0
+      expect(''.distance(nil)).to eq 0
+    end
+
+    it 'caps distances above ten at eleven' do
+      expect(('a' * 10).distance('')).to eq 10
+      expect(('a' * 12).distance('')).to eq 11
     end
 
     describe 'Quoting' do

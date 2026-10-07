@@ -768,7 +768,7 @@ result
 
 ## String
 
-FatCore::String has methods for performing matching of one string with another (`#matches_with`, `#fuzzy_match`), for converting a string to title-case as might by used in the title of a book (`#entitle`), for converting a String into a useable Symbol (`#as_sym`) and vice-versa (`#as_str` also `Symbol#as_str`), for wrapping with an optional hanging indent (`#wrap`), cleaning up errant spaces (`#clean`), and computing the Damerau-Levenshtein distance between strings (`#distance`). And several others.
+FatCore::String has methods for performing matching of one string with another (`#matches_with`, `#fuzzy_match`), for converting a string to title-case as might by used in the title of a book (`#entitle`), for converting a String into a useable Symbol (`#as_sym`) and vice-versa (`#as_str` also `Symbol#as_str`), for wrapping with an optional hanging indent (`#wrap`), cleaning up errant spaces (`#clean`), and computing the Levenshtein distance between strings (`#distance`). And several others.
 
 
 <a id="org63111cb"></a>
@@ -883,7 +883,7 @@ result
 
 ### Method `#distance`
 
-`FatCore` provides `distance` as a simple wrapper around the Damerau-Levenshtein distance function in `damerau-levenshtein` gem, using a block size of 1 and a max distance of 10.
+`FatCore` provides `distance` as a simple wrapper around the Levenshtein distance function in Ruby's bundled `DidYouMean` library. Insertions, deletions, and substitutions each count as one edit; swapping adjacent letters counts as two. Distances above 10 return 11, preserving the existing ceiling. No native extension is needed.
 
 ```ruby
 result = []

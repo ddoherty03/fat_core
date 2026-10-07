@@ -2,7 +2,7 @@
 
 require 'bigdecimal'
 require 'fat_core/patches'
-require 'damerau-levenshtein'
+require 'did_you_mean/levenshtein'
 require 'active_support/core_ext/regexp'
 require_relative 'numeric'
 
@@ -215,14 +215,14 @@ module FatCore
     # @group Matching
     # :section: Matching
 
-    # Return the Damerau-Levenshtein distance between self an another string
-    # using a transposition block size of 1 and quitting if a max distance of 10
-    # is reached.
+    # Return the Levenshtein distance between self and another string.
+    # Distances above 10 return 11, preserving the existing ceiling.
+    # Swapping adjacent characters counts as two edits.
     #
     # @param other [#to_s] string to compute self's distance from
     # @return [Integer] the distance between self and other
     def distance(other)
-      DamerauLevenshtein.distance(self, other.to_s, 1, 10)
+      [DidYouMean::Levenshtein.distance(self, other.to_s), 11].min
     end
 
     # Return the matched portion of self, with fuzzy-match punctuation normalized,

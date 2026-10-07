@@ -175,7 +175,8 @@ Array are included in the result /unless/ they also appear in any of the
 | hammers | glue | bolts | hammers |
 #+end_example
 
-** BigDecimal ~#inspect~
+** BigDecimal
+*** Method ~#inspect~
 ~FatCore~ provides nothing but a better ~#inspect~ method for the ~BigDecimal~
 class since the default inspect method is not very readable.
 
@@ -718,7 +719,7 @@ FatCore::String has methods for performing matching of one string with another
 might by used in the title of a book (~#entitle~), for converting a String
 into a useable Symbol (~#as_sym~) and vice-versa (~#as_str~ also
 ~Symbol#as_str~), for wrapping with an optional hanging indent (~#wrap~),
-cleaning up errant spaces (~#clean~), and computing the Damerau-Levenshtein
+cleaning up errant spaces (~#clean~), and computing the Levenshtein
 distance between strings (~#distance~). And several others.
 
 *** Method ~#fuzzy_match~
@@ -851,8 +852,10 @@ something like "In the Heat of the Night".
 
 *** Method ~#distance~
 ~FatCore~ provides ~distance~ as a simple wrapper around the
-Damerau-Levenshtein distance function in ~damerau-levenshtein~ gem, using a
-block size of 1 and a max distance of 10.
+Levenshtein distance function in Ruby's bundled ~DidYouMean~ library.
+Insertions, deletions, and substitutions each count as one edit; swapping
+adjacent letters counts as two. Distances above 10 return 11, preserving
+the existing ceiling. No native extension is needed.
 
 #+begin_src ruby
   result = []
